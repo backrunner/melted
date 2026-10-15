@@ -70,3 +70,19 @@ private func fixture(_ name: String) throws -> Data {
     #expect(IdentityProof.challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk") == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
     #expect(try APIClient.validatedURL("https://example.com/") == APIClient.validatedURL("https://example.com"))
 }
+
+@Test func authenticationNegotiationIsForwardCompatibleAndHonorsServerOrder() throws {
+    func decode(_ json: String) throws -> Discovery.Authentication {
+        try Wire.decoder().decode(Discovery.Authentication.self, from: Data(json.utf8))
+    }
+    let password = try decode(#"{"version":1,"methods":["password"]}"#)
+    #expect(password.preferredMethod == .password)
+    let multiple = try decode(#"{"methods":["future","api_key","password","api_key"],"preferred":"password"}"#)
+    #expect(multiple.supportedMethods == [.apiKey, .password])
+    #expect(multiple.preferredMethod == .password)
+    #expect(try decode(#"{"methods":["future"]}"#).preferredMethod == nil)
+    #expect(try decode(#"{"version":2,"methods":["password"]}"#).supportedMethods.isEmpty)
+    #expect(try decode(#"{"methods":["key"],"key_algorithm":"RSA"}"#).supportedMethods.isEmpty)
+    #expect(try decode(#"{"methods":["browser"],"browser_callback":"https://evil.example"}"#).supportedMethods.isEmpty)
+    #expect(try decode(#"{"methods":["key","browser"],"key_algorithm":"P-256","browser_callback":"melted://auth/callback"}"#).supportedMethods == [.key, .browser])
+}

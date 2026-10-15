@@ -87,7 +87,13 @@ public struct BriefingPage: Codable, Sendable {
 public struct Discovery: Codable, Sendable {
     public struct ProtocolRange: Codable, Sendable { public var min: Int; public var max: Int }
     public struct Operator: Codable, Sendable { public var name: String }
-    public struct Authentication: Codable, Sendable { public var methods: [String]; public var keyAlgorithm: String; public var browserCallback: String }
+    public struct Authentication: Codable, Sendable {
+        public var methods: [String]
+        public var version: Int?
+        public var preferred: String?
+        public var keyAlgorithm: String?
+        public var browserCallback: String?
+    }
     public struct Capabilities: Codable, Sendable { public var developmentSamples: Bool? }
     public var auth: Authentication?
     public var capabilities: Capabilities?

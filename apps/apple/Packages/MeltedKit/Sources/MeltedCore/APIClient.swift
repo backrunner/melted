@@ -12,6 +12,9 @@ public enum APIError: Error, LocalizedError, Sendable {
         case .localCredentials: "无法访问系统钥匙串，请检查钥匙串状态。"
         case .syncCredentialsUnavailable: "当前构建无法访问可同步钥匙串。你可以使用本机凭据继续，它不会同步到其他设备。"
         case .oversizedResponse: "服务器返回的内容过大。"
+        case .response(_, "invalid_credentials"): "账号、密码或 API Key 不正确，请检查后重试。"
+        case .response(_, "auth_method_unavailable"): "服务器已停用此登录方式，请返回并重新连接。"
+        case .response(_, "registration_closed"): "此服务器只允许已有账户登录，请联系运营者。"
         case .response(let code, _):
             switch code {
             case 401: "登录已失效，请重新连接服务器。"
@@ -58,7 +61,7 @@ public actor APIClient {
         let manifest: ProcessingManifest = try await send("/.well-known/melted/processing")
         guard manifest.version == d.processingManifestVersion else { throw APIError.incompatible }
         discoveredID = d.serverId
-        authenticationMethods = d.auth?.methods ?? []
+        authenticationMethods = d.auth?.supportedMethods.map(\.rawValue) ?? []
         serverID = d.serverId + "|" + baseURL.absoluteString
         return (d, manifest)
     }
@@ -78,6 +81,20 @@ public actor APIClient {
         guard let url = URL(string: start.authorizationUrl), url.scheme == baseURL.scheme, url.host == baseURL.host, url.port == baseURL.port,
               url.user == nil, url.password == nil, url.fragment == nil, url.path == "/v1/auth/browser/authorize" else { throw APIError.incompatible }
         return url
+    }
+    public func credentialLogin(_ credential: LoginCredential) async throws -> String {
+        guard !serverID.isEmpty, authenticationMethods.contains(credential.method.rawValue) else { throw APIError.incompatible }
+        let path: String, body: [String: String]
+        switch credential {
+        case .password(let username, let password):
+            path = "/v1/auth/password/sessions"
+            body = ["username": username.trimmingCharacters(in: .whitespacesAndNewlines), "password": password]
+        case .apiKey(let key):
+            path = "/v1/auth/api-key/sessions"
+            body = ["api_key": key.trimmingCharacters(in: .whitespacesAndNewlines)]
+        }
+        let next: Session = try await send(path, method: "POST", body: Wire.encoder().encode(body))
+        return try accept(next)
     }
     public func browserExchange(callback: URL, state: String, verifier: String) async throws -> String {
         guard callback.scheme == "melted", callback.host == "auth", callback.path == "/callback", callback.user == nil, callback.password == nil, callback.fragment == nil,
@@ -124,6 +141,7 @@ public actor APIClient {
         return try await send("/v1/briefings/\(id)/state", method: "PUT", body: b, token: accessToken())
     }
     private struct Empty: Decodable, Sendable {}
+    private struct Failure: Decodable { let code: String }
     private func send<T: Decodable & Sendable>(_ path: String, method: String = "GET", query: [URLQueryItem] = [], body: Data? = nil, token: String? = nil) async throws -> T {
         var c = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
         c.path = path; c.queryItems = query.isEmpty ? nil : query
@@ -141,7 +159,10 @@ public actor APIClient {
             data.append(byte)
         }
         guard let response = response as? HTTPURLResponse else { throw APIError.response(0, "invalid_response") }
-        guard (200...299).contains(response.statusCode) else { throw APIError.response(response.statusCode, "request_failed") }
+        guard (200...299).contains(response.statusCode) else {
+            let code = (try? JSONDecoder().decode(Failure.self, from: data))?.code ?? "request_failed"
+            throw APIError.response(response.statusCode, code)
+        }
         return try Wire.decoder().decode(T.self, from: response.statusCode == 204 ? Data("{}".utf8) : data)
     }
 }

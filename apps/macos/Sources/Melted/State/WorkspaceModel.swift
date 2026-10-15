@@ -9,6 +9,7 @@ final class WorkspaceModel: ObservableObject {
     @Published var serverAddress: String
     @Published var localCredentialOption = false
     @Published var identityStorage: String
+    @Published private(set) var authenticationMethod: AuthenticationMethod?
     private let browserAuthentication = BrowserAuthentication()
     @Published var discovery: Discovery?
     @Published var manifest: ProcessingManifest?
@@ -47,12 +48,14 @@ final class WorkspaceModel: ObservableObject {
         connectionGeneration = UUID()
         client = nil; discovery = nil; manifest = nil
         acceptedServer = false; localCredentialOption = false; error = nil
+        authenticationMethod = nil
     }
 
     func discover() async {
         guard !connecting else { return }
         let generation = UUID(); connectionGeneration = generation
         connecting = true; error = nil; discovery = nil; manifest = nil; acceptedServer = false
+        client = nil; authenticationMethod = nil; localCredentialOption = false
         defer { if connectionGeneration == generation { connecting = false } }
         do {
             let url = try APIClient.validatedURL(serverAddress)
@@ -60,6 +63,7 @@ final class WorkspaceModel: ObservableObject {
             let (d, m) = try await candidate.discover()
             guard generation == connectionGeneration else { return }
             client = candidate; discovery = d; manifest = m
+            authenticationMethod = d.auth?.preferredMethod
         } catch { if generation == connectionGeneration { self.error = message(error) } }
     }
     func bootstrap() async {
@@ -76,24 +80,37 @@ final class WorkspaceModel: ObservableObject {
         do { if try await client.restore(account: account) { acceptedServer = true; connected = true; await loadInitial() } }
         catch { self.error = message(error) }
     }
-    func login(localOnly: Bool = false, browser: Bool = false) async {
-        guard !connecting, acceptedServer, let client, let discovery else { return }
-        connecting = true; error = nil
+    func selectAuthenticationMethod(_ method: AuthenticationMethod) {
+        guard !connecting, discovery?.auth?.supportedMethods.contains(method) == true, authenticationMethod != method else { return }
+        authenticationMethod = method; error = nil; localCredentialOption = false
+    }
+    func login(localOnly: Bool = false, credential: LoginCredential? = nil) async {
+        guard !connecting, acceptedServer, let client, let discovery, let method = authenticationMethod,
+              discovery.auth?.supportedMethods.contains(method) == true else { return }
+        if method == .password || method == .apiKey {
+            guard credential?.method == method else { return }
+        }
+        connecting = true; error = nil; localCredentialOption = false
         defer { connecting = false }
         do {
             let account: String
-            if browser {
+            if method == .browser {
                 let state = IdentityProof.random(), verifier = IdentityProof.random()
                 let url = try await client.browserStart(state: state, verifier: verifier)
                 let callback = try await browserAuthentication.authenticate(url)
                 account = try await client.browserExchange(callback: callback, state: state, verifier: verifier)
                 identityStorage = "browser"
-            } else {
+            } else if method == .key {
                 let localPreference = "localIdentity|\(serverAddress)|\(discovery.serverId)"
                 let useLocal = localOnly || defaults.bool(forKey: localPreference)
                 account = try await client.login(localOnly: useLocal)
                 defaults.set(useLocal, forKey: localPreference)
                 identityStorage = useLocal ? "local" : "keychain"
+            } else if let credential {
+                account = try await client.credentialLogin(credential)
+                identityStorage = method.rawValue
+            } else {
+                return
             }
             defaults.set(identityStorage, forKey: "identityStorage")
             defaults.set(serverAddress, forKey: "serverAddress")
@@ -180,6 +197,7 @@ final class WorkspaceModel: ObservableObject {
             queryGeneration = UUID(); detailGeneration = UUID(); connectionGeneration = UUID()
             connected = false; items = []; terms = []; detail = nil; selectedID = nil; filter = .init()
             discovery = nil; manifest = nil; acceptedServer = false; error = nil
+            authenticationMethod = nil; localCredentialOption = false
             defaults.removeObject(forKey: "accountID")
         } catch { self.error = message(error) }
     }

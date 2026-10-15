@@ -9,50 +9,61 @@ struct ConnectionActions: View {
     let discovery: Discovery
     @Environment(\.colorScheme) private var scheme
     private var palette: MeltedPalette { MeltedPalette(scheme) }
+    private var methods: [AuthenticationMethod] { discovery.auth?.supportedMethods ?? [] }
 
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedReading.blockInset) {
-            if discovery.auth?.methods.contains("key") == true {
-                Button { Task { await model.login() } } label: {
-                    Text("使用密钥登录")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: MeltedConnection.controlHeight)
+            if let method = model.authenticationMethod {
+                if methods.count > 1 {
+                    Picker("登录方式", selection: Binding(get: { method }, set: model.selectAuthenticationMethod)) {
+                        ForEach(methods) { Text($0.title).tag($0) }
+                    }
+                    .disabled(model.connecting)
+                    .font(.system(size: MeltedType.control))
+                } else {
+                    Text("此服务器使用\(method.title)")
+                        .font(.system(size: MeltedType.control, weight: .medium))
+                        .foregroundStyle(palette.secondary)
                 }
-                .buttonStyle(MeltedPrimaryButtonStyle(palette: palette))
-                .disabled(!model.acceptedServer || model.connecting)
-            }
-            if discovery.auth?.methods.contains("browser") == true {
-                Button { Task { await model.login(browser: true) } } label: {
-                    Text("浏览器登录")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: MeltedConnection.controlHeight)
+                CredentialForm(model: model, method: method)
+                    .id(method)
+                if model.connecting {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("正在登录…")
+                    }
+                    .font(.system(size: MeltedType.control))
+                    .foregroundStyle(palette.secondary)
                 }
-                .buttonStyle(MeltedSecondaryButtonStyle(palette: palette))
-                .disabled(!model.acceptedServer || model.connecting)
-            }
-            if model.connecting {
-                HStack(spacing: 8) {
-                    ProgressView().controlSize(.small)
-                    Text("正在恢复或建立登录…")
-                }
-                .font(.system(size: MeltedType.control))
-                .foregroundStyle(palette.secondary)
-            }
-            Text(model.identityStorage == "local"
-                 ? "身份密钥保存在此 Mac 的钥匙串中。"
-                 : "身份密钥保存在系统钥匙串中，服务器不会获得你的 Apple 账号。")
-                .font(.system(size: MeltedType.metadata))
-                .foregroundStyle(palette.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if discovery.registration == "closed" {
-                Text("当前服务器仅允许已有身份登录")
+                Text(note(for: method))
                     .font(.system(size: MeltedType.metadata))
+                    .foregroundStyle(palette.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if method == .key && discovery.registration == "closed" {
+                    Text("当前服务器仅允许已有身份密钥登录")
+                        .font(.system(size: MeltedType.metadata))
+                        .foregroundStyle(palette.warning)
+                }
+                if method == .key && model.localCredentialOption {
+                    Button("使用本机凭据继续") { Task { await model.login(localOnly: true) } }
+                        .disabled(!model.acceptedServer || model.connecting)
+                }
+            } else {
+                Text("这台服务器的登录方式暂不受当前版本支持。请更新应用，或联系服务器运营者。")
+                    .font(.system(size: MeltedType.control))
                     .foregroundStyle(palette.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("重新获取登录方式") { Task { await model.discover() } }
+                    .disabled(model.connecting)
             }
-            if model.localCredentialOption {
-                Button("使用本机凭据继续") { Task { await model.login(localOnly: true) } }
-                    .disabled(!model.acceptedServer || model.connecting)
-            }
+        }
+    }
+    private func note(for method: AuthenticationMethod) -> String {
+        switch method {
+        case .password: "使用服务器运营者提供的账户。密码仅用于本次登录。"
+        case .apiKey: "使用这台服务器签发的 API Key。验证后仅在本机钥匙串保存登录会话。"
+        case .browser: "在浏览器中完成身份验证，然后自动返回 Melted。"
+        case .key: "身份密钥保存在系统钥匙串中，不代表 Apple 账号身份。"
         }
     }
 }

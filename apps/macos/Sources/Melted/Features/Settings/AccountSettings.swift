@@ -24,7 +24,9 @@ struct AccountSettings: View {
 
                 SettingsInfoRow(
                     label: "身份凭据",
-                    value: model.identityStorage == "browser" ? "浏览器登录" :
+                    value: model.identityStorage == "password" ? "账号密码" :
+                           model.identityStorage == "api_key" ? "API Key" :
+                           model.identityStorage == "browser" ? "浏览器登录" :
                            model.identityStorage == "local" ? "仅此 Mac" :
                            model.identityStorage == "keychain" ? "可同步钥匙串" : "本机会话"
                 )
@@ -34,7 +36,7 @@ struct AccountSettings: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Label {
-                        Text("凭据保存在钥匙串，正文暂存在内存，退出后需重新获取")
+                        Text("登录会话保存在本机钥匙串，密码和 API Key 不在应用中保存。正文暂存在内存。")
                             .font(.system(size: 12))
                             .foregroundStyle(palette.secondary)
                             .fixedSize(horizontal: false, vertical: true)
