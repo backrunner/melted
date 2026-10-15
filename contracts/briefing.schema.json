@@ -1,0 +1,449 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://melted.invalid/schemas/briefing-v1",
+  "$ref": "#/components/schemas/Briefing",
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ReadingState": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean"
+          },
+          "saved": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "read",
+          "saved",
+          "hidden",
+          "version"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "excerpt"
+        ]
+      },
+      "Term": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "category",
+              "tag",
+              "subject"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name"
+        ]
+      },
+      "Briefing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string"
+          },
+          "content_kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "category_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_status": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "state": {
+            "$ref": "#/components/schemas/ReadingState"
+          },
+          "is_demo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "schema_version",
+          "revision",
+          "kind",
+          "content_kind",
+          "title",
+          "summary",
+          "markdown",
+          "updated_at",
+          "published_at",
+          "category_id",
+          "tag_ids",
+          "subject_ids",
+          "evidence_status",
+          "evidence",
+          "state",
+          "is_demo"
+        ]
+      },
+      "BriefingPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Briefing"
+            }
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "query_hash": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "query_hash",
+          "total"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "account_id",
+          "access_token",
+          "refresh_token",
+          "expires_at"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable failure identifier; unknown codes remain failures"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable"
+        ]
+      },
+      "StateMutation": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean"
+          },
+          "saved": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mutation_id": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "read",
+          "saved",
+          "hidden",
+          "expected_version",
+          "mutation_id"
+        ]
+      },
+      "Discovery": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "integer"
+              },
+              "max": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ]
+          },
+          "server_id": {
+            "type": "string"
+          },
+          "api_base": {
+            "const": "/v1"
+          },
+          "registration": {
+            "enum": [
+              "key",
+              "closed"
+            ]
+          },
+          "operator": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subject_pull": {
+                "type": "boolean"
+              },
+              "html_static": {
+                "type": "boolean"
+              },
+              "push": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "reading": {
+                "type": "boolean"
+              },
+              "taxonomy": {
+                "type": "boolean"
+              },
+              "changes": {
+                "type": "boolean"
+              },
+              "snapshot_sync": {
+                "type": "boolean"
+              },
+              "development_samples": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "input",
+              "subject_pull",
+              "html_static",
+              "push",
+              "reading",
+              "taxonomy",
+              "changes",
+              "snapshot_sync"
+            ]
+          },
+          "processing_manifest_version": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "object",
+            "properties": {
+              "methods": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "key",
+                    "browser"
+                  ]
+                }
+              },
+              "key_algorithm": {
+                "const": "P-256"
+              },
+              "browser_callback": {
+                "const": "melted://auth/callback"
+              }
+            },
+            "required": [
+              "methods",
+              "key_algorithm",
+              "browser_callback"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "protocol",
+          "server_id",
+          "api_base",
+          "registration",
+          "operator",
+          "capabilities",
+          "processing_manifest_version",
+          "auth"
+        ]
+      },
+      "ProcessingManifest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "destinations": {
+            "type": "array",
+            "maxItems": 0
+          }
+        },
+        "required": [
+          "version",
+          "description",
+          "destinations"
+        ]
+      },
+      "Change": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "type": "integer"
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "upsert",
+              "state"
+            ]
+          }
+        },
+        "required": [
+          "sequence",
+          "entity_id",
+          "kind"
+        ]
+      }
+    }
+  }
+}

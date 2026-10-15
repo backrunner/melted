@@ -1,0 +1,12 @@
+{
+  "view": "saved",
+  "q": "阅读",
+  "category_ids": [
+    "cat_culture"
+  ],
+  "tag_ids": [
+    "tag_reading"
+  ],
+  "subject_ids": [],
+  "sort": "updated_desc"
+}

@@ -1,0 +1,234 @@
+{
+  "terms": [
+    {
+      "id": "cat_culture",
+      "kind": "category",
+      "name": "文化"
+    },
+    {
+      "id": "cat_life",
+      "kind": "category",
+      "name": "生活"
+    },
+    {
+      "id": "cat_work",
+      "kind": "category",
+      "name": "工作"
+    },
+    {
+      "id": "cat_reference",
+      "kind": "category",
+      "name": "资料"
+    },
+    {
+      "id": "tag_reading",
+      "kind": "tag",
+      "name": "阅读"
+    },
+    {
+      "id": "tag_city",
+      "kind": "tag",
+      "name": "城市"
+    },
+    {
+      "id": "tag_photo",
+      "kind": "tag",
+      "name": "摄影"
+    },
+    {
+      "id": "sub_weekend",
+      "kind": "subject",
+      "name": "周末安排"
+    }
+  ],
+  "documents": [
+    {
+      "id": "demo_library",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "reference",
+      "title": "图书馆的周末：把一个下午留给阅读",
+      "summary": "一份周末阅读安排，整理了需要提前确认的开放时间、活动与路线。",
+      "markdown": "## 留一段没有安排的时间\n\n这是一份用于体验 Melted 的开发样例。你可以把阅读、展览或日常消息放在同一个工作台里，按自己的节奏浏览。\n\n周末去图书馆，不必把每一段时间填满。先选一本一直想读的书，再留出散步和休息的空隙。\n\n## 出发前确认\n\n- 查询场馆当天的开放时间。\n- 需要预约的活动，提前确认余位。\n- 把返程安排留得宽松一些。\n\n> 信息整理应该减少打扰，也给判断留出空间。\n\n## 一个轻松的安排\n\n| 时段 | 安排 |\n| --- | --- |\n| 午后 | 到馆，选择座位和读物 |\n| 傍晚 | 整理几条笔记，沿街散步 |\n\n这不是实际活动公告，地点和开放信息需要另行确认。",
+      "updated_at": "2026-10-14T09:00:00Z",
+      "published_at": null,
+      "category_id": "cat_culture",
+      "tag_ids": [
+        "tag_reading",
+        "tag_city"
+      ],
+      "subject_ids": [
+        "sub_weekend"
+      ],
+      "evidence_status": "not_applicable",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": false,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    },
+    {
+      "id": "demo_street",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "reference",
+      "title": "慢慢看一条街：日常摄影练习",
+      "summary": "不急着找特别的景色，从光线、距离和人的活动观察熟悉的街道。",
+      "markdown": "## 先观察，再拍摄\n\n选一条熟悉的街道，在同一位置停留十分钟。留意光影移动、行人的方向和建筑之间的空隙。\n\n1. 用一张照片交代环境。\n2. 走近一些，记录一个细节。\n3. 换个时间再回来，对照光线变化。\n\n**尊重他人的隐私。** 涉及可辨认的人物时，先取得适当许可。\n\n## 回看照片\n\n挑出三张，分别写下你注意到的东西。没有必要给每一张照片打分。\n\n这是一份独立编写的练习样例，不代表专业摄影建议。",
+      "updated_at": "2026-10-14T08:00:00Z",
+      "published_at": null,
+      "category_id": "cat_reference",
+      "tag_ids": [
+        "tag_photo",
+        "tag_city"
+      ],
+      "subject_ids": [],
+      "evidence_status": "not_applicable",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": false,
+        "saved": true,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    },
+    {
+      "id": "demo_walk",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "message",
+      "title": "社区步行路线调整：仍需确认具体日期",
+      "summary": "样例展示如何保留来源中的不确定性，而不是把尚未确认的消息改写成事实。",
+      "markdown": "## 目前知道的内容\n\n一条开发样例消息提到，社区步行路线可能调整。消息中没有提供可核对的公告或生效日期。\n\n## 仍待确认\n\n- 调整是否已经正式公布。\n- 涉及哪些路段，何时生效。\n- 是否有无障碍替代路线。\n\n在获得可靠公告之前，不应据此改变实际出行安排。\n\n本条为虚构开发样例，用于验证“尚未确认”的显示状态。",
+      "updated_at": "2026-10-14T07:00:00Z",
+      "published_at": null,
+      "category_id": "cat_life",
+      "tag_ids": [
+        "tag_city"
+      ],
+      "subject_ids": [],
+      "evidence_status": "unconfirmed",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": false,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    },
+    {
+      "id": "demo_notes",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "reference",
+      "title": "把零散笔记整理成能再次找到的资料",
+      "summary": "保留原意，补上背景，再用少量分类建立长期可用的个人资料库。",
+      "markdown": "## 先写下背景\n\n一段话离开原来的上下文后，可能很难理解。整理时补充为什么记录、适用的范围，以及还没有想清楚的部分。\n\n## 给资料留一个入口\n\n分类用于粗略区分用途，标签描述内容。两者不需要把每个词都重复一遍。\n\n```text\n标题：下次还想找到的内容\n背景：当时在解决什么问题\n待确认：哪些地方还缺少证据\n```\n\n这是开发样例，内容由项目直接编写。",
+      "updated_at": "2026-10-14T06:00:00Z",
+      "published_at": null,
+      "category_id": "cat_reference",
+      "tag_ids": [
+        "tag_reading"
+      ],
+      "subject_ids": [],
+      "evidence_status": "not_applicable",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": true,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    },
+    {
+      "id": "demo_meeting",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "message",
+      "title": "下周讨论前，需要准备的三件事",
+      "summary": "一条工作消息的整理示例：明确准备事项，保留尚未确定的会议时间。",
+      "markdown": "## 准备事项\n\n- [ ] 整理本周观察到的问题。\n- [ ] 每个问题准备一个具体例子。\n- [ ] 写下最想讨论的一个决定。\n\n会议时间尚未确定，收到正式安排后再更新日历。\n\n这是虚构工作消息，不是真实会议通知。",
+      "updated_at": "2026-10-14T05:00:00Z",
+      "published_at": null,
+      "category_id": "cat_work",
+      "tag_ids": [],
+      "subject_ids": [],
+      "evidence_status": "not_applicable",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": true,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    },
+    {
+      "id": "demo_essay",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "opinion",
+      "title": "重读一本书，为什么会看到不同的内容",
+      "summary": "同一本书在不同时间带来不同感受。这条样例将个人观点与可核验事实分开。",
+      "markdown": "## 一种阅读感受\n\n重读时，吸引注意的段落常常会改变。也许书没有变，读者正在面对的问题变了。\n\n不必急着判断第一次是否读懂。可以记下这一次关注的句子，再和以前的笔记对照。\n\n以上是为界面编写的观点样例，不是研究结论。",
+      "updated_at": "2026-10-14T04:00:00Z",
+      "published_at": null,
+      "category_id": "cat_culture",
+      "tag_ids": [
+        "tag_reading"
+      ],
+      "subject_ids": [],
+      "evidence_status": "not_applicable",
+      "evidence": [
+        {
+          "title": "项目开发样例",
+          "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+        }
+      ],
+      "state": {
+        "read": true,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    }
+  ]
+}

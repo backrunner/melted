@@ -1,0 +1,34 @@
+{
+  "id": "demo_library",
+  "schema_version": 1,
+  "revision": 1,
+  "kind": "item",
+  "content_kind": "reference",
+  "title": "图书馆的周末：把一个下午留给阅读",
+  "summary": "一份周末阅读安排，整理了需要提前确认的开放时间、活动与路线。",
+  "markdown": "## 留一段没有安排的时间\n\n这是一份用于体验 Melted 的开发样例。你可以把阅读、展览或日常消息放在同一个工作台里，按自己的节奏浏览。\n\n周末去图书馆，不必把每一段时间填满。先选一本一直想读的书，再留出散步和休息的空隙。\n\n## 出发前确认\n\n- 查询场馆当天的开放时间。\n- 需要预约的活动，提前确认余位。\n- 把返程安排留得宽松一些。\n\n> 信息整理应该减少打扰，也给判断留出空间。\n\n## 一个轻松的安排\n\n| 时段 | 安排 |\n| --- | --- |\n| 午后 | 到馆，选择座位和读物 |\n| 傍晚 | 整理几条笔记，沿街散步 |\n\n这不是实际活动公告，地点和开放信息需要另行确认。",
+  "updated_at": "2026-10-14T09:00:00Z",
+  "published_at": null,
+  "category_id": "cat_culture",
+  "tag_ids": [
+    "tag_reading",
+    "tag_city"
+  ],
+  "subject_ids": [
+    "sub_weekend"
+  ],
+  "evidence_status": "not_applicable",
+  "evidence": [
+    {
+      "title": "项目开发样例",
+      "excerpt": "内容由项目独立编写，用于联调和视觉验收；没有经过模型处理。"
+    }
+  ],
+  "state": {
+    "read": false,
+    "saved": false,
+    "hidden": false,
+    "version": 1
+  },
+  "is_demo": true
+}

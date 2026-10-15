@@ -1,0 +1,1298 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Melted development API",
+    "version": "0.2.0",
+    "description": "First implemented reading slice of planned protocol v1. Not the frozen full v1 API. No ingest, model execution, preferences, plugin execution, full snapshot sync or third-party processing. List bodies/evidence are empty; fetch detail. Times are UTC RFC3339. Search is literal substring, not linguistic full-text search."
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Database readiness",
+        "operationId": "get_healthz",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/.well-known/melted": {
+      "get": {
+        "summary": "Server identity and implemented capabilities",
+        "operationId": "get__well-known_melted",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Discovery"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/.well-known/melted/processing": {
+      "get": {
+        "summary": "Local-only processing declaration",
+        "operationId": "get__well-known_melted_processing",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingManifest"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "summary": "Rotate refresh token; replay revokes the family",
+        "operationId": "post_v1_auth_refresh",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/sessions/current": {
+      "delete": {
+        "summary": "Revoke current session family",
+        "operationId": "delete_v1_auth_sessions_current",
+        "responses": {
+          "204": {
+            "description": "Session family revoked"
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/taxonomy": {
+      "get": {
+        "summary": "Owner-scoped categories, tags and development subject references",
+        "operationId": "get_v1_taxonomy",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "terms": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Term"
+                      }
+                    }
+                  },
+                  "required": [
+                    "terms"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/briefings": {
+      "get": {
+        "summary": "Stable five-minute query snapshot; literal title/summary/body substring search",
+        "operationId": "get_v1_briefings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefingPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "view",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "unread",
+                "saved"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "category_ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "tag_ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "subject_ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "updated_desc"
+              ],
+              "default": "updated_desc"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ]
+      }
+    },
+    "/v1/briefings/{id}": {
+      "get": {
+        "summary": "Published document with current reading state and evidence excerpts",
+        "operationId": "get_v1_briefings_id",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Briefing"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/briefings/{id}/state": {
+      "put": {
+        "summary": "Versioned idempotent state change; key retained seven days",
+        "operationId": "put_v1_briefings_id_state",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StateMutation"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/sync/changes": {
+      "get": {
+        "summary": "Commit-ordered change hints; fetch entities separately",
+        "operationId": "get_v1_sync_changes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Change"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": "integer"
+                    },
+                    "has_more": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "changes",
+                    "next_cursor",
+                    "has_more"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 404, 409, 410, 422, 429, 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/v1/auth/key/challenges": {
+      "post": {
+        "summary": "Issue a 120-second P-256 challenge",
+        "operationId": "post_v1_auth_key_challenges",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenge_id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "expires_in": {
+                      "const": 120
+                    }
+                  },
+                  "required": [
+                    "challenge_id",
+                    "message",
+                    "expires_in"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "public_key": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{87}$",
+                    "description": "Uncompressed X9.63 P-256 public key, base64url without padding"
+                  }
+                },
+                "required": [
+                  "public_key"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/key/sessions": {
+      "post": {
+        "summary": "Consume proof once; create or restore owner",
+        "operationId": "post_v1_auth_key_sessions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challenge_id": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "signature": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{86}$",
+                    "description": "SHA256 ECDSA raw IEEE P1363 r||s, 64 bytes"
+                  }
+                },
+                "required": [
+                  "challenge_id",
+                  "signature"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/browser/start": {
+      "post": {
+        "summary": "Start configured OIDC login with client PKCE",
+        "operationId": "post_v1_auth_browser_start",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "authorization_url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "expires_in": {
+                      "const": 300
+                    }
+                  },
+                  "required": [
+                    "authorization_url",
+                    "expires_in"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "redirect_uri": {
+                    "const": "melted://auth/callback"
+                  },
+                  "state": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{32,128}$"
+                  },
+                  "code_challenge": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  }
+                },
+                "required": [
+                  "redirect_uri",
+                  "state",
+                  "code_challenge"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/browser/authorize": {
+      "get": {
+        "summary": "OIDC browser redirect",
+        "operationId": "get_v1_auth_browser_authorize",
+        "responses": {
+          "302": {
+            "description": "Success",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/auth/browser/callback": {
+      "get": {
+        "summary": "OIDC browser redirect",
+        "operationId": "get_v1_auth_browser_callback",
+        "responses": {
+          "302": {
+            "description": "Success",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/auth/browser/exchange": {
+      "post": {
+        "summary": "Consume short-lived app code with PKCE",
+        "operationId": "post_v1_auth_browser_exchange",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "code_verifier": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._~-]{43,128}$"
+                  },
+                  "redirect_uri": {
+                    "const": "melted://auth/callback"
+                  }
+                },
+                "required": [
+                  "code",
+                  "code_verifier",
+                  "redirect_uri"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/development/seed": {
+      "post": {
+        "summary": "Seed authenticated owner with project samples; loopback development only",
+        "operationId": "post_v1_development_seed",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ReadingState": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean"
+          },
+          "saved": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "read",
+          "saved",
+          "hidden",
+          "version"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "excerpt"
+        ]
+      },
+      "Term": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "category",
+              "tag",
+              "subject"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name"
+        ]
+      },
+      "Briefing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string"
+          },
+          "content_kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "category_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_status": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "state": {
+            "$ref": "#/components/schemas/ReadingState"
+          },
+          "is_demo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "schema_version",
+          "revision",
+          "kind",
+          "content_kind",
+          "title",
+          "summary",
+          "markdown",
+          "updated_at",
+          "published_at",
+          "category_id",
+          "tag_ids",
+          "subject_ids",
+          "evidence_status",
+          "evidence",
+          "state",
+          "is_demo"
+        ]
+      },
+      "BriefingPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Briefing"
+            }
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "query_hash": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "query_hash",
+          "total"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "account_id",
+          "access_token",
+          "refresh_token",
+          "expires_at"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable failure identifier; unknown codes remain failures"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable"
+        ]
+      },
+      "StateMutation": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean"
+          },
+          "saved": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mutation_id": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "read",
+          "saved",
+          "hidden",
+          "expected_version",
+          "mutation_id"
+        ]
+      },
+      "Discovery": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "integer"
+              },
+              "max": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ]
+          },
+          "server_id": {
+            "type": "string"
+          },
+          "api_base": {
+            "const": "/v1"
+          },
+          "registration": {
+            "enum": [
+              "key",
+              "closed"
+            ]
+          },
+          "operator": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subject_pull": {
+                "type": "boolean"
+              },
+              "html_static": {
+                "type": "boolean"
+              },
+              "push": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "reading": {
+                "type": "boolean"
+              },
+              "taxonomy": {
+                "type": "boolean"
+              },
+              "changes": {
+                "type": "boolean"
+              },
+              "snapshot_sync": {
+                "type": "boolean"
+              },
+              "development_samples": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "input",
+              "subject_pull",
+              "html_static",
+              "push",
+              "reading",
+              "taxonomy",
+              "changes",
+              "snapshot_sync"
+            ]
+          },
+          "processing_manifest_version": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "object",
+            "properties": {
+              "methods": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "key",
+                    "browser"
+                  ]
+                }
+              },
+              "key_algorithm": {
+                "const": "P-256"
+              },
+              "browser_callback": {
+                "const": "melted://auth/callback"
+              }
+            },
+            "required": [
+              "methods",
+              "key_algorithm",
+              "browser_callback"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "protocol",
+          "server_id",
+          "api_base",
+          "registration",
+          "operator",
+          "capabilities",
+          "processing_manifest_version",
+          "auth"
+        ]
+      },
+      "ProcessingManifest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "destinations": {
+            "type": "array",
+            "maxItems": 0
+          }
+        },
+        "required": [
+          "version",
+          "description",
+          "destinations"
+        ]
+      },
+      "Change": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "type": "integer"
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "upsert",
+              "state"
+            ]
+          }
+        },
+        "required": [
+          "sequence",
+          "entity_id",
+          "kind"
+        ]
+      }
+    }
+  }
+}

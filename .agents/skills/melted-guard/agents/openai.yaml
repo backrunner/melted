@@ -1,0 +1,4 @@
+interface:
+  display_name: "Melted Guard"
+  short_description: "Melted 产品、原生 UI、服务端开发和验证证据规范"
+  default_prompt: "Use $melted-guard to implement or review this Melted change with the project design and validation standards."

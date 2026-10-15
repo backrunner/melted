@@ -1,0 +1,12 @@
+{
+  "runtime": "v24.21.0",
+  "requests": 200,
+  "concurrency": 16,
+  "fixture_documents": 6,
+  "errors": 0,
+  "elapsed_ms": 315,
+  "requests_per_second": 634,
+  "p50_ms": 32.46,
+  "p95_ms": 49.49,
+  "note": "Local container HTTP; 50% authenticated list snapshots / 50% details; no TLS or AI"
+}
