@@ -13,6 +13,13 @@ Melted 是一个通用个人信息工作台。资料、消息、观点和兴趣�
 
 项目处于 **0.2 开发阶段**。当前交付的是身份、内容存储和原生阅读基础。自动采集、AI 整理与偏好学习仍在建设中，开发样例由项目编写，不代表模型生成质量。
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/reader-dark.png">
+  <img src="assets/screenshots/reader-light.png" width="1120" alt="Melted 原生 macOS 阅读器：内容列表、统一搜索与阅读正文">
+</picture>
+
+当前 SwiftUI 构建的真实窗口，展示项目编写的开发样例。[连接入口](assets/screenshots/landing-light.png)同样使用暖色设计系统。
+
 ## 现在可以做什么
 
 - **专注阅读**：SwiftUI / AppKit 原生窗口，暖纸白与暖炭灰主题，Markdown 标题、列表、引用、代码和表格，阅读字号可放大至 200%。
@@ -35,7 +42,7 @@ open build/Melted.app
 
 连接 `http://127.0.0.1:8421`，确认服务器后登录。没有内容时，可以在设置中载入开发样例；这一入口只在启用开发样例的本地服务器提供。
 
-开发包采用 ad-hoc 签名。同步钥匙串不可用时，可明确选择本机凭据；重新编译签名后 macOS 可能再次要求钥匙串授权。正式签名和跨设备同步需分别验证。
+构建脚本会将唯一可用的 Apple Development 证书固定在本机 `.local/macos-signing.json`，后续构建沿用同一签名身份。多个证书或没有证书时需显式配置，详见 [开发签名](apps/macos/README.md#固定开发签名)。从旧临时签名迁移时，既有钥匙串项目可能需要一次授权；同步钥匙串不可用时，仍可明确选择本机凭据。跨设备同步和公证发行需分别验证。
 
 | 快捷键 | 操作 |
 | --- | --- |
@@ -84,7 +91,7 @@ python3 scripts/dev.py down
 | `assets/brand` | 同源矢量 Logo 与亮暗标识 |
 | `.agents` | 产品设计、开发约定与带日期的验证记录 |
 
-更多信息：[服务端开发](server/README.md) · [设计索引](.agents/README.md) · [贡献指南](CONTRIBUTING.md)。
+更多信息：[客户端模块与签名](apps/macos/README.md) · [服务端开发](server/README.md) · [设计索引](.agents/README.md) · [贡献指南](CONTRIBUTING.md)。
 
 ## 路线图
 

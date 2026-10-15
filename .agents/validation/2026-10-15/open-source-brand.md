@@ -1,5 +1,7 @@
 # 品牌、交互与开源准备
 
+后续状态：本记录保留首次 ad-hoc 构建与授权阻塞的历史；当晚已固定开发签名、完成 UI 模块拆分、统一 Landing／底栏并补齐真实 App 验证，见 [后续记录](ui-modules.md)。
+
 日期：2026-10-15（Asia/Singapore）。当前系统 macOS 27.0.1 (26A434)，Apple Silicon，目标 macOS 14。当前源码构建 `build/Melted.app`，0.2.0 (2)，ad-hoc 签名；不是签名公证发行版。
 
 ## 修改
