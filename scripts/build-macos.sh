@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 set -eu
 repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+identity=$(python3 "$repo/scripts/macos-signing.py")
 cd "$repo/apps/macos"
 swift build -c debug
 bin=$(swift build -c debug --show-bin-path)
@@ -32,5 +33,6 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict></plist>
 PLIST
-codesign --force --sign - "$app"
+codesign --force --sign "$identity" --timestamp=none "$app"
+codesign --verify --deep --strict "$app"
 printf '%s\n' "$app"
