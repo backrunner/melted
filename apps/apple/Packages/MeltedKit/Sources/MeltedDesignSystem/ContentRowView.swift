@@ -1,5 +1,15 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 import MeltedCore
+
+/// The row's selection owns feedback; pressing an already selected row is inert.
+public struct ContentRowButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+    }
+}
 
 /// A feed-style content row with rich preview and native macOS polish
 public struct ContentRowView: View {
@@ -8,6 +18,7 @@ public struct ContentRowView: View {
     private let isSelected: Bool
 
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
     public init(item: Briefing, category: String, isSelected: Bool = false) {
@@ -71,34 +82,23 @@ public struct ContentRowView: View {
         .background(backgroundMaterial(palette))
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
-        .animation(.spring(response: 0.2, dampingFraction: 0.85), value: isHovered)
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isSelected)
-        .animation(.spring(response: 0.2, dampingFraction: 0.85), value: item.state.read)
+        .animation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback), value: isHovered && !isSelected)
+        .animation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.selection), value: isSelected)
         .accessibilityElement(children: .combine)
         .accessibilityValue(item.state.read ? "已读" : "未读")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
-    @ViewBuilder
     private func backgroundMaterial(_ palette: MeltedPalette) -> some View {
-        if isSelected {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(palette.accent.opacity(0.12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(palette.accent.opacity(0.4), lineWidth: 1.5)
-                )
-                .shadow(color: palette.accent.opacity(0.15), radius: 4, x: 0, y: 1)
-        } else if isHovered {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(palette.canvas.opacity(0.7))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(palette.separator.opacity(0.3), lineWidth: 0.5)
-                )
-        } else {
-            Color.clear
-        }
+        // Keep one shape alive so selection only interpolates its colors and border.
+        RoundedRectangle(cornerRadius: 10)
+            .fill(isSelected ? palette.accent.opacity(0.12) : (isHovered ? palette.canvas.opacity(0.7) : .clear))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(isSelected ? palette.accent.opacity(0.4) : (isHovered ? palette.separator.opacity(0.3) : .clear),
+                                  lineWidth: isSelected ? 1.5 : 0.5)
+            )
+            .shadow(color: palette.accent.opacity(isSelected ? 0.15 : 0), radius: 4, x: 0, y: 1)
     }
 
     private var timeFormat: Date.FormatStyle {

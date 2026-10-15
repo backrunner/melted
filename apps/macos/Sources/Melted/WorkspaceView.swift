@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 import MeltedCore
 import MeltedDesignSystem
@@ -155,14 +157,14 @@ struct WorkspaceView: View {
                             Section {
                                 ForEach(group.items) { item in
                                     Button {
-                                        // 自动标记为已读（点击后）
-                                        if model.selectedID != item.id {
-                                            model.selectedID = item.id
-                                            if !item.state.read {
-                                                Task {
-                                                    try? await Task.sleep(nanoseconds: 300_000_000)
-                                                    await model.updateState(read: true)
-                                                }
+                                        guard model.selectedID != item.id else { return }
+                                        model.selectedID = item.id
+                                        if !item.state.read {
+                                            Task {
+                                                try? await Task.sleep(nanoseconds: 300_000_000)
+                                                guard model.selectedID == item.id,
+                                                      model.detail?.id == item.id else { return }
+                                                await model.updateState(read: true)
                                             }
                                         }
                                     } label: {
@@ -172,7 +174,7 @@ struct WorkspaceView: View {
                                             isSelected: model.selectedID == item.id
                                         )
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(ContentRowButtonStyle())
                                     .contextMenu {
                                         contextMenuItems(for: item)
                                     }
@@ -213,9 +215,10 @@ struct WorkspaceView: View {
                 HStack(spacing: 12) {
                     // Melted branding
                     HStack(spacing: 6) {
-                        Image(systemName: "waveform.path.ecg")
-                            .font(.system(size: 11, weight: .semibold))
+                        MeltedMark()
                             .foregroundStyle(palette.accent)
+                            .frame(width: 18, height: 18)
+                            .accessibilityHidden(true)
                         Text("Melted")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(palette.text)

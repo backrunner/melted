@@ -1,13 +1,13 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 
-/// A category is a single, refined label with subtle styling and hover effect
+/// A passive label; the enclosing row owns selection and pointer feedback.
 public struct CategoryLabel: View {
     private let title: String
     private let isSelected: Bool
 
     @Environment(\.colorScheme) private var scheme
-    @State private var isHovered = false
-    @State private var isPressed = false
 
     public init(_ title: String, isSelected: Bool = false) {
         self.title = title
@@ -23,48 +23,19 @@ public struct CategoryLabel: View {
             .padding(.vertical, 5)
             .background(
                 Capsule()
-                    .fill(backgroundColor(palette))
+                    .fill(isSelected ? palette.accent.opacity(0.15) : palette.selection)
             )
             .overlay(
                 Capsule()
                     .strokeBorder(
-                        borderColor(palette),
+                        isSelected ? palette.accent.opacity(0.4) : palette.separator.opacity(0.5),
                         lineWidth: isSelected ? 1 : 0.5
                     )
-            )
-            .scaleEffect(isPressed ? 0.96 : (isHovered ? 1.04 : 1.0))
-            .animation(.spring(response: 0.22, dampingFraction: 0.75), value: isHovered)
-            .animation(.spring(response: 0.18, dampingFraction: 0.8), value: isPressed)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isSelected)
-            .onHover { isHovered = $0 }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
             )
             .accessibilityLabel("分类：\(title)")
             .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
-    private func backgroundColor(_ palette: MeltedPalette) -> Color {
-        if isSelected {
-            return palette.accent.opacity(0.15)
-        } else if isHovered {
-            return palette.selection.opacity(0.95)
-        } else {
-            return palette.selection
-        }
-    }
-
-    private func borderColor(_ palette: MeltedPalette) -> Color {
-        if isSelected {
-            return palette.accent.opacity(0.4)
-        } else if isHovered {
-            return palette.separator
-        } else {
-            return palette.separator.opacity(0.5)
-        }
-    }
 }
 
 public struct WrappingLayout: Layout {

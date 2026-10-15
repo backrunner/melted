@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 import MeltedDesignSystem
 
@@ -48,9 +50,10 @@ struct LandingView: View {
                     .fill(palette.accent.opacity(0.1))
                     .frame(width: 96, height: 96)
 
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.system(size: 44, weight: .regular))
+                MeltedMark()
                     .foregroundStyle(palette.accent)
+                    .frame(width: 64, height: 64)
+                    .accessibilityHidden(true)
             }
 
             VStack(spacing: 6) {
