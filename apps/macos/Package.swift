@@ -9,5 +9,5 @@ let package = Package(
         .product(name: "MeltedCore", package: "MeltedKit"),
         .product(name: "MeltedDesignSystem", package: "MeltedKit"),
         .product(name: "MeltedRendering", package: "MeltedKit")
-    ])]
+    ]), .testTarget(name: "MeltedTests", dependencies: ["Melted"])]
 )

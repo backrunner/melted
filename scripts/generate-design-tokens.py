@@ -21,6 +21,10 @@ for name, value in tokens['macTypographyPt'].items():
 lines += ['}', '', 'public enum MeltedReading {']
 for name, value in tokens['readingMetricsPt'].items():
     lines.append(f'    public static let {name}: CGFloat = {value}')
+for group, name in [('connectionMetricsPt', 'MeltedConnection'), ('libraryStatusMetricsPt', 'MeltedLibraryStatus')]:
+    lines += ['}', '', f'public enum {name} {{']
+    for name, value in tokens[group].items():
+        lines.append(f'    public static let {name}: CGFloat = {value}')
 lines += ['}', '', 'public enum MeltedMotion {']
 for name, value in tokens['motionMs'].items():
     lines.append(f'    public static let {name}: Double = {value / 1000:g}')

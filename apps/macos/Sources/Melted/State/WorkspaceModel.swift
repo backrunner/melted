@@ -6,9 +6,9 @@ import MeltedCore
 
 @MainActor
 final class WorkspaceModel: ObservableObject {
-    @Published var serverAddress = UserDefaults.standard.string(forKey: "serverAddress") ?? "http://127.0.0.1:8421"
+    @Published var serverAddress: String
     @Published var localCredentialOption = false
-    @Published var identityStorage = UserDefaults.standard.string(forKey: "identityStorage") ?? "session"
+    @Published var identityStorage: String
     private let browserAuthentication = BrowserAuthentication()
     @Published var discovery: Discovery?
     @Published var manifest: ProcessingManifest?
@@ -27,34 +27,57 @@ final class WorkspaceModel: ObservableObject {
     @Published var nextCursor: String?
     @Published var total = 0
     @Published var searchRequest = 0
-    private var client: APIClient?
+    private var client: (any WorkspaceClient)?
+    private let defaults: UserDefaults
+    private let makeClient: (URL) -> any WorkspaceClient
     private var queryGeneration = UUID()
     private var detailGeneration = UUID()
     private var connectionGeneration = UUID()
+    private var hasBootstrapped = false
+
+    init(defaults: UserDefaults = .standard, makeClient: @escaping (URL) -> any WorkspaceClient = { APIClient(url: $0) }) {
+        self.defaults = defaults
+        self.makeClient = makeClient
+        serverAddress = defaults.string(forKey: "serverAddress") ?? "http://127.0.0.1:8421"
+        identityStorage = defaults.string(forKey: "identityStorage") ?? "session"
+    }
+
+    func resetConnection() {
+        guard !connecting else { return }
+        connectionGeneration = UUID()
+        client = nil; discovery = nil; manifest = nil
+        acceptedServer = false; localCredentialOption = false; error = nil
+    }
 
     func discover() async {
+        guard !connecting else { return }
         let generation = UUID(); connectionGeneration = generation
         connecting = true; error = nil; discovery = nil; manifest = nil; acceptedServer = false
         defer { if connectionGeneration == generation { connecting = false } }
         do {
             let url = try APIClient.validatedURL(serverAddress)
-            let candidate = APIClient(url: url)
+            let candidate = makeClient(url)
             let (d, m) = try await candidate.discover()
             guard generation == connectionGeneration else { return }
             client = candidate; discovery = d; manifest = m
         } catch { if generation == connectionGeneration { self.error = message(error) } }
     }
     func bootstrap() async {
-        guard UserDefaults.standard.string(forKey: "accountID") != nil else { return }
+        // A reopened window must not start another Keychain restore or replace the active client.
+        guard !hasBootstrapped else { return }
+        hasBootstrapped = true
+        guard defaults.string(forKey: "accountID") != nil else { return }
         await discover()
-        guard let client, let discovery, let account = UserDefaults.standard.string(forKey: "accountID"),
-              UserDefaults.standard.string(forKey: "serverID") == discovery.serverId,
-              UserDefaults.standard.string(forKey: "manifestVersion") == discovery.processingManifestVersion else { return }
+        guard let client, let discovery, let account = defaults.string(forKey: "accountID"),
+              defaults.string(forKey: "serverID") == discovery.serverId,
+              defaults.string(forKey: "manifestVersion") == discovery.processingManifestVersion else { return }
+        connecting = true
+        defer { connecting = false }
         do { if try await client.restore(account: account) { acceptedServer = true; connected = true; await loadInitial() } }
         catch { self.error = message(error) }
     }
     func login(localOnly: Bool = false, browser: Bool = false) async {
-        guard acceptedServer, let client, let discovery else { return }
+        guard !connecting, acceptedServer, let client, let discovery else { return }
         connecting = true; error = nil
         defer { connecting = false }
         do {
@@ -67,16 +90,16 @@ final class WorkspaceModel: ObservableObject {
                 identityStorage = "browser"
             } else {
                 let localPreference = "localIdentity|\(serverAddress)|\(discovery.serverId)"
-                let useLocal = localOnly || UserDefaults.standard.bool(forKey: localPreference)
+                let useLocal = localOnly || defaults.bool(forKey: localPreference)
                 account = try await client.login(localOnly: useLocal)
-                UserDefaults.standard.set(useLocal, forKey: localPreference)
+                defaults.set(useLocal, forKey: localPreference)
                 identityStorage = useLocal ? "local" : "keychain"
             }
-            UserDefaults.standard.set(identityStorage, forKey: "identityStorage")
-            UserDefaults.standard.set(serverAddress, forKey: "serverAddress")
-            UserDefaults.standard.set(discovery.serverId, forKey: "serverID")
-            UserDefaults.standard.set(discovery.processingManifestVersion, forKey: "manifestVersion")
-            UserDefaults.standard.set(account, forKey: "accountID")
+            defaults.set(identityStorage, forKey: "identityStorage")
+            defaults.set(serverAddress, forKey: "serverAddress")
+            defaults.set(discovery.serverId, forKey: "serverID")
+            defaults.set(discovery.processingManifestVersion, forKey: "manifestVersion")
+            defaults.set(account, forKey: "accountID")
             connected = true; await loadInitial()
         } catch { self.error = message(error) }
     }
@@ -95,7 +118,7 @@ final class WorkspaceModel: ObservableObject {
         defer { if queryGeneration == generation { loading = false } }
         do {
             try await Task.sleep(for: .milliseconds(180))
-            let page = try await client.list(selection)
+            let page = try await client.list(selection, cursor: nil)
             try Task.checkCancellation()
             guard generation == queryGeneration, selection == filter else { return }
             items = page.items; nextCursor = page.nextCursor; total = page.total
@@ -119,11 +142,25 @@ final class WorkspaceModel: ObservableObject {
         defer { if generation == detailGeneration { loadingDetail = false } }
         do {
             let d = try await client.detail(id); try Task.checkCancellation()
-            if generation == detailGeneration, selectedID == id { detail = d }
+            guard generation == detailGeneration, selectedID == id else { return }
+            detail = d
+            loadingDetail = false
+            if !d.state.read {
+                try await Task.sleep(for: .milliseconds(300))
+                try Task.checkCancellation()
+                guard generation == detailGeneration, selectedID == id, detail?.id == id else { return }
+                await updateState(for: d, read: true)
+            }
         } catch is CancellationError {} catch { if generation == detailGeneration { self.error = message(error) } }
     }
     func updateState(saved: Bool? = nil, read: Bool? = nil) async {
-        guard let client, let current = detail, !mutating else { return }
+        guard let detail else { return }
+        await updateState(for: detail, saved: saved, read: read)
+    }
+    func updateState(for item: Briefing, saved: Bool? = nil, read: Bool? = nil) async {
+        guard let client, !mutating else { return }
+        // Context actions always target their row, even while a different article is open.
+        let current = items.first(where: { $0.id == item.id }) ?? item
         mutating = true; error = nil; defer { mutating = false }
         var state = current.state; if let saved { state.saved = saved }; if let read { state.read = read }
         do {
@@ -143,7 +180,7 @@ final class WorkspaceModel: ObservableObject {
             queryGeneration = UUID(); detailGeneration = UUID(); connectionGeneration = UUID()
             connected = false; items = []; terms = []; detail = nil; selectedID = nil; filter = .init()
             discovery = nil; manifest = nil; acceptedServer = false; error = nil
-            UserDefaults.standard.removeObject(forKey: "accountID")
+            defaults.removeObject(forKey: "accountID")
         } catch { self.error = message(error) }
     }
     func termName(_ id: String?) -> String { terms.first { $0.id == id }?.name ?? "" }
@@ -163,7 +200,7 @@ final class WorkspaceModel: ObservableObject {
             if case .response(401, _) = error, connected {
                 queryGeneration = UUID(); detailGeneration = UUID()
                 connected = false; items = []; detail = nil; selectedID = nil
-                UserDefaults.standard.removeObject(forKey: "accountID")
+                defaults.removeObject(forKey: "accountID")
             }
             return error.localizedDescription
         }

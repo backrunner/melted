@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import Foundation
 
+extension Briefing {
+    public var requiresEvidenceNotice: Bool {
+        // Unknown or newly introduced states must remain visible before the body.
+        !["not_applicable", "corroborated"].contains(evidenceStatus)
+    }
+}
+
 public struct Term: Codable, Identifiable, Hashable, Sendable {
     public var id: String
     public var kind: String

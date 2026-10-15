@@ -8,6 +8,7 @@ struct SearchPalette: View {
     @ObservedObject var model: WorkspaceModel
     let close: () -> Void
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var input: String
     @State private var highlighted: Int?
     @State private var focusRequest = 0
@@ -59,7 +60,7 @@ struct SearchPalette: View {
                     HStack(spacing: 8) {
                         ForEach(selected) { term in
                             Button {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
                                     model.toggle(term.id, kind: term.kind)
                                 }
                                 focusRequest += 1
@@ -186,7 +187,7 @@ struct SearchPalette: View {
 
                 if model.filter.isFiltered || !input.isEmpty {
                     Button("清除") {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
                             model.filter = .init()
                             input = ""
                         }
@@ -204,7 +205,7 @@ struct SearchPalette: View {
                 } label: {
                     Text("完成")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(palette.accentText)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 7)
                         .background(palette.accent, in: RoundedRectangle(cornerRadius: 7))
@@ -238,7 +239,7 @@ struct SearchPalette: View {
     }
     private func kindName(_ kind: String) -> String { kinds.first { $0.0 == kind }?.1 ?? "筛选" }
     private func choose(_ term: Term) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+        withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
             model.toggle(term.id, kind: term.kind)
         }
         input = ""; model.filter.q = ""; highlighted = nil; focusRequest += 1

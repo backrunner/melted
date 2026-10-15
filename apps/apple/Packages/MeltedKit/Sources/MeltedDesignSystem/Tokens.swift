@@ -61,6 +61,21 @@ public enum MeltedReading {
     public static let ruleWidth: CGFloat = 1
 }
 
+public enum MeltedConnection {
+    public static let contentMaximum: CGFloat = 440
+    public static let pageInset: CGFloat = 32
+    public static let sectionSpacing: CGFloat = 28
+    public static let controlHeight: CGFloat = 40
+    public static let brandSize: CGFloat = 36
+    public static let brandTitle: CGFloat = 28
+}
+
+public enum MeltedLibraryStatus {
+    public static let horizontalInset: CGFloat = 24
+    public static let verticalInset: CGFloat = 10
+    public static let markSize: CGFloat = 16
+}
+
 public enum MeltedMotion {
     public static let feedback: Double = 0.16
     public static let selection: Double = 0.12

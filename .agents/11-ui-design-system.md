@@ -1,4 +1,4 @@
-# Melted UI 设计规范 v0.7
+# Melted UI 设计规范 v0.8
 
 更新：2026-10-15。用户已确定：素雅、有设计感、有品质感和现代感，遵循 Apple HIG；采用更明亮、温暖、适合阅读的米白色系，不用绿色，并保持 UI 整齐。亮暗两套外观同时设计，desktop/mobile 使用统一设计语言；主界面无导航侧栏，设置集中到标题栏最右侧入口，隐藏可见“资讯”标题，全部/未读/收藏保留，分类/标签/关注合并进标题栏的统一搜索入口；避免装饰性 indicator、圆点拼接文本和模板化 AI 文案。本文是实施基线；具体色值和尺寸仍需原生窗口验证。HIG 对齐、静态预览、运行验收、App Review 是不同证据。
 
@@ -179,6 +179,10 @@ VoiceOver 顺序为工具栏、筛选、列表、详情；图标按钮有动作�
 系统原生过渡优先；自定义反馈约 120–180 ms，区域切换约 180–240 ms，均是候选值。Reduce Motion 下取消位移/弹簧和非必要渐变；Reduce Transparency 下使用实底；Increase Contrast 下保留清晰边界。不做循环闪烁、装饰呼吸或持续滚动消息。
 
 ## 8. 组件清单与实现门槛
+
+2026-10-15 原生界面修订：内容列表底栏与列表共用 `canvas`、语义分隔线和文字边线；Logo 在左，计数在右，不使用中性灰材质和竖线拼接。连接入口与服务器确认页共用 440 pt 内容宽度、32 pt 页边距、28 pt 分组间距和 40 pt 控件高度；小窗口可滚动，错误完整换行。品牌、说明、字段、主动作保持同一左边线，取消大圆形玻璃装饰、卡片阴影及重复图标。
+
+现有 macOS 源码按 App、State、Connection、Library、Reading、Search、Settings 拆分；视图只消费状态与动作，凭据和网络留在 MeltedCore。具体依赖方向见 [客户端工程说明](../apps/macos/README.md)。tokens.json 新增连接页和底栏尺寸组，生成 Swift token，禁止业务页面另建色板。
 
 建立 MeltedDesignSystem（Swift package）统一语义 token 和可复用内容组件：ContentToolbar、FilterSelection、ContentRow、ReadingDocument、EvidenceDisclosure、ContentStatus、FeedbackActions、PreferenceDiff、SourceHealthRow、ConnectionBanner、EmptyState、SettingsEntry。原生 Button/List/Form/Toolbar/Sheet 不另造一套。不要把 token 数值散布到业务 View。
 
