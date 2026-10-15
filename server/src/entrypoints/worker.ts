@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { createApp } from "../http/app.js";
 import { CloudRepository } from "../storage/cloudflare/repository.js";
 import { type CloudBindings } from "../storage/cloudflare/bindings.js";

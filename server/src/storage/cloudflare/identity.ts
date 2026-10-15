@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { Problem, invalid, unauthorized } from "../../shared/problem.js";
 import { id, random, hash } from "../../shared/crypto.js";
 import { type Session } from "../../modules/identity/types.js";

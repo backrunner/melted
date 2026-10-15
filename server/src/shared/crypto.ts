@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 export const id = (prefix: string) =>
   `${prefix}_${crypto.randomUUID().replaceAll("-", "")}`;
 export const b64 = (data: ArrayBuffer | Uint8Array) =>

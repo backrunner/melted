@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 export function initializeAccount(sql: SqlStorage) {
   sql.exec(`CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS challenges(id TEXT PRIMARY KEY,public_key TEXT NOT NULL,message TEXT NOT NULL,expires INTEGER NOT NULL);

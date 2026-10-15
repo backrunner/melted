@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Melted contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Apple Container owns all local Node, PostgreSQL and workerd processes."""
 import json
 import hashlib

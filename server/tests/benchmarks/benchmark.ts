@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Small development baseline. It is not a cross-framework benchmark or production capacity claim.
 import { b64 } from "../../src/shared/crypto.js";
 const origin = process.argv[2];

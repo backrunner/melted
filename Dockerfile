@@ -10,6 +10,7 @@ FROM node:24-bookworm-slim
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8421
 WORKDIR /app/server
 COPY --from=build --chown=node:node /app/server/node_modules ./node_modules
+COPY LICENSE COPYRIGHT THIRD_PARTY.md /app/licenses/
 COPY --from=build --chown=node:node /app/server/package.json ./package.json
 COPY --from=build --chown=node:node /app/server/dist ./dist
 USER node

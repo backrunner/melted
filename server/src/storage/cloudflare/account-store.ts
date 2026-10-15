@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { listChanges } from "./changes.js";
 import type { Mutation, Fixture } from "../../modules/content/schemas.js";
 import { DurableObject } from "cloudflare:workers";

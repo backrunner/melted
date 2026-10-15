@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 
 /// A centered loading indicator with optional message and elegant animation

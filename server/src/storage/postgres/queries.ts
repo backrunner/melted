@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { briefingProjection } from "./content.js";
 import { Database } from "./database.js";
 import { hash, id } from "../../shared/crypto.js";

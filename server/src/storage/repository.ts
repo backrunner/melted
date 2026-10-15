@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import type { IdentityRepository } from "../modules/identity/repository.js";
 import type { BrowserRepository } from "../modules/identity/browser-repository.js";
 import type { ContentRepository } from "../modules/content/repository.js";

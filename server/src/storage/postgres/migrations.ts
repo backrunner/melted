@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { readFile, readdir } from "node:fs/promises";
 import { Database } from "./database.js";
 

@@ -1,6 +1,6 @@
 # 第三方依赖
 
-Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolved 锁定。本清单不是项目 GPL 版本或发行许可结论。
+Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolved 锁定。Melted 原创部分采用 GPL-3.0-or-later；下列第三方依赖保留各自许可证与版权声明。
 
 | 依赖 | 版本 | 用途 | 上游许可 |
 | --- | --- | --- | --- |
@@ -9,6 +9,7 @@ Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolve
 | pg | 8.23.1 | PostgreSQL | MIT |
 | zod | 4.6.7 | 输入/产物校验 | MIT |
 | jose | 6.2.12 | OIDC 签名验证 | MIT |
+| js-yaml / @types/js-yaml | 5.4.3 / 4.0.9 | 可选 YAML 配置 / 类型声明 | MIT |
 | TypeScript | 7.0.2 | 类型检查与构建 | Apache-2.0 |
 | Wrangler | 4.151.0 | Cloudflare 构建/部署 | MIT OR Apache-2.0 |
 | Miniflare | 5.20261012.0-beta | workerd 持久性测试 | MIT |

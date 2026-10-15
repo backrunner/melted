@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { type Connection } from "./database.js";
 import { unauthorized } from "../../shared/problem.js";
 

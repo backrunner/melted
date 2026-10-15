@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 import { test, after } from "node:test";
 import assert from "node:assert/strict";

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
 import { Database, type Connection } from "./database.js";
 import { id, random, hash } from "../../shared/crypto.js";

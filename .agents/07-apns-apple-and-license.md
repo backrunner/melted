@@ -53,7 +53,7 @@ APNs 成功响应只代表接收请求，不是送达/已读。处理 410 无效
 
 ## GPL 与发行
 
-用户已确定 GPL 开源，但未确定 GPL-2.0/GPL-3.0、only/or-later 或额外发行许可。建议以 GPL-3.0-or-later 作为评审起点，本次不代替用户创建最终 LICENSE，也不改成 AGPL。
+2026-10-15 用户确认采用 **GPL-3.0-or-later**，本次不添加 App Store 分发例外。根目录 [LICENSE](../LICENSE) 保存完整 GPL 第三版正文，[COPYRIGHT](../COPYRIGHT) 明确“第三版或后续版本”对原创代码、文档与品牌资产的适用范围；第三方依赖保留上游许可。贡献沿用同一许可、版权留在各贡献者，不要求版权转让，见 [贡献说明](../CONTRIBUTING.md)。
 
 GPL 允许商业使用和收费；一般服务端仅通过网络运行并不会因 GPL 自动触发向远端用户提供修改源码的义务。GPL 不是阻止第三方托管竞争的工具。见 [GNU FAQ 商业收费](https://www.gnu.org/licenses/gpl-faq.en.html#DoesTheGPLAllowMoney) 与 [未分发的修改](https://www.gnu.org/licenses/gpl-faq.en.html#UnreleasedMods)。官方即使日后托管，也建议公开核心改进维持社区信任。
 

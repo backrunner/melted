@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import type { BrowserFlow } from "./browser-flow.js";
 import type { Session } from "./types.js";
 

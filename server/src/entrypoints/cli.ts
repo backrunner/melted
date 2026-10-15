@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { readFile } from "node:fs/promises";
 import { connect } from "../storage/postgres/connection.js";
 import { migrate } from "../storage/postgres/migrations.js";

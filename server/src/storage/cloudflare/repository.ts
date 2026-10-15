@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
 import { type Config } from "../../config/schema.js";
 import { unauthorized } from "../../shared/problem.js";

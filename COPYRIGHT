@@ -1,0 +1,22 @@
+Melted
+Copyright (C) 2026 Melted contributors
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Melted's original source code, documentation, and brand artwork in this
+repository are free software: you can redistribute them and/or modify them
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+Melted is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for details.
+
+You should have received a copy of the GNU General Public License along
+with Melted. If not, see <https://www.gnu.org/licenses/>.
+
+The full license is in LICENSE. Third-party software retains its own
+copyright notices and licenses; see THIRD_PARTY.md. This project does not
+add an App Store distribution exception or require copyright assignment.
+
+License application reference: https://www.gnu.org/licenses/gpl-howto.en.html

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { Database } from "./database.js";
 import { hash } from "../../shared/crypto.js";
 import { Problem } from "../../shared/problem.js";

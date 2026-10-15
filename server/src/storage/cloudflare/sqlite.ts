@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 /** All writes inside transaction() are synchronous; prepare crypto/IO before entering. */
 export class AccountDatabase {
   readonly sql: SqlStorage;
