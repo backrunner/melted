@@ -14,6 +14,7 @@
   "server_id": "srv_example",
   "api_base": "/v1",
   "registration": "key",
+  "auth": {"version": 1, "methods": ["password", "api_key"], "preferred": "password"},
   "operator": {"name": "Personal Melted", "contact": "admin@example.invalid"},
   "capabilities": {"input": ["text", "markdown", "html", "image", "audio"], "subject_pull": true, "html_static": true, "push": ["none"]},
   "processing_manifest_version": "pm_1"
@@ -22,13 +23,17 @@
 
 App 先展示运营者及 AI/mem 数据去向，用户同意后才发账号、附件或设备绑定。HTTPS 验证证书；开发 localhost 单独允许；私有 CA 用系统信任，不提供忽略证书错误。发现接口不得跨域重定向凭据；安全端点变化重新确认。
 
-默认认证是客户端生成独立 P-256 私钥：`POST /v1/auth/key/challenges` 提交 65 字节 X9.63 公钥，返回包含 server_id、challenge_id、随机 nonce 的 120 秒挑战；`POST /v1/auth/key/sessions` 提交 SHA-256 ECDSA 的 64 字节原始签名，原子消费挑战并创建或恢复账户。均使用无 padding 的 base64url。`registration=key` 允许新凭据开户，`closed` 只允许已有身份。来源/body 不能指定 owner。
+认证由服务器协商：客户端选定服务器后读取 `auth.version/methods/preferred`，一种支持的方式直接展示，多种按首选方式展示并允许切换。未知方法忽略，全部不支持或版本未知时明确提示更新，不默认创建密钥。服务器仅声明已配置的方式，停用方式的接口返回 404。发现响应不含用户名、凭据摘要、密码、API Key 或任意表单/远程执行指令。所有认证端点固定为当前 origin 下的 `/v1/auth/*`。
+
+`password` 使用 `POST /v1/auth/password/sessions`（username/password）；`api_key` 使用 `POST /v1/auth/api-key/sessions`（api_key），均返回现有 Session。客户端只保存会话，输入凭据不进入偏好设置或日志。首期由运营者预置账户，配置及凭据生成见 [认证配置](../server/docs/authentication.md)。同一 subject 的密码/API Key 对应同一账户；不自动与旧密钥或 OIDC 身份合并。`registration=closed` 不阻止运营者已预置的账户登录。
+
+服务器启用 `key` 时，客户端生成独立 P-256 私钥：`POST /v1/auth/key/challenges` 提交 65 字节 X9.63 公钥，返回包含 server_id、challenge_id、随机 nonce 的 120 秒挑战；`POST /v1/auth/key/sessions` 提交 SHA-256 ECDSA 的 64 字节原始签名，原子消费挑战并创建或恢复账户。均使用无 padding 的 base64url。`registration=key` 允许新凭据开户，`closed` 只允许已有身份。来源/body 不能指定 owner。
 
 `POST /v1/auth/refresh` 旋转 refresh token；旧 refresh 再用会撤销整个会话族；`DELETE /v1/auth/sessions/current` 登出。access 15 分钟、会话族 30 天；私钥按 origin + server_id 保存在可同步 Keychain，会话按 origin/server_id/account_id 设备本地保存。可同步 Keychain 证明持有凭据，不证明 Apple 身份。开发签名无法访问同步项时，用户可明确选择本机凭据，不能静默换身份。
 
 可配置 OIDC：`POST /v1/auth/browser/start` 接收 client state、S256 challenge 与固定 `melted://auth/callback`；同源 authorize 入口引导浏览器到提供方。服务器回调验证 state、nonce、签名、issuer、audience、exp/iat，再返回 60 秒一次性 app code。`POST /v1/auth/browser/exchange` 校验客户端 verifier；客户端由 ASWebAuthenticationSession 接回调并验证 state。服务器到 OIDC 也使用独立 PKCE。未配置时 discovery 不包含 browser，API 返回 404。账户按 issuer + subject 绑定，不按邮箱自动合并。
 
-个人 API token 有 scope、有效期和撤销。`ingest:write` 不能读内容或改用户权限；owner 取自认证上下文，不接受客户端指定的归属。
+后续摄取用个人 API token 将有 scope、有效期和撤销；当前用于换取完整账户会话的登录 API Key 不等于这种受限 token。`ingest:write` 不能读内容或改用户权限；owner 取自认证上下文，不接受客户端指定的归属。
 
 公开 `GET /.well-known/melted/processing` 返回无秘密的目的地/用途/保留策略 manifest 和内容 hash。登录后的 `POST /v1/consents` 记录用户接受的 manifest hash 与数据类别，`DELETE /v1/consents/{id}` 撤销。账户登录并不自动同意上传给第三方；后台只处理有效授权覆盖的数据，新目的地让相关任务进入 blocked_consent。旧公开 manifest 与登录后的有效能力不匹配时重新展示差异，不能用旧版本同意覆盖新增目的地。
 

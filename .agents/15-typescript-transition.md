@@ -29,9 +29,9 @@ SQLite DO 单行受平台上限约束，快照按独立文档行保存而不是�
 | 定时 / 长流程 | 调度进程 | Cron Triggers / Alarms / Workflows | 后续接入；本轮 Alarms 仅清理过期记录 |
 | 可选向量 / 模型 | pgvector / provider | Vectorize / Workers AI 或授权 provider | 后续评估 |
 
-Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库、Redis、S3 或 VPS。外部来源、可选 OIDC/AI provider 属业务连接，默认密钥登录与阅读不依赖它们。
+Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库、Redis、S3 或 VPS。外部来源、可选 OIDC/AI provider 属业务连接，密码、API Key、密钥登录与阅读不依赖它们；方法由服务器声明，详见 [认证配置](../server/docs/authentication.md)。
 
-默认凭据证明私钥持有权，不能证明 Apple 身份。[可同步 Keychain](https://developer.apple.com/documentation/security/ksecattrsynchronizable)随用户已启用的 iCloud Keychain 同步；普通客户端无法读取 Apple 账号作为服务器身份凭证。真实 Apple 身份须配置 Sign in with Apple / 对应 OIDC。不同服务器使用不同密钥，不能跨服务器关联。正式签名、共享 access group 和实体设备上的同步必须另验收；本机 ad-hoc 构建不等于 iCloud 同步已验证。
+服务器启用密钥登录时，凭据证明私钥持有权，不能证明 Apple 身份。[可同步 Keychain](https://developer.apple.com/documentation/security/ksecattrsynchronizable)随用户已启用的 iCloud Keychain 同步；普通客户端无法读取 Apple 账号作为服务器身份凭证。真实 Apple 身份须配置 Sign in with Apple / 对应 OIDC。不同服务器使用不同密钥，不能跨服务器关联。正式签名、共享 access group 和实体设备上的同步必须另验收；本机 ad-hoc 构建不等于 iCloud 同步已验证。
 
 浏览器登录由 [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) 发起；固定回调、state、nonce、PKCE、一次性短期授权码和 issuer/audience 验证缺一不可。身份关联使用 issuer + subject，不根据相同邮箱自动合并账户。未配置提供方时不显示可用的浏览器登录。
 

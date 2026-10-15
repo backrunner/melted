@@ -49,7 +49,7 @@ Melted 是通用个人信息工作台，Swift Apple 客户端与可自托管 Typ
 
 服务端使用 TypeScript + Hono：自托管 Node 24 / PostgreSQL，Cloudflare Workers / SQLite Durable Objects；Cloudflare 的附件、任务、调度只采用 R2、Queues、Workflows/Cron/Alarms 等本体系服务，不引入外部数据库作为依赖。两端共用契约与隔离/幂等/并发测试，SQL 方言分别实现。账户 DO 内用同步事务；跨 DO 操作不能伪称原子事务。所有本机后端、数据库、workerd 调试经 Apple Container；Swift 保持原生构建。具体配置见 [迁移与部署](../../15-typescript-transition.md)。
 
-默认密钥登录证明 P-256 私钥持有权，不证明 Apple 身份。私钥按 origin/server_id 隔离，可同步 Keychain 不能替代 Sign in with Apple；会话设备本地。同步不可用时明确让用户选择本机凭据，不能静默创建另一身份。浏览器路径保留 state、双侧 PKCE、nonce、issuer/audience/expiry、一次性授权码，不按邮箱自动合并。生产日志不能记录 bearer、回调 code 或完整认证 URL。
+先发现服务器声明的认证版本、方法与首选方式，再显示对应原生表单；不把密钥或 Apple 身份当作所有服务器的前提。密码/API Key 只用于换取会话，不进偏好设置或日志；未知方法不自动回退。服务器启用的密钥登录证明 P-256 私钥持有权，不证明 Apple 身份。私钥按 origin/server_id 隔离，可同步 Keychain 不能替代 Sign in with Apple；会话设备本地。同步不可用时明确让用户选择本机凭据，不能静默创建另一身份。浏览器路径保留 state、双侧 PKCE、nonce、issuer/audience/expiry、一次性授权码，不按邮箱自动合并。生产日志不能记录 bearer、回调 code 或完整认证 URL。
 
 插件预检检查目标、runtime、能力与 bindings，并实际打包 Worker。预检不是沙箱证明，未实现执行引擎时不能将兼容清单描述为可运行插件。
 

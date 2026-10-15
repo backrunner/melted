@@ -4,7 +4,7 @@
 
 ## 已实现
 
-TypeScript + Hono 双入口：Node 24 / PostgreSQL 与 Workers / SQLite Durable Objects。P-256 持有权登录、自动分配独立账户、可关闭注册；配置后可用 OIDC 浏览器登录。15 分钟 access、30 天会话族、refresh 轮换与重放撤销；所有读取/写入按认证账户隔离。浏览器使用 state、双侧 PKCE、nonce、issuer/audience/exp/iat 和一次性短期授权码。认证不依赖 Apple 账号信息；可同步 Keychain 不等于 Apple 身份认证。
+TypeScript + Hono 双入口：Node 24 / PostgreSQL 与 Workers / SQLite Durable Objects。服务器声明认证版本、可用方式与首选方式；支持预置账号密码/API Key、P-256 持有权及配置后的 OIDC 浏览器登录。密钥可自动开户并可关闭注册；运营者预置的账户仍可登录。15 分钟 access、30 天会话族、refresh 轮换与重放撤销；所有读取/写入按认证账户隔离。浏览器使用 state、双侧 PKCE、nonce、issuer/audience/exp/iat 和一次性短期授权码。认证不依赖 Apple 账号信息；可同步 Keychain 不等于 Apple 身份认证。
 
 Dockerfile、Compose 迁移任务、Wrangler SQLite DO 配置、插件目标预检已提供。Apple Container 内运行所有本机后端、PG、workerd 与测试；旧 Go 源码已删除，数据库旧 schema/增量迁移保留，旧开发库已备份恢复到容器。
 
@@ -47,3 +47,5 @@ Dockerfile、Compose 迁移任务、Wrangler SQLite DO 配置、插件目标预�
 
 
 Cloudflare 不使用 Hyperdrive 或外部 PostgreSQL；附件 R2、后台 Queues/Workflows、AI/memory 仍是后续集成，不把配置方案当作已完成业务。插件目前只检查部署兼容性，任何 enabled 插件都会因运行引擎未实现而阻止部署。
+
+服务器协商认证的测试、原生登录/重启与截图见 [2026-10-16 认证验证](validation/2026-10-16/authentication.md)。
