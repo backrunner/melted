@@ -1,0 +1,7 @@
+packages:
+  - 'server'
+
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
+  - '@cloudflare/workerd-darwin-arm64'

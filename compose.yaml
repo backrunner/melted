@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: melted
+      POSTGRES_DB: melted
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U melted -d melted"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: postgres://melted:${POSTGRES_PASSWORD}@postgres:5432/melted
+    command: ["node", "dist/server/src/entrypoints/cli.js", "migrate"]
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://melted:${POSTGRES_PASSWORD}@postgres:5432/melted
+      MELTED_SERVER_ID: ${MELTED_SERVER_ID:?Set a stable MELTED_SERVER_ID}
+      MELTED_OPERATOR: ${MELTED_OPERATOR:-Melted}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN}
+      REGISTRATION_MODE: ${REGISTRATION_MODE:-key}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+    ports: ["127.0.0.1:8421:8421"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+volumes:
+  postgres:

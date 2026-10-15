@@ -1,0 +1,44 @@
+{
+  "name": "@melted/server",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && cp -R migrations dist/server/",
+    "check": "tsc --noEmit",
+    "test": "wrangler deploy --dry-run --env=\"\" --outdir .wrangler/test-build && npm run test:unit && npm run test:integration",
+    "dev": "tsx watch src/entrypoints/node.ts",
+    "start": "node dist/server/src/entrypoints/node.js",
+    "migrate": "tsx src/entrypoints/cli.ts migrate",
+    "cli": "tsx src/entrypoints/cli.ts",
+    "plugins:check": "tsx src/entrypoints/plugins-check.ts",
+    "worker:check": "tsx src/entrypoints/plugins-check.ts cloudflare && wrangler deploy --dry-run --env=\"\"",
+    "worker:deploy": "tsx src/entrypoints/plugins-check.ts cloudflare --deployment && wrangler deploy --env=\"\"",
+    "format": "prettier --write src tests",
+    "format:check": "prettier --check src tests",
+    "test:unit": "node --import tsx --test --test-concurrency=1 tests/unit/*.test.ts",
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "@types/js-yaml": "^4.0.9",
+    "hono": "4.13.13",
+    "jose": "6.2.12",
+    "js-yaml": "^5.4.3",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261014.1",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "miniflare": "5.20261012.0-beta",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "wrangler": "4.151.0"
+  }
+}

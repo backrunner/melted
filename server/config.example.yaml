@@ -1,0 +1,54 @@
+# Melted Server Configuration
+# Self-hosted deployment configuration file
+# Copy this file to config.local.yaml and customize for your environment
+
+server:
+  # Unique server identifier (used for distributed setups)
+  id: melted-server-001
+
+  # Display name for this server instance
+  operator: My Melted Instance
+
+  # Public URL where this server is accessible
+  # IMPORTANT: Must be https:// in production
+  public_origin: https://melted.example.com
+
+  # Server binding
+  host: 0.0.0.0
+  port: 8421
+
+# User registration mode
+# - "key": Users can register with a registration key
+# - "closed": Registration is closed, only existing users can login
+registration:
+  mode: key
+
+# Database configuration (PostgreSQL required)
+database:
+  # Connection string format: postgresql://user:password@host:port/database
+  url: postgresql://melted:your-secure-password@localhost:5432/melted
+
+  # Connection pool settings (optional)
+  pool:
+    min: 2
+    max: 10
+
+# Development features (disable in production)
+development:
+  # Enable sample data and test endpoints
+  samples: false
+
+  # Enable debug logging
+  debug: false
+
+# Optional: OpenID Connect (OIDC) authentication
+# Uncomment and configure to enable OIDC login
+# oidc:
+#   issuer: https://your-oidc-provider.com
+#   client_id: your-client-id
+#   client_secret: your-client-secret
+
+# Optional: Rate limiting (requests per minute)
+# rate_limit:
+#   requests_per_minute: 600
+#   burst: 100

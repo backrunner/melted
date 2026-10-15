@@ -1,0 +1,13 @@
+.local
+.agents
+.git
+build
+apps
+**/node_modules
+server/dist
+server/.wrangler
+server/.dev.vars
+**/.env
+server/cmd
+server/internal
+server/go.*
