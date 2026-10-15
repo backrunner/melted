@@ -1,55 +1,102 @@
-# Melted
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/lockup-dark.svg">
+    <img src="assets/brand/lockup-light.svg" width="268" height="96" alt="Melted">
+  </picture>
+</p>
 
-通用个人信息工作台。TypeScript 服务端与原生 Swift macOS 客户端；iOS 后续加入。先开源，后续探索商业化，内容不限定技术领域。
+<p align="center">让信息回到适合阅读的样子。</p>
+<p align="center">原生 macOS 阅读器 · 可自托管 TypeScript 服务端 · GPL-3.0-or-later</p>
+<p align="center"><a href="#快速开始">快速开始</a> · <a href="#部署">部署</a> · <a href="#路线图">路线图</a> · <a href="CONTRIBUTING.md">参与贡献</a></p>
 
-当前 0.2 基础版本实现多用户鉴权、资讯阅读、搜索筛选、阅读/收藏状态和变化提示。采集、真实 AI 整理、偏好学习、媒体上传、插件执行与 APNs 仍在后续计划中。样例均明确标记为项目编写的开发内容。GPL 具体版本与发行许可尚待确定，见 [许可说明](.agents/07-apns-apple-and-license.md)。
+Melted 是一个通用个人信息工作台。资料、消息、观点和兴趣内容，在一个安静的阅读界面里浏览、搜索和收藏；数据服务可以运行在你自己的服务器上。
 
-## 部署
+项目处于 **0.2 开发阶段**。当前交付的是身份、内容存储和原生阅读基础。自动采集、AI 整理与偏好学习仍在建设中，开发样例由项目编写，不代表模型生成质量。
 
-| 目标 | 运行时 | 持久化 | 入口 |
-| --- | --- | --- | --- |
-| 自托管 | Node.js 24 + Hono | PostgreSQL 17 | [Dockerfile](Dockerfile)、[Compose](compose.yaml) |
-| Cloudflare | Workers + Hono | SQLite Durable Objects | [Wrangler 配置](server/wrangler.jsonc) |
+## 现在可以做什么
 
-Cloudflare 无外部数据库、Redis 或 VPS 依赖。后续附件和后台任务分别使用 R2、Queues，并保留任务幂等与账户事务。详细部署、插件预检、OIDC 配置及旧数据库迁移见 [.agents/15-typescript-transition.md](.agents/15-typescript-transition.md)。
+- **专注阅读**：SwiftUI / AppKit 原生窗口，暖纸白与暖炭灰主题，Markdown 标题、列表、引用、代码和表格，阅读字号可放大至 200%。
+- **找到内容**：全部、未读与收藏视图；在统一搜索面板中组合正文、分类、标签和关注条件。
+- **保留依据**：正文与来源分开呈现，区分有佐证、单一来源、尚未确认与存在不同说法。
+- **自行部署**：Node.js + PostgreSQL，或 Cloudflare Workers + SQLite Durable Objects，共用 API 契约与隔离测试。
+- **密钥登录**：P-256 私钥保留在 Apple Keychain，服务器保存公钥；另提供 OIDC 浏览器登录协议支持。
 
-自托管：复制 `.env.example` 为 `.env`，生成随机 URL-safe 数据库密码，填写稳定 server ID、运营者与 HTTPS origin，然后运行 `docker compose up --build -d`。API 默认只映射 `127.0.0.1:8421`，数据库不发布端口；公网接入使用 HTTPS 反向代理。migrate 成功后才启动 API。
+## 快速开始
 
-Cloudflare：填写 Wrangler 顶层 vars，通过容器执行 `npm run worker:check` 检查配置/插件并实际打包。准备好目标 Cloudflare 账号后执行 `npm run worker:deploy`；该命令会拒绝占位配置。当前没有代替用户发布公网实例。`local` 环境仅用于模拟器。
+需要 macOS、Xcode、Python 3，以及已启动的 [Apple Container](https://github.com/apple/container)。客户端最低目标为 macOS 14；本机 Node、PostgreSQL 和 workerd 均在容器内运行。
 
-## 本机开发
-
-依赖 Apple Container（system 已启动）、Python 3 与 Xcode。Node、PostgreSQL、workerd 全部运行在 Apple Container 内，无需主机安装 Node 或 Go。
+在项目根目录执行：
 
 ```sh
 python3 scripts/dev.py up
 sh scripts/build-macos.sh
+open build/Melted.app
 ```
 
-启动 `build/Melted.app`，连接 `http://127.0.0.1:8421`，确认服务器后继续。默认生成 P-256 凭据，私钥保存在可同步 Keychain，会话仅留当前设备；服务器只保存公钥。iCloud Keychain 不代表 Apple 身份已验证。ad-hoc 构建可能无法访问同步钥匙串，此时可明确选择本机凭据；重新签名可能触发 macOS 钥匙串授权。正式签名与跨设备同步需要单独验收。设置中的“载入开发样例”仅在本地开发服务器显示。
+连接 `http://127.0.0.1:8421`，确认服务器后登录。没有内容时，可以在设置中载入开发样例；这一入口只在启用开发样例的本地服务器提供。
+
+开发包采用 ad-hoc 签名。同步钥匙串不可用时，可明确选择本机凭据；重新编译签名后 macOS 可能再次要求钥匙串授权。正式签名和跨设备同步需分别验证。
+
+| 快捷键 | 操作 |
+| --- | --- |
+| `⌘F` | 搜索与筛选 |
+| `⌘R` | 刷新资讯 |
+| `⌘,` | 设置 |
+| `⌘+` / `⌘-` / `⌘0` | 放大、缩小、还原阅读字号 |
+
+## 部署
+
+| 方式 | 运行环境 | 持久化 | 配置入口 |
+| --- | --- | --- | --- |
+| 自托管 | Node.js 24 + Hono | PostgreSQL 17 | [Compose](compose.yaml) / [环境变量](.env.example) |
+| Cloudflare | Workers + Hono | SQLite Durable Objects | [Wrangler](server/wrangler.jsonc) |
+
+**自托管**：复制 `.env.example` 为 `.env`，填写随机 URL-safe 数据库密码、稳定 server ID、运营者与 HTTPS origin，再运行 `docker compose up --build -d`。迁移完成后 API 才启动；默认只绑定 `127.0.0.1:8421`，数据库不发布端口。公网访问需要 HTTPS 反向代理。环境变量可独立启动服务，可选 YAML 配置不会覆盖显式环境变量。
+
+**Cloudflare**：填写 Wrangler 顶层 vars，在开发容器中运行 `python3 scripts/dev.py exec npm run worker:check` 验证配置及打包。配置自己的 Cloudflare 账号后再执行 `worker:deploy`；占位配置会被拒绝。当前不依赖外部数据库、Redis 或 VPS。
+
+详细配置、OIDC 与迁移说明见 [部署指南](deploy/README.md) 和 [TypeScript 部署说明](.agents/15-typescript-transition.md)。生产数据库操作前先备份；旧账号不会自动合并。
+
+## 开发
 
 ```sh
-# 可选 Cloudflare 本地模拟器（前台运行）
-python3 scripts/dev.py worker
-# 检查两个后端；测试自行启动隔离的 workerd，不依赖上述模拟器
+# 设计与生成资产、服务端双后端测试、Swift 测试和 macOS 构建
 sh scripts/check.sh
-# 在容器内运行 Node 命令
+
+# Cloudflare 本地模拟器（前台运行）
+python3 scripts/dev.py worker
+
+# 在容器内构建服务端
 python3 scripts/dev.py exec npm run build
+
 # 停止本项目容器，保留数据库卷
 python3 scripts/dev.py down
 ```
 
-`.local` 保存 0600 环境文件，`melted-pg-data` 保存数据库。重复 setup 不重置数据库。迁移旧 Go 安装前先备份；旧 001 schema 与增量 002 保留，账户和内容不自动合并。管理员可用 CLI 绑定公钥恢复旧账户，详见迁移文档。
+`.local/` 存放本机环境文件，`melted-pg-data` 卷保存数据库。源码、配置模板和锁文件纳入 Git，真实凭据、数据库和构建产物不纳入 Git。
 
-## 客户端与契约
+| 目录 | 内容 |
+| --- | --- |
+| `apps/macos` | 原生 macOS 应用 |
+| `apps/apple/Packages/MeltedKit` | Swift 协议、设计系统与 Markdown 渲染 |
+| `server` | TypeScript 领域模块、HTTP、PostgreSQL / Cloudflare 适配 |
+| `contracts` | OpenAPI、JSON Schema 与共享 fixture |
+| `assets/brand` | 同源矢量 Logo 与亮暗标识 |
+| `.agents` | 产品设计、开发约定与带日期的验证记录 |
 
-标题栏保留全部/未读/收藏；搜索与分类、标签、关注组合进入 Spotlight 式面板，设置位于右侧。⌘F 搜索、⌘R 刷新、⌘, 设置、⌘+/⌘-/⌘0 调整阅读字号。分类为轻量胶囊，阅读器使用暖纸白/暖炭灰配色。Markdown 原始 HTML 与远程图片不执行/加载。
+更多信息：[服务端开发](server/README.md) · [设计索引](.agents/README.md) · [贡献指南](CONTRIBUTING.md)。
 
-- [服务端目录与开发约定](server/README.md)
-- [设计与开发索引](.agents/README.md)
-- [实施状态](.agents/14-implementation-status.md)
-- [后端验收](.agents/validation/2026-10-15/typescript-migration.md)
-- [原生界面验收](.agents/validation/2026-10-15/reader-refinement.md)
-- [OpenAPI](contracts/openapi.json) 与 [共享 fixture](contracts/fixtures/development-library.json)
+## 路线图
 
-当前查询为中文可用的字面子串，不是语义检索；查询快照有 5 分钟、2,000 条、8 MiB 上限。没有正文磁盘缓存、完整离线同步或账户恢复 UI，不把基础阅读闭环当作完整 AI 产品。
+| 当前已有 | 后续计划 |
+| --- | --- |
+| 双部署、密钥身份、多用户隔离 | 来源采集、任务恢复与插件执行 |
+| 搜索筛选、阅读与收藏状态 | AI 整理、证据核验、偏好与记忆 |
+| macOS 原生阅读器 | 正文磁盘缓存与完整离线同步 |
+| Swift 共享基础包 | iOS、可选 APNs 中继与发行准备 |
+
+搜索目前使用字面子串匹配。查询快照上限为 5 分钟、2,000 条、8 MiB。原始 HTML 与远程图片不会在阅读器中执行或自动加载。完整进度与验证边界见[实施记录](.agents/14-implementation-status.md)。
+
+## 许可
+
+Copyright © 2026 Melted contributors。Melted 原创代码、文档与品牌资产采用 **GNU GPL 第三版或任何后续版本（GPL-3.0-or-later）**，不提供任何担保。完整条款见 [LICENSE](LICENSE) 与 [COPYRIGHT](COPYRIGHT)，第三方依赖见 [THIRD_PARTY.md](THIRD_PARTY.md)。本次不添加 App Store 分发例外。
