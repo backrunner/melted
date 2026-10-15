@@ -1,0 +1,21 @@
+# 第三方依赖
+
+Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolved 锁定。本清单不是项目 GPL 版本或发行许可结论。
+
+| 依赖 | 版本 | 用途 | 上游许可 |
+| --- | --- | --- | --- |
+| Hono | 4.13.13 | Node/Worker 共享 HTTP | MIT |
+| @hono/node-server | 2.1.5 | Node 原生适配 | MIT |
+| pg | 8.23.1 | PostgreSQL | MIT |
+| zod | 4.6.7 | 输入/产物校验 | MIT |
+| jose | 6.2.12 | OIDC 签名验证 | MIT |
+| TypeScript | 7.0.2 | 类型检查与构建 | Apache-2.0 |
+| Wrangler | 4.151.0 | Cloudflare 构建/部署 | MIT OR Apache-2.0 |
+| Miniflare | 5.20261012.0-beta | workerd 持久性测试 | MIT |
+| @cloudflare/workers-types | 5.20261014.1 | CF 类型 | MIT OR Apache-2.0 |
+| tsx / Prettier | 4.23.15 / 3.9.10 | 开发运行 / 格式 | MIT |
+| @types/node / @types/pg | 24.19.2 / 8.23.1 | 类型声明 | MIT |
+| swift-markdown | 0.7.3 | Markdown AST | Apache-2.0 with Swift exception |
+| swift-cmark | 0.9.0 | Markdown parser | 运行时 MIT/BSD 通知；测试规范另有 CC-BY-SA 声明 |
+
+Node 镜像保留 node_modules 中的上游许可文件；macOS 开发包保留 swift-markdown LICENSE 与 swift-cmark COPYING。传递依赖与 Linux 基础镜像的软件包仍需正式发行时按实际产物生成完整清单。系统 SwiftUI、AppKit、Security、CryptoKit 和 AuthenticationServices 由 Apple SDK 提供。旧 Go/Argon2/pgx 依赖已删除。
