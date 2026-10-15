@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { AppEnv } from "../context.js";
 import { Hono } from "hono";
+import { authentication } from "../../modules/identity/auth-policy.js";
 
 export function registerDiscoveryRoutes(app: Hono<AppEnv>) {
   app.get("/healthz", async (c) => {
@@ -15,11 +16,7 @@ export function registerDiscoveryRoutes(app: Hono<AppEnv>) {
       api_base: "/v1",
       registration: c.env.config.registration,
       operator: { name: c.env.config.operator },
-      auth: {
-        methods: ["key", ...(c.env.config.oidc ? ["browser"] : [])],
-        key_algorithm: "P-256",
-        browser_callback: "melted://auth/callback",
-      },
+      auth: authentication(c.env.config),
       capabilities: {
         input: [],
         subject_pull: false,

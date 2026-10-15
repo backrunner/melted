@@ -21,7 +21,8 @@
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
     "test:unit": "node --import tsx --test --test-concurrency=1 tests/unit/*.test.ts",
-    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts"
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "credentials": "tsx src/entrypoints/credentials.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

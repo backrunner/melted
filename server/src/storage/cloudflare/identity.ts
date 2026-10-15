@@ -134,6 +134,19 @@ export class AccountIdentity {
     }
     return {};
   }
+  async managedSession(owner: string) {
+    const prepared = await this.prepareSession(owner);
+    this.db.transaction(() => {
+      if (
+        this.db.meta("registered") &&
+        this.db.meta("registered") !== "managed"
+      )
+        throw unauthorized();
+      this.db.setMeta("registered", "managed");
+      this.storeSession(prepared);
+    });
+    return prepared.session;
+  }
   async issueSession(owner: string) {
     if (!this.db.meta("registered")) throw unauthorized();
     const prepared = await this.prepareSession(owner);

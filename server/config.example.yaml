@@ -18,8 +18,8 @@ server:
   port: 8421
 
 # User registration mode
-# - "key": Users can register with a registration key
-# - "closed": Registration is closed, only existing users can login
+# - "key": Users can create an account by proving possession of a P-256 key
+# - "closed": No self-registration; existing identities and operator-provisioned accounts can login
 registration:
   mode: key
 
@@ -52,3 +52,9 @@ development:
 # rate_limit:
 #   requests_per_minute: 600
 #   burst: 100
+
+# Authentication methods are advertised to clients. Omit to preserve key (+ configured OIDC).
+# For password/api_key, provision hashed accounts as described in docs/authentication.md.
+# authentication:
+#   methods: [key]
+#   preferred: key

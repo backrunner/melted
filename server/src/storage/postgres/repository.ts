@@ -5,7 +5,7 @@ import { Database } from "./database.js";
 import { type Config } from "../../config/schema.js";
 import { Problem } from "../../shared/problem.js";
 import { rateLimit } from "./rate-limit.js";
-import { authenticate, refresh } from "./sessions.js";
+import { authenticate, refresh, issue } from "./sessions.js";
 import { challenge, keySession } from "./key-auth.js";
 import { type Principal } from "../../modules/identity/types.js";
 import type { Fixture, Mutation } from "../../modules/content/schemas.js";
@@ -45,6 +45,15 @@ export class PostgresRepository implements Repository {
   }
   authenticate(token?: string) {
     return authenticate(this.db, token);
+  }
+  managedSession(owner: string) {
+    return this.db.transaction(async (connection) => {
+      await connection.query(
+        "INSERT INTO accounts(id) VALUES($1) ON CONFLICT(id) DO NOTHING",
+        [owner],
+      );
+      return issue(connection, owner);
+    });
   }
   refresh(body: unknown) {
     return refresh(this.db, body);

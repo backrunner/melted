@@ -370,25 +370,31 @@
               "methods": {
                 "type": "array",
                 "items": {
-                  "enum": [
-                    "key",
-                    "browser"
-                  ]
-                }
+                  "type": "string",
+                  "description": "Known v1 values: password, api_key, browser, key. Unknown methods must not trigger credential submission."
+                },
+                "uniqueItems": true
               },
               "key_algorithm": {
                 "const": "P-256"
               },
               "browser_callback": {
                 "const": "melted://auth/callback"
+              },
+              "version": {
+                "type": "integer",
+                "const": 1,
+                "description": "Absent on legacy v1 servers; unknown versions require a compatible client."
+              },
+              "preferred": {
+                "type": "string",
+                "description": "Preferred method, present in methods. Client may use the first supported method."
               }
             },
             "required": [
-              "methods",
-              "key_algorithm",
-              "browser_callback"
+              "methods"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           }
         },
         "required": [

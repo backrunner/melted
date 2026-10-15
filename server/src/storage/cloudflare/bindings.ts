@@ -7,6 +7,7 @@ export interface CloudBindings {
   MELTED_OPERATOR: string;
   PUBLIC_ORIGIN: string;
   REGISTRATION_MODE?: string;
+  AUTH_CONFIG?: string;
   OIDC_ISSUER?: string;
   OIDC_CLIENT_ID?: string;
   OIDC_CLIENT_SECRET?: string;

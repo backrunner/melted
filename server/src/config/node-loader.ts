@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { load } from "js-yaml";
 
 export interface ServerConfig {
+  authentication?: unknown;
   server: {
     id: string;
     operator: string;
@@ -70,9 +71,11 @@ export function loadConfig(
         }
 
         return config;
-      } catch (error) {
-        console.error(`Failed to load config from ${configPath}:`, error);
-        throw error;
+      } catch {
+        // YAML parser errors may include source excerpts containing credential hashes.
+        throw new Error(
+          `Unable to load server configuration from ${configPath}; check syntax and required fields`,
+        );
       }
     }
   }
@@ -156,6 +159,9 @@ export function configToEnv(config: ServerConfig): Record<string, string> {
     REGISTRATION_MODE: config.registration.mode,
     DATABASE_URL: config.database.url,
     DEVELOPMENT_SAMPLES: config.development?.samples ? "true" : "false",
+    ...(config.authentication !== undefined
+      ? { AUTH_CONFIG: JSON.stringify(config.authentication) }
+      : {}),
     ...(config.oidc && {
       OIDC_ISSUER: config.oidc.issuer,
       OIDC_CLIENT_ID: config.oidc.client_id,

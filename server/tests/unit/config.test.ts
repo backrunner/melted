@@ -68,3 +68,44 @@ test("deployment environment overrides YAML defaults and local file wins over ba
     rmSync(cwd, { recursive: true, force: true });
   }
 });
+
+test("authentication policy rejects unavailable methods and ambiguous identities", () => {
+  const base = {
+    MELTED_SERVER_ID: "test",
+    PUBLIC_ORIGIN: "https://melted.example.com",
+  };
+  for (const policy of [
+    { methods: [] },
+    { methods: ["future"] },
+    { methods: ["key", "key"] },
+    { methods: ["password"] },
+    { methods: ["api_key"] },
+    { methods: ["browser"] },
+    { methods: ["key"], preferred: "password" },
+    { methods: ["key"], accounts: [{ subject: "a", username: "alice" }] },
+    {
+      methods: ["api_key"],
+      accounts: [
+        { subject: "a", api_key_hashes: ["a".repeat(64)] },
+        { subject: "b", api_key_hashes: ["a".repeat(64)] },
+      ],
+    },
+  ])
+    assert.throws(() =>
+      configFromEnv({ ...base, AUTH_CONFIG: JSON.stringify(policy) }),
+    );
+  assert.throws(
+    () => configFromEnv({ ...base, AUTH_CONFIG: "secret-not-json" }),
+    (error) =>
+      error instanceof Error && !error.message.includes("secret-not-json"),
+  );
+  assert.throws(() => configFromEnv({ ...base, AUTH_CONFIG: "" }));
+  const configured = configFromEnv({
+    ...base,
+    AUTH_CONFIG: JSON.stringify({
+      methods: ["api_key"],
+      accounts: [{ subject: "alice", api_key_hashes: ["a".repeat(64)] }],
+    }),
+  });
+  assert.deepEqual(configured.authentication?.methods, ["api_key"]);
+});

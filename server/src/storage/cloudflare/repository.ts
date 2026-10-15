@@ -91,6 +91,9 @@ export class CloudRepository implements Repository {
       { token },
     );
   }
+  managedSession(owner: string) {
+    return this.account<Session>(owner, "managedSession");
+  }
   async refresh(body: unknown) {
     const { refresh_token } = parse(
       z.object({ refresh_token: z.string().max(512) }).strict(),

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { AppEnv } from "../context.js";
 import { Hono } from "hono";
+import { requireMethod } from "../../modules/identity/auth-policy.js";
+import { credentialLogin } from "../../modules/identity/credential-login.js";
 import {
   startBrowser,
   authorizeBrowser,
@@ -14,6 +16,28 @@ export function registerAuthRoutes(app: Hono<AppEnv>) {
     await c.env.repository.limit("auth:" + c.env.remoteIP, 60);
     await next();
   });
+  for (const method of ["key", "browser"] as const) {
+    app.use(`/v1/auth/${method}/*`, async (c, next) => {
+      requireMethod(c.env.config, method);
+      await next();
+    });
+  }
+  for (const method of ["password", "api_key"] as const) {
+    app.post(
+      `/v1/auth/${method === "api_key" ? "api-key" : method}/sessions`,
+      async (c) => {
+        await c.env.repository.limit("credentials:" + c.env.remoteIP, 10);
+        return c.json(
+          await credentialLogin(
+            c.env.repository,
+            c.env.config,
+            method,
+            await c.req.json(),
+          ),
+        );
+      },
+    );
+  }
   app.post("/v1/auth/key/challenges", async (c) =>
     c.json(await c.env.repository.challenge(c.env.config, await c.req.json())),
   );

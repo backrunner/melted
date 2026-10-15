@@ -415,6 +415,8 @@ for (const { name, send } of targets)
         );
         await json("/v1/taxonomy", undefined, b.access_token, undefined, 401);
         await json("/v1/auth/browser/start", {}, undefined, undefined, 404);
+        await json("/v1/auth/password/sessions", {}, undefined, undefined, 404);
+        await json("/v1/auth/api-key/sessions", {}, undefined, undefined, 404);
       },
     );
   });

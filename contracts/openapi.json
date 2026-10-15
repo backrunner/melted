@@ -849,6 +849,113 @@
           }
         }
       }
+    },
+    "/v1/auth/password/sessions": {
+      "post": {
+        "summary": "Exchange password credentials for a device session; only available when advertised",
+        "operationId": "post_auth_password_sessions",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024,
+                    "writeOnly": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/api-key/sessions": {
+      "post": {
+        "summary": "Exchange api-key credentials for a device session; only available when advertised",
+        "operationId": "post_auth_api_key_sessions",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "api_key"
+                ],
+                "properties": {
+                  "api_key": {
+                    "type": "string",
+                    "pattern": "^melted_[A-Za-z0-9_-]{43}$",
+                    "writeOnly": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1219,25 +1326,31 @@
               "methods": {
                 "type": "array",
                 "items": {
-                  "enum": [
-                    "key",
-                    "browser"
-                  ]
-                }
+                  "type": "string",
+                  "description": "Known v1 values: password, api_key, browser, key. Unknown methods must not trigger credential submission."
+                },
+                "uniqueItems": true
               },
               "key_algorithm": {
                 "const": "P-256"
               },
               "browser_callback": {
                 "const": "melted://auth/callback"
+              },
+              "version": {
+                "type": "integer",
+                "const": 1,
+                "description": "Absent on legacy v1 servers; unknown versions require a compatible client."
+              },
+              "preferred": {
+                "type": "string",
+                "description": "Preferred method, present in methods. Client may use the first supported method."
               }
             },
             "required": [
-              "methods",
-              "key_algorithm",
-              "browser_callback"
+              "methods"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           }
         },
         "required": [

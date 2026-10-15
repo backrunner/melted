@@ -57,6 +57,8 @@ export class AccountStore extends DurableObject<CloudBindings> {
         return this.identity.externalIdentity(p);
       case "issue":
         return this.identity.issueSession(owner);
+      case "managedSession":
+        return this.identity.managedSession(owner);
       case "authenticate":
         return this.identity.authenticate(owner, p);
       case "refresh":
