@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { load } from "js-yaml";
@@ -39,15 +41,20 @@ export interface ServerConfig {
  * Load configuration from YAML file
  * Looks for config.yaml in the following locations:
  * 1. CONFIG_PATH environment variable
- * 2. ./config.yaml (current directory)
- * 3. ./config.local.yaml (local override)
+ * 2. ./config.local.yaml (local override)
+ * 3. ./config.yaml (current directory)
+ * Without a file, the deployment can use environment variables alone.
  */
-export function loadConfig(): ServerConfig {
-  const configPaths = [
-    process.env.CONFIG_PATH,
-    resolve(process.cwd(), "config.local.yaml"),
-    resolve(process.cwd(), "config.yaml"),
-  ].filter((p): p is string => !!p);
+export function loadConfig(
+  env: Record<string, string | undefined> = process.env,
+  cwd = process.cwd(),
+): ServerConfig | undefined {
+  const configPaths = env.CONFIG_PATH
+    ? [resolve(cwd, env.CONFIG_PATH)]
+    : [resolve(cwd, "config.local.yaml"), resolve(cwd, "config.yaml")];
+  if (env.CONFIG_PATH && !existsSync(resolve(cwd, env.CONFIG_PATH))) {
+    throw new Error("The configured CONFIG_PATH file does not exist");
+  }
 
   for (const configPath of configPaths) {
     if (existsSync(configPath)) {
@@ -70,9 +77,15 @@ export function loadConfig(): ServerConfig {
     }
   }
 
-  throw new Error(
-    "No configuration file found. Please create config.yaml or set CONFIG_PATH environment variable.",
-  );
+  return undefined;
+}
+
+export function nodeEnvironment(
+  env: Record<string, string | undefined> = process.env,
+  cwd = process.cwd(),
+): Record<string, string | undefined> {
+  const config = loadConfig(env, cwd);
+  return { ...(config ? configToEnv(config) : {}), ...env };
 }
 
 function validateConfig(
@@ -123,9 +136,9 @@ function validateConfig(
   }
 
   // Validate database URL format
-  if (!config.database.url.startsWith("postgresql://")) {
+  if (!/^postgres(?:ql)?:\/\//.test(config.database.url)) {
     throw new Error(
-      `Invalid database.url: must start with postgresql:// (got: ${config.database.url})`,
+      "Invalid database.url: must start with postgres:// or postgresql://",
     );
   }
 }

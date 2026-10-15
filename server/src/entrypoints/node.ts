@@ -1,17 +1,16 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { serve } from "@hono/node-server";
 import { createApp } from "../http/app.js";
 import { configFromEnv } from "../config/schema.js";
 import { Problem } from "../shared/problem.js";
 import { connect } from "../storage/postgres/connection.js";
 import { PostgresRepository } from "../storage/postgres/repository.js";
-import { loadConfig, configToEnv } from "../config/node-loader.js";
+import { nodeEnvironment } from "../config/node-loader.js";
 
-// Load configuration from YAML file
-const yamlConfig = loadConfig();
-const envVars = configToEnv(yamlConfig);
-
-// Merge with process.env for backward compatibility
-Object.assign(process.env, envVars);
+// Compose and Apple Container use environment variables; YAML is optional.
+// Explicit environment values take precedence over a local configuration file.
+Object.assign(process.env, nodeEnvironment());
 
 const config = configFromEnv(process.env);
 const { database, pool } = connect();
@@ -20,8 +19,8 @@ await repository.health();
 const app = createApp();
 const server = serve(
   {
-    port: yamlConfig.server.port,
-    hostname: yamlConfig.server.host,
+    port: Number(process.env.PORT ?? 8421),
+    hostname: process.env.HOST ?? "0.0.0.0",
     fetch: async (request, context) => {
       // Forwarded headers are deliberately not trusted. Terminating proxies should
       // enforce their own edge rate limits; the application uses the socket peer.
@@ -41,7 +40,7 @@ const server = serve(
         config,
         remoteIP,
         developmentSamples:
-          yamlConfig.development?.samples === true &&
+          process.env.DEVELOPMENT_SAMPLES === "true" &&
           new URL(config.publicOrigin).protocol === "http:",
       });
     },

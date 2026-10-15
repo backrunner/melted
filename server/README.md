@@ -76,6 +76,6 @@ python3 scripts/dev.py exec npm run build
 
 编译后的入口为 `dist/server/src/entrypoints/node.js`、`dist/server/src/entrypoints/cli.js`；迁移目录为 `dist/server/migrations/`。Worker 的 Durable Object 导出名称保持 `AccountStore` / `ControlStore`，移动源码不创建新的 DO namespace。
 
-Node 启动读取 `CONFIG_PATH`、`config.local.yaml`、`config.yaml`，按此顺序选首个存在的文件，YAML 值覆盖对应环境变量。配置包含凭据，应保存在本机且不提交。管理 CLI 使用环境变量连接数据库；Workers 使用 bindings。配置加载和部署操作详见 [迁移与部署](../.agents/15-typescript-transition.md) 和 [部署入口](../deploy/README.md)。
+Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.local.yaml`、`config.yaml` 读取；显式 `CONFIG_PATH` 不存在时直接报错，未指定时本机文件优先。显式环境变量覆盖 YAML 默认值，使 Compose 与 Apple Container 不依赖本机配置。配置包含凭据，应保存在本机且不提交。管理 CLI 使用环境变量连接数据库；Workers 使用 bindings。配置加载和部署操作详见 [迁移与部署](../.agents/15-typescript-transition.md) 和 [部署入口](../deploy/README.md)。
 
 插件预检只检查兼容性；当前尚未实现插件执行引擎。

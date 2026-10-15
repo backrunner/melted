@@ -7,6 +7,8 @@ apps
 server/dist
 server/.wrangler
 server/.dev.vars
+server/config.yaml
+server/config.local.yaml
 **/.env
 server/cmd
 server/internal

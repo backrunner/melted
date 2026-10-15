@@ -1,0 +1,70 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+import { nodeEnvironment } from "../../src/config/node-loader.js";
+import { configFromEnv } from "../../src/config/schema.js";
+
+test("clean deployments run from environment without an untracked YAML file", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "melted-env-"));
+  try {
+    const env = {
+      MELTED_SERVER_ID: "clean",
+      PUBLIC_ORIGIN: "https://melted.example.com",
+      DATABASE_URL: "postgres://test:example@localhost/test",
+    };
+    assert.deepEqual(nodeEnvironment(env, cwd), env);
+    assert.equal(configFromEnv(nodeEnvironment(env, cwd)).serverID, "clean");
+    assert.throws(
+      () => nodeEnvironment({ ...env, CONFIG_PATH: "missing.yaml" }, cwd),
+      /CONFIG_PATH/,
+    );
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("deployment environment overrides YAML defaults and local file wins over base file", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "melted-yaml-"));
+  const config = (id: string) =>
+    JSON.stringify({
+      server: {
+        id,
+        operator: "Example",
+        public_origin: "https://melted.example.com",
+        host: "127.0.0.1",
+        port: 8421,
+      },
+      registration: { mode: "closed" },
+      database: { url: "postgres://test:example@localhost/test" },
+      development: { samples: true },
+    });
+  try {
+    writeFileSync(join(cwd, "config.yaml"), config("base"));
+    writeFileSync(join(cwd, "config.local.yaml"), config("local"));
+    assert.equal(nodeEnvironment({}, cwd).MELTED_SERVER_ID, "local");
+    const result = nodeEnvironment(
+      {
+        MELTED_SERVER_ID: "deployment",
+        HOST: "0.0.0.0",
+        PORT: "9000",
+        DEVELOPMENT_SAMPLES: "false",
+      },
+      cwd,
+    );
+    assert.equal(result.MELTED_SERVER_ID, "deployment");
+    assert.equal(result.HOST, "0.0.0.0");
+    assert.equal(result.PORT, "9000");
+    assert.equal(result.DEVELOPMENT_SAMPLES, "false");
+    assert.equal(result.REGISTRATION_MODE, "closed");
+    assert.equal(
+      nodeEnvironment({ CONFIG_PATH: "config.yaml" }, cwd).MELTED_SERVER_ID,
+      "base",
+    );
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
