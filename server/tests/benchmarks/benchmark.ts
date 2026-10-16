@@ -23,9 +23,6 @@ const call = async (path: string, body?: unknown, token?: string) => {
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.status === 204 ? null : ((await r.json()) as any);
 };
-const d = await call("/.well-known/melted");
-if (!d.capabilities.development_samples)
-  throw new Error("Development samples must be enabled");
 const key = await crypto.subtle.generateKey(
   { name: "ECDSA", namedCurve: "P-256" },
   true,
@@ -44,7 +41,16 @@ const session = await call("/v1/auth/key/sessions", {
     ),
   ),
 });
-await call("/v1/development/seed", {}, session.access_token);
+// Samples are imported out of band by the operator CLI, not over HTTP.
+const first = await call(
+  "/v1/briefings?limit=30",
+  undefined,
+  session.access_token,
+);
+if (first.total < 1)
+  throw new Error(
+    "Import fixtures with `npm run cli -- import-demo ACCOUNT_ID FILE` before benchmarking",
+  );
 const timings: number[] = [];
 let next = 0;
 const count = 200,

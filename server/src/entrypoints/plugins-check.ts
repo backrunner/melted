@@ -49,8 +49,6 @@ if (target === "cloudflare" && process.argv.includes("--deployment")) {
     );
   if (!worker.vars.PUBLIC_ORIGIN.startsWith("https://"))
     failures.push("Production PUBLIC_ORIGIN requires HTTPS");
-  if (worker.vars.DEVELOPMENT_SAMPLES === "true")
-    failures.push("Development samples cannot be enabled in production");
 }
 if (failures.length) {
   console.error(failures.join("\n"));

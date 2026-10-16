@@ -11,5 +11,4 @@ export interface CloudBindings {
   OIDC_ISSUER?: string;
   OIDC_CLIENT_ID?: string;
   OIDC_CLIENT_SECRET?: string;
-  DEVELOPMENT_SAMPLES?: string;
 }

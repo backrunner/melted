@@ -40,7 +40,7 @@ test("deployment environment overrides YAML defaults and local file wins over ba
       },
       registration: { mode: "closed" },
       database: { url: "postgres://test:example@localhost/test" },
-      development: { samples: true },
+      development: { debug: true },
     });
   try {
     writeFileSync(join(cwd, "config.yaml"), config("base"));
@@ -51,14 +51,14 @@ test("deployment environment overrides YAML defaults and local file wins over ba
         MELTED_SERVER_ID: "deployment",
         HOST: "0.0.0.0",
         PORT: "9000",
-        DEVELOPMENT_SAMPLES: "false",
+        MELTED_OPERATOR: "Deployment",
       },
       cwd,
     );
     assert.equal(result.MELTED_SERVER_ID, "deployment");
     assert.equal(result.HOST, "0.0.0.0");
     assert.equal(result.PORT, "9000");
-    assert.equal(result.DEVELOPMENT_SAMPLES, "false");
+    assert.equal(result.MELTED_OPERATOR, "Deployment");
     assert.equal(result.REGISTRATION_MODE, "closed");
     assert.equal(
       nodeEnvironment({ CONFIG_PATH: "config.yaml" }, cwd).MELTED_SERVER_ID,

@@ -829,27 +829,6 @@
         "security": []
       }
     },
-    "/v1/development/seed": {
-      "post": {
-        "summary": "Seed authenticated owner with project samples; loopback development only",
-        "operationId": "post_v1_development_seed",
-        "responses": {
-          "204": {
-            "description": "Success"
-          },
-          "default": {
-            "description": "Structured failure; 400, 401, 403, 404, 409, 410, 413, 422, 429, 500, 503",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/auth/password/sessions": {
       "post": {
         "summary": "Exchange password credentials for a device session; only available when advertised",
@@ -1300,9 +1279,6 @@
                 "type": "boolean"
               },
               "snapshot_sync": {
-                "type": "boolean"
-              },
-              "development_samples": {
                 "type": "boolean"
               }
             },

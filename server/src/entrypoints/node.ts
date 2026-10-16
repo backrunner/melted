@@ -35,14 +35,7 @@ const server = serve(
           );
         throw error;
       }
-      return app.fetch(request, {
-        repository,
-        config,
-        remoteIP,
-        developmentSamples:
-          process.env.DEVELOPMENT_SAMPLES === "true" &&
-          new URL(config.publicOrigin).protocol === "http:",
-      });
+      return app.fetch(request, { repository, config, remoteIP });
     },
   },
   () => console.log("Melted API ready"),

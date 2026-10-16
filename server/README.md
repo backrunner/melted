@@ -12,10 +12,10 @@ server/
 │   │   ├── app.ts           # 路由组装，保留中间件与鉴权注册顺序
 │   │   ├── context.ts       # Hono bindings 与请求变量类型
 │   │   ├── middleware.ts    # 请求 ID、响应头、体积限制及错误映射
-│   │   └── routes/          # discovery、auth、content、sync、development
+│   │   └── routes/          # discovery、auth、content、sync
 │   ├── modules/
 │   │   ├── identity/        # 身份/会话契约、浏览器登录与 OIDC 适配
-│   │   ├── content/         # 内容 schema、筛选、样例校验与存储接口
+│   │   ├── content/         # 内容 schema、筛选、fixture 校验与存储接口
 │   │   ├── sync/            # 变化日志契约
 │   │   └── plugins/         # 插件 manifest 与平台兼容性检查
 │   ├── storage/
@@ -41,7 +41,7 @@ server/
 
 - `entrypoints` 组装运行时，`http` 只做认证、解析、调用与响应；HTTP 不直接操作 SQL。
 - `modules` 保存领域类型、接口与规则，可依赖 `config` / `shared`，不得导入具体存储实现或 HTTP 层。
-- `storage` 实现领域接口。PostgreSQL 与 Cloudflare 互不导入；样例等通用校验放 `modules`，不能从一个后端借用。
+- `storage` 实现领域接口。PostgreSQL 与 Cloudflare 互不导入；fixture 等通用校验放 `modules`，不能从一个后端借用。
 - `shared` 不导入领域、HTTP、数据库或平台绑定。YAML/文件读取只在 Node 配置加载器中使用；Worker 只依赖共享配置 schema。
 - 文件按职责拆分。新增领域放进对应 `modules`，SQL 和平台细节留在适配目录；不预建尚未实现的业务模块，不增加转发旧路径的兼容大文件。
 - 保留事务边界：PG mutation、变化序号及幂等响应同事务提交；SQLite DO 只在同步事务中写入，crypto 与外部 IO 在事务外准备。过期清理由运行时维护任务或 DO alarm 负责。
@@ -72,6 +72,7 @@ python3 scripts/dev.py exec npm run build
 | `npm run dev` / `npm start` | Node 源码开发入口 / 编译入口 |
 | `npm run migrate` | 源码 CLI 执行迁移 |
 | `npm run cli -- bind-key ACCOUNT_ID PUBLIC_KEY` | 绑定已核对的公钥 |
+| `npm run cli -- import-demo ACCOUNT_ID FILE` | 开发用途：向指定账户导入 fixture 内容 |
 | `npm run worker:check` | 插件预检及 Worker dry-run |
 
 编译后的入口为 `dist/server/src/entrypoints/node.js`、`dist/server/src/entrypoints/cli.js`；迁移目录为 `dist/server/migrations/`。Worker 的 Durable Object 导出名称保持 `AccountStore` / `ControlStore`，移动源码不创建新的 DO namespace。

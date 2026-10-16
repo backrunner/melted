@@ -28,7 +28,6 @@ test("SQLite DO persists across process restart; browser code and replay revocat
       MELTED_OPERATOR: "test",
       PUBLIC_ORIGIN: "http://localhost",
       REGISTRATION_MODE: "key",
-      DEVELOPMENT_SAMPLES: "true",
     },
   });
   options.unsafeInspectDurableObjects = true;

@@ -24,7 +24,6 @@ export interface ServerConfig {
     };
   };
   development?: {
-    samples?: boolean;
     debug?: boolean;
   };
   oidc?: {
@@ -158,7 +157,6 @@ export function configToEnv(config: ServerConfig): Record<string, string> {
     PORT: config.server.port.toString(),
     REGISTRATION_MODE: config.registration.mode,
     DATABASE_URL: config.database.url,
-    DEVELOPMENT_SAMPLES: config.development?.samples ? "true" : "false",
     ...(config.authentication !== undefined
       ? { AUTH_CONFIG: JSON.stringify(config.authentication) }
       : {}),

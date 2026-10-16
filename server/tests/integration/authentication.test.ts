@@ -6,6 +6,11 @@ import assert from "node:assert/strict";
 import { connect } from "../../src/storage/postgres/connection.js";
 import { migrate } from "../../src/storage/postgres/migrations.js";
 import { PostgresRepository } from "../../src/storage/postgres/repository.js";
+import { CloudRepository } from "../../src/storage/cloudflare/repository.js";
+import type { CloudBindings } from "../../src/storage/cloudflare/bindings.js";
+import { fixtureSchema } from "../../src/modules/content/schemas.js";
+import { parse } from "../../src/shared/validation.js";
+import fixture from "../../../contracts/fixtures/development-library.json" with { type: "json" };
 import { createApp } from "../../src/http/app.js";
 import { configSchema } from "../../src/config/schema.js";
 import { hash, random } from "../../src/shared/crypto.js";
@@ -46,6 +51,14 @@ for (const target of ["PostgreSQL", "Cloudflare workerd"] as const) {
     });
     const app = createApp(),
       repository = new PostgresRepository(database);
+    const library = parse(fixtureSchema, fixture);
+    const documents = library.documents;
+    const seed = async (owner: string) => {
+      const seeder = worker
+        ? new CloudRepository(await worker.getBindings<CloudBindings>())
+        : repository;
+      await seeder.importDemo(owner, library);
+    };
     const worker =
       target === "Cloudflare workerd"
         ? new Miniflare(
@@ -64,7 +77,6 @@ for (const target of ["PostgreSQL", "Cloudflare workerd"] as const) {
                 MELTED_OPERATOR: "test",
                 PUBLIC_ORIGIN: "http://localhost",
                 REGISTRATION_MODE: "closed",
-                DEVELOPMENT_SAMPLES: "true",
                 AUTH_CONFIG: JSON.stringify(policy),
               },
             }),
@@ -92,7 +104,6 @@ for (const target of ["PostgreSQL", "Cloudflare workerd"] as const) {
             repository,
             config,
             remoteIP: ip,
-            developmentSamples: true,
           });
       return {
         status: result.status,
@@ -165,17 +176,13 @@ for (const target of ["PostgreSQL", "Cloudflare workerd"] as const) {
         api_key: otherKey,
       });
       assert.notEqual(other.data.account_id, keyLogin.data.account_id);
-      assert.equal(
-        (await send("/v1/development/seed", {}, keyLogin.data.access_token))
-          .status,
-        204,
-      );
+      await seed(passwordLogin.data.account_id);
       const items = await send(
         "/v1/briefings",
         undefined,
         passwordLogin.data.access_token,
       );
-      assert(items.data.total > 0);
+      assert.equal(items.data.total, documents.length);
       assert.equal(
         (await send("/v1/briefings", undefined, other.data.access_token)).data
           .total,

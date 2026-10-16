@@ -7,7 +7,6 @@ import { registerDiscoveryRoutes } from "./routes/discovery.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerContentRoutes } from "./routes/content.js";
 import { registerSyncRoutes } from "./routes/sync.js";
-import { registerDevelopmentRoutes } from "./routes/development.js";
 
 export function createApp() {
   const app = new Hono<AppEnv>();
@@ -23,6 +22,5 @@ export function createApp() {
   });
   registerContentRoutes(app);
   registerSyncRoutes(app);
-  registerDevelopmentRoutes(app);
   return app;
 }

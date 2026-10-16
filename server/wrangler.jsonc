@@ -22,7 +22,7 @@
   "env": {
     "local": {
       "name": "melted-local",
-      "vars": {"MELTED_SERVER_ID": "melted-cloud-local", "MELTED_OPERATOR": "Melted Cloud 本地测试", "PUBLIC_ORIGIN": "http://127.0.0.1:8787", "REGISTRATION_MODE": "key", "DEVELOPMENT_SAMPLES": "true"},
+      "vars": {"MELTED_SERVER_ID": "melted-cloud-local", "MELTED_OPERATOR": "Melted Cloud 本地测试", "PUBLIC_ORIGIN": "http://127.0.0.1:8787", "REGISTRATION_MODE": "key"},
       "durable_objects": {"bindings": [{"name": "ACCOUNTS", "class_name": "AccountStore"}, {"name": "CONTROL", "class_name": "ControlStore"}]}
     }
   }

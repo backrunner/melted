@@ -7,6 +7,8 @@ import { connect } from "../../src/storage/postgres/connection.js";
 import { migrate } from "../../src/storage/postgres/migrations.js";
 import { createApp } from "../../src/http/app.js";
 import { PostgresRepository } from "../../src/storage/postgres/repository.js";
+import { CloudRepository } from "../../src/storage/cloudflare/repository.js";
+import type { CloudBindings } from "../../src/storage/cloudflare/bindings.js";
 import { b64, random } from "../../src/shared/crypto.js";
 import { configSchema } from "../../src/config/schema.js";
 import { parse } from "../../src/shared/validation.js";
@@ -38,7 +40,6 @@ const worker = new Miniflare(
       MELTED_OPERATOR: "test",
       PUBLIC_ORIGIN: "http://localhost",
       REGISTRATION_MODE: "key",
-      DEVELOPMENT_SAMPLES: "true",
     },
   }),
 );
@@ -53,13 +54,20 @@ const config = parse(configSchema, {
 });
 const repo = new PostgresRepository(database);
 const app = createApp();
+const library = parse(fixtureSchema, fixture);
+const documents = library.documents;
 type Send = (
   path: string,
   body?: unknown,
   token?: string,
   method?: string,
 ) => Promise<Response>;
-const targets: { name: string; send: Send }[] = [
+type Target = {
+  name: string;
+  send: Send;
+  seed: (owner: string) => Promise<void>;
+};
+const targets: Target[] = [
   {
     name: "PostgreSQL",
     send: async (path, body, token, method) =>
@@ -77,9 +85,9 @@ const targets: { name: string; send: Send }[] = [
           repository: repo,
           config,
           remoteIP,
-          developmentSamples: true,
         },
       ),
+    seed: (owner) => repo.importDemo(owner, library),
   },
   {
     name: "Cloudflare workerd + SQLite DO",
@@ -97,13 +105,17 @@ const targets: { name: string; send: Send }[] = [
         headers: response.headers as unknown as Headers,
       });
     },
+    seed: async (owner) => {
+      const bindings = await worker.getBindings<CloudBindings>();
+      await new CloudRepository(bindings).importDemo(owner, library);
+    },
   },
 ];
 
 test("migrations serialize and can be reapplied", async () => {
   await Promise.all([migrate(database), migrate(database)]);
 });
-for (const { name, send } of targets)
+for (const { name, send, seed } of targets)
   test(name, async (t) => {
     const json = async (
       path: string,
@@ -179,12 +191,11 @@ for (const { name, send } of targets)
         assert.notEqual(a.account_id, b.account_id);
       },
     );
-    const documents = parse(fixtureSchema, fixture).documents;
     let page: any;
     await t.test(
       "owner isolation, seeded fixture, literal query and combined filters",
       async () => {
-        await json("/v1/development/seed", {}, a.access_token, undefined, 204);
+        await seed(a.account_id);
         page = await json("/v1/briefings?limit=2", undefined, a.access_token);
         assert.equal(page.total, documents.length);
         assert.equal(page.items.length, 2);

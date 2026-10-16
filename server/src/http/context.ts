@@ -9,7 +9,6 @@ export type AppEnv = {
     repository: Repository;
     config: Config;
     remoteIP: string;
-    developmentSamples: boolean;
   };
   Variables: { principal: Principal; requestID: string };
 };

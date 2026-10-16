@@ -39,9 +39,6 @@ export default {
       repository,
       config,
       remoteIP: request.headers.get("CF-Connecting-IP") ?? "local",
-      developmentSamples:
-        env.DEVELOPMENT_SAMPLES === "true" &&
-        new URL(config.publicOrigin).protocol === "http:",
     });
   },
 };

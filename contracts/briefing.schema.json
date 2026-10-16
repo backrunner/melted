@@ -345,9 +345,6 @@
               },
               "snapshot_sync": {
                 "type": "boolean"
-              },
-              "development_samples": {
-                "type": "boolean"
               }
             },
             "required": [

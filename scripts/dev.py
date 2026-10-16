@@ -61,7 +61,7 @@ def setup():
     base = f"postgres://melted:{values['POSTGRES_PASSWORD']}@{ip}:5432/"
     envfile(LOCAL/'node.env', {'DATABASE_URL':base+'melted_dev','MELTED_TEST_DATABASE_URL':base+'melted_test',
                              'MELTED_SERVER_ID':'melted-local-development','MELTED_OPERATOR':'Melted 本机开发服务器',
-                             'PUBLIC_ORIGIN':'http://127.0.0.1:8421','DEVELOPMENT_SAMPLES':'true'})
+                             'PUBLIC_ORIGIN':'http://127.0.0.1:8421'})
     exists=run('container','exec','melted-postgres','psql','-U','melted','-d','postgres','-Atc',
                "SELECT 1 FROM pg_database WHERE datname='melted_test'",capture=True).stdout.strip()
     if not exists: run('container','exec','melted-postgres','createdb','-U','melted','melted_test')

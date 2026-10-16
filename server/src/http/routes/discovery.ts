@@ -26,7 +26,6 @@ export function registerDiscoveryRoutes(app: Hono<AppEnv>) {
         taxonomy: true,
         changes: true,
         snapshot_sync: false,
-        development_samples: c.env.developmentSamples,
       },
       processing_manifest_version: "local-v1",
     }),

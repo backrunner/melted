@@ -35,9 +35,6 @@ database:
 
 # Development features (disable in production)
 development:
-  # Enable sample data and test endpoints
-  samples: false
-
   # Enable debug logging
   debug: false
 
