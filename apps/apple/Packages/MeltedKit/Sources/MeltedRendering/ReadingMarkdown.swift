@@ -62,33 +62,7 @@ public struct ReadingMarkdown: View {
         }
         if let paragraph = node as? Paragraph { return AnyView(SwiftUI.Text(inline(paragraph)).fixedSize(horizontal: false, vertical: true)) }
         if let code = node as? CodeBlock {
-            return AnyView(VStack(alignment: .leading, spacing: 0) {
-                if let language = code.language, !language.isEmpty {
-                    SwiftUI.Text(language.uppercased())
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(palette.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.top, 10)
-                        .padding(.bottom, 4)
-                }
-                ScrollView(.horizontal, showsIndicators: true) {
-                    SwiftUI.Text(code.code.hasSuffix("\n") ? String(code.code.dropLast()) : code.code)
-                        .font(.system(size: 13 * scale, design: .monospaced))
-                        .foregroundStyle(palette.text)
-                        .fixedSize(horizontal: true, vertical: true)
-                        .padding(14)
-                }
-                .scrollBounceBehavior(.basedOnSize)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(palette.canvas)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(palette.separator.opacity(0.4), lineWidth: 0.5)
-            ))
+            return AnyView(ReadingCodeBlock(source: code.code, info: code.language, scale: scale))
         }
         if node is BlockQuote {
             return AnyView(HStack(alignment: .top, spacing: 0) {
@@ -200,10 +174,11 @@ public struct ReadingMarkdown: View {
             result = node.children.reduce(into: AttributedString()) { $0 += inline($1, size: size, weight: weight, italic: italic) }
         }
         if node.childCount == 0 || node is Markdown.Image {
-            let font = Font.system(size: (node is InlineCode ? 13 : size) * scale, weight: weight, design: node is InlineCode ? .monospaced : .default)
+            let font = Font.system(size: (node is InlineCode ? max(MeltedCode.inlineSize, size * 0.875) : size) * scale, weight: weight, design: node is InlineCode ? .monospaced : .default)
             result.font = italic ? font.italic() : font
             if node is InlineCode {
-                result.backgroundColor = MeltedPalette(scheme).selection.opacity(0.6)
+                result.foregroundColor = MeltedPalette(scheme).accent
+                result.backgroundColor = MeltedPalette(scheme).selection
             }
         }
         if node is Strikethrough { result.strikethroughStyle = .single }

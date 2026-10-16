@@ -14,19 +14,20 @@
 </head>
 <body>
 <main>
-<header><div><p class="meta">Melted · UI v1.0 · 2026-10-17</p><h1>安静、温暖的原生阅读</h1><p class="muted">当前设计参考：真实截图、共享颜色与页面规则</p></div><label for="theme">文档外观<select id="theme"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></label></header>
+<header><div><p class="meta">Melted · UI v1.1 · 2026-10-17</p><h1>安静、温暖的原生阅读</h1><p class="muted">当前设计参考：真实截图、共享颜色与页面规则</p></div><label for="theme">文档外观<select id="theme"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></label></header>
 <nav aria-label="设计文档导航"><a href="../11-ui-design-system.md">完整 UI 规范</a><a href="README.md">资源与组件</a><a href="../13-design-review.md">实现差异与证据</a><a href="#palette">配色</a><a href="#states">页面与状态</a></nav>
 <p>正文是视觉中心。暖纸白与暖炭灰共用相同层级，褐色只用于必要操作；布局依靠文字、留白和边线，保留原生窗口与控件行为。</p>
 <p class="muted">本页是设计文档，不模拟 App 功能。图片来自已有 macOS 原生构建，内容为公开开发样例；浏览器外观只改变文档，静态截图保持原色。iOS、完整离线与 AI 处理尚未交付。</p>
 <section aria-labelledby="reading"><h2 id="reading">资讯工作台</h2><dl class="rules"><dt>窗口</dt><dd>无导航侧栏、无品牌条，隐藏可见“资讯”标题；宽窗双栏，窄窗列表进入详情</dd><dt>操作</dt><dd>全部 / 未读 / 收藏与最右设置；有条件才显示摘要，不另占筛选行</dd><dt>正文</dt><dd>标题、时间与收藏，必要证据警告；正文后以字段排列分类、标签、关注与依据</dd></dl>
 <div class="pair"><figure><a href="../../assets/screenshots/reader-light.png"><img src="../../assets/screenshots/reader-light.png" alt="浅色原生工作台：左侧分组列表，右侧暖白阅读正文，无顶部品牌" loading="lazy"></a><figcaption>浅色阅读 · 2026-10-17 原生截图</figcaption></figure><figure><a href="../../assets/screenshots/reader-dark.png"><img src="../../assets/screenshots/reader-dark.png" alt="深色原生工作台：暖炭灰环境，米白正文，褐色分类和收藏强调" loading="lazy"></a><figcaption>深色阅读 · 同一设计语言</figcaption></figure></div></section>
+<section aria-labelledby="code"><h2 id="code">代码与 App 图标</h2><p>行内代码使用系统等宽字体与轻底色；代码块使用原生文本、低饱和语法色、语言/复制栏和 10 pt 圆角边框。缩进、中文、空行和长行保留，未知语言回退完整原文；高亮引擎离线随包，代码不会执行。</p><div class="pair"><figure><a href="../validation/2026-10-17/code-and-icon/code-light.png"><img src="../validation/2026-10-17/code-and-icon/code-light.png" alt="浅色原生代码块：等宽字体、褐色字符串、低饱和关键字、轻边框和复制按钮" loading="lazy"></a><figcaption>浅色代码 · 原生构建验证截图</figcaption></figure><figure><a href="../validation/2026-10-17/code-and-icon/code-dark.png"><img src="../validation/2026-10-17/code-and-icon/code-dark.png" alt="深色原生代码块：暖炭灰底面、柔和语法颜色与相同的复制工具栏" loading="lazy"></a><figcaption>深色代码 · 同一组语义 token</figcaption></figure></div><p style="margin-top:24px"><img src="../../assets/app-icon/AppIcon.png" width="96" height="96" alt="Melted App 图标：暖纸白底板上的褐色融化 m" style="float:left;margin:0 20px 8px 0">图标复用正式 m 轮廓与共享配色，提供 SVG、1024 PNG 和原生多尺寸 ICNS。<a href="../../assets/app-icon/README.md">图标资产与生成说明</a></p><div style="clear:both"></div></section>
 <section aria-labelledby="connection"><h2 id="connection">连接与服务器确认</h2><p>Wordmark 位于表单标题上方，与字段左边线对齐。边缘融化背景保留中央留白；连接后工作台及列表底栏不再展示品牌。</p><p>连接切步只做 220 ms 淡化，登录方式切换关闭布局插值。输入框和按钮保持同列同宽，避免弹簧、水平滑动或错峰进入造成“飞过”。</p><figure><a href="../../assets/screenshots/landing-light.png"><img src="../../assets/screenshots/landing-light.png" alt="Melted 标识位于从这里开始阅读标题上方，下方是服务器地址和连接按钮" loading="lazy"></a><figcaption>连接入口 · 2026-10-17 原生截图；最大内容宽 440 pt，边距 32 pt</figcaption></figure><details><summary>查看服务器确认与深色入口</summary><div class="pair"><figure><img src="../validation/2026-10-16/brand-position/confirmation-light.png" alt="原生服务器确认页：运营者、信任选择与登录操作，品牌在同一表单列" loading="lazy"><figcaption>服务器确认 · 2026-10-16 品牌位置验收</figcaption></figure><figure><img src="../validation/2026-10-16/brand-position/landing-dark.png" alt="暖炭灰主题下的连接表单和低强度融化边缘" loading="lazy"><figcaption>深色连接 · 对应记录中的构建</figcaption></figure></div></details></section>
 <section aria-labelledby="palette"><h2 id="palette">成对语义颜色</h2><p class="muted">直接读取本页内嵌 tokens.json；静态不透明颜色对通过不代表材质、透明度或原生辅助设置已通过</p><div id="palettes" class="colors"></div></section>
 <section aria-labelledby="states"><h2 id="states">页面与状态基线</h2><div class="table-wrap"><table><thead><tr><th scope="col">范围</th><th scope="col">规则</th><th scope="col">当前边界</th></tr></thead><tbody><tr><th scope="row">搜索</th><td>统一输入、分类/标签/关注建议；清条件保留 view</td><td>已有组件和命令状态，主窗口尚未挂载面板</td></tr><tr><th scope="row">依据</th><td>文末按需展开编号来源，风险前置</td><td>没有独立反馈按钮或大核验卡</td></tr><tr><th scope="row">设置</th><td>外观、账户、关于；原生 grouped Form</td><td>来源、偏好、通知、反馈等是后续页面</td></tr><tr><th scope="row">空态 / 失败</th><td>区分无内容、未读空、收藏空、无匹配；提示与操作就地展示</td><td>已加载内容留内存，不称完整离线缓存</td></tr><tr><th scope="row">字号 / 窗口</th><td>阅读 16 pt，100–200%；最小窗口 680×520 pt</td><td>200% 阅读不等于界面全局缩放或 iOS Dynamic Type</td></tr><tr><th scope="row">动效</th><td>选择 120 ms、hover 160 ms，减少动态时冻结/关闭</td><td>旧 page spring 不用于连接流程</td></tr></tbody></table></div><details><summary>查看法律文本的原生证据</summary><div class="pair"><figure><img src="../validation/2026-10-17/publication/license-dark.png" alt="深色原生法律 sheet 显示完整 GNU GPL 第三版文本" loading="lazy"><figcaption>完整 GPL · 可滚动选择，具体操作见验收记录</figcaption></figure><figure><img src="../validation/2026-10-17/publication/third-party-light.png" alt="浅色原生第三方声明 sheet，使用 Markdown 表格显示依赖及许可证" loading="lazy"><figcaption>第三方声明 · 复用原生 Markdown</figcaption></figure></div></details></section>
 <footer><p class="muted">完整页面矩阵、VoiceOver、最低系统与 iOS 尚未全项验收。当前实现差异见<a href="../13-design-review.md">设计复核</a>；旧浏览器测量与手机探索保存在<a href="history/2026-10-14-design-review.md">历史报告</a>和<a href="history/reference-v0.6.html">原型 v0.6</a>，不作为当前原生能力证明。</p></footer>
 </main>
 <script id="design-tokens" type="application/json">{
-  "version": 6,
+  "version": 7,
   "status": "design-baseline-not-runtime-verified",
   "themes": {
     "light": {
@@ -39,7 +40,12 @@
       "selection": "#EDEAE4",
       "separator": "#E2DED7",
       "warning": "#835512",
-      "danger": "#A33E35"
+      "danger": "#A33E35",
+      "codeKeyword": "#80516E",
+      "codeString": "#88513B",
+      "codeNumber": "#7C5A27",
+      "codeType": "#3B6378",
+      "codeComment": "#756D63"
     },
     "dark": {
       "canvas": "#232220",
@@ -51,7 +57,12 @@
       "selection": "#403A32",
       "separator": "#504B43",
       "warning": "#DABB7D",
-      "danger": "#EFA599"
+      "danger": "#EFA599",
+      "codeKeyword": "#C5A4BD",
+      "codeString": "#D3AD8C",
+      "codeNumber": "#D3BB8C",
+      "codeType": "#9FBED0",
+      "codeComment": "#B1A79A"
     }
   },
   "contrastChecks": [
@@ -108,6 +119,36 @@
     {
       "foreground": "danger",
       "background": "surface",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "codeKeyword",
+      "background": "canvas",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "codeString",
+      "background": "canvas",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "codeNumber",
+      "background": "canvas",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "codeType",
+      "background": "canvas",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "codeComment",
+      "background": "canvas",
+      "minimum": 4.5
+    },
+    {
+      "foreground": "accent",
+      "background": "selection",
       "minimum": 4.5
     }
   ],
@@ -205,6 +246,15 @@
     "horizontalInset": 24,
     "verticalInset": 10,
     "markSize": 16
+  },
+  "codeMetricsPt": {
+    "inset": 16,
+    "headerHeight": 36,
+    "cornerRadius": 10,
+    "lineSpacing": 4,
+    "borderWidth": 1,
+    "inlineSize": 14,
+    "labelSize": 11
   }
 }</script>
 <script>

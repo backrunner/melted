@@ -1,6 +1,6 @@
 # 实施记录与当前设计状态
 
-更新：2026-10-17。当前开发版本 0.2.0（2），Bundle ID **com.alkinum.melted**；已交付基础鉴权/阅读链路，不代表完整 P0、M1 或可公证分发的 alpha 已完成。视觉规范以 [UI v1.0](11-ui-design-system.md)为准。
+更新：2026-10-17。当前开发版本 0.2.0（2），Bundle ID **com.alkinum.melted**；已交付基础鉴权/阅读链路，不代表完整 P0、M1 或可公证分发的 alpha 已完成。视觉规范以 [UI v1.1](11-ui-design-system.md)为准。
 
 ## 已有代码与能力
 
@@ -12,10 +12,11 @@
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、迁移、CLI、Docker/Compose、Worker 配置与插件预检 | 插件执行引擎尚未实现；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
 | 搜索组件 | SearchPalette、NativeSearchField、菜单/⌘F 状态、词表条件、组合查询模型 | **当前 WorkspaceView 未挂载 SearchPalette，入口不可记为完成** |
-| 阅读 | 原生 Markdown、必要证据警告、文末元信息与编号来源；100–200% 阅读缩放 | 不渲染 raw HTML、不加载远程图片；无语义反馈 UI |
+| 阅读 | 原生 Markdown、行内等宽代码、离线语法高亮/复制/长行横滚、必要证据警告、文末元信息与来源；100–200% 阅读缩放 | 不渲染 raw HTML、不加载远程图片；无语义反馈 UI |
 | 连接设计 | 品牌放在表单标题上方；共享背景；220 ms 透明度切换，方法切换无布局插值 | 工作台和列表底栏无品牌；不把局部空态动效扩到连接按钮 |
 | 设置 | 外观、账户、关于；完整 GPL 和第三方声明 sheet | 来源/偏好/关注/通知/反馈/导出删除页面后续 |
 | 同步 | 12 秒轮询 changes 提示，upsert 刷新/到达高亮，手动刷新，内存保留已加载内容 | 无正文磁盘缓存、SSE、持久离线 mutation、完整 snapshot 重放；静默轮询失败待完善 |
+| App 图标 | 正式品牌矢量生成 SVG/1024 PNG/多尺寸 ICNS，构建绑定 CFBundleIconFile | macOS 标准外观，非 iOS 图标或动态深色图标 |
 | 开源材料 | [公开仓库](https://github.com/backrunner/melted)、GPL-3.0-or-later、贡献/安全/第三方声明、原生截图 README | 无 App Store 例外、无已发布公证二进制或生产服务 |
 
 本机开发样例由服务端管理 CLI import-demo 导入，带 is_demo=true；App 无加载样例入口或种子端点。样例不是模型输出，不证明 AI 质量。全部本机 Node/PG/workerd 与服务端测试通过 Apple Container，Swift 原生构建。
@@ -46,6 +47,7 @@
 - [认证，2026-10-16](validation/2026-10-16/authentication.md)：服务器协商方式与特定原生登录操作。
 - [品牌与切页，2026-10-16](validation/2026-10-16/brand-position.md)：位置/无主界面品牌/短淡化及当时构建。
 - [仓库准备，2026-10-17](validation/2026-10-17/publication.md)：本地测试/最终构建、原生亮暗截图与长许可操作；该记录不覆盖全页面矩阵。
+- [App 图标与代码，2026-10-17](validation/2026-10-17/code-and-icon.md)：资产/高亮/构建测试与原生亮暗预验收，锁屏后未完成的场景单列。
 - [设计文档同步，2026-10-17](validation/2026-10-17/design-documentation.md)：文档/资产一致性与源码核对，不是新的运行验收。
 
 所有历史记录保留当时事实；最新源码状态与旧截图不同处以差异清单说明。没有 GitHub Actions 工作流，不把本地检查称为远端 CI；未验证 iCloud Keychain 实体设备同步、最低系统和完整 VoiceOver，不把 Apple Development 签名称为 Developer ID 公证发行。

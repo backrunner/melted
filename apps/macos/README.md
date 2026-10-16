@@ -1,6 +1,6 @@
 # macOS 客户端
 
-SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.0](../../.agents/11-ui-design-system.md)，颜色、尺寸和动效以 [tokens.json](../../.agents/design/tokens.json) 为源。
+SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.1](../../.agents/11-ui-design-system.md)，颜色、尺寸和动效以 [tokens.json](../../.agents/design/tokens.json) 为源。
 
 ## 模块边界
 
@@ -44,3 +44,5 @@ sh scripts/build-macos.sh
 在本目录执行 `swift test`，覆盖启动恢复去重、登录去重、右键目标和取消阅读任务。共享包测试在 `../apple/Packages/MeltedKit` 执行 `swift test`。根目录 `scripts/check.sh` 会运行两组测试以及构建、设计和服务端检查。测试使用隔离的 UserDefaults 与 actor stub，不读写真实钥匙串。
 
 真实窗口和签名证据按构建与日期保留：见 [品牌与切页](../../.agents/validation/2026-10-16/brand-position.md)、[开源准备](../../.agents/validation/2026-10-17/publication.md)及[完整证据索引](../../.agents/13-design-review.md)。
+
+App 图标来自 [正式资产](../../assets/app-icon/README.md)，构建复制 ICNS 并设置 CFBundleIconFile。Markdown 代码使用系统等宽字体与自定义亮暗语法色；HighlightSwift 的 SwiftPM 资源包放入 Contents/Resources，完整第三方许可随包。修改品牌后运行 swift scripts/generate-app-icon.swift，静态检查使用 --check。

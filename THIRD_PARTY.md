@@ -18,5 +18,7 @@ Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolve
 | @types/node / @types/pg | 24.19.2 / 8.23.1 | 类型声明 | MIT |
 | swift-markdown | 0.7.3 | Markdown AST | Apache-2.0 with Swift exception |
 | swift-cmark | 0.9.0 | Markdown parser | 运行时 MIT/BSD 通知；测试规范另有 CC-BY-SA 声明 |
+| HighlightSwift | 1.1.0 | 离线代码语法高亮，原生 AttributedString | MIT |
+| highlight.js（由 HighlightSwift 捆绑） | 11.9.0 | 代码语言识别与 token 着色 | BSD-3-Clause |
 
-Node 镜像保留 node_modules 中的上游许可文件；macOS 开发包保留 swift-markdown LICENSE 与 swift-cmark COPYING。传递依赖与 Linux 基础镜像的软件包仍需正式发行时按实际产物生成完整清单。系统 SwiftUI、AppKit、Security、CryptoKit 和 AuthenticationServices 由 Apple SDK 提供。旧 Go/Argon2/pgx 依赖已删除。
+Node 镜像保留 node_modules 中的上游许可文件；macOS 开发包保留 swift-markdown LICENSE、swift-cmark COPYING、HighlightSwift 和 highlight.js 的完整许可。代码仅作为字符串交给捆绑高亮器，不执行正文代码，不请求远端语法/字体。传递依赖与 Linux 基础镜像的软件包仍需正式发行时按实际产物生成完整清单。系统 SwiftUI、AppKit、Security、CryptoKit 和 AuthenticationServices 由 Apple SDK 提供。旧 Go/Argon2/pgx 依赖已删除。

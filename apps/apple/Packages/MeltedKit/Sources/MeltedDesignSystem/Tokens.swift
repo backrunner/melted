@@ -14,6 +14,22 @@ public struct MeltedPalette {
     public var separator: Color { Color(meltedHex: dark ? "504B43" : "E2DED7") }
     public var warning: Color { Color(meltedHex: dark ? "DABB7D" : "835512") }
     public var danger: Color { Color(meltedHex: dark ? "EFA599" : "A33E35") }
+    public var codeKeyword: Color { Color(meltedHex: dark ? "C5A4BD" : "80516E") }
+    public var codeString: Color { Color(meltedHex: dark ? "D3AD8C" : "88513B") }
+    public var codeNumber: Color { Color(meltedHex: dark ? "D3BB8C" : "7C5A27") }
+    public var codeType: Color { Color(meltedHex: dark ? "9FBED0" : "3B6378") }
+    public var codeComment: Color { Color(meltedHex: dark ? "B1A79A" : "756D63") }
+    public var codeHighlightCSS: String {
+        """
+        .hljs{color:\(dark ? "#F1EBE0" : "#2F2B27")}
+        .hljs-comment,.hljs-quote{color:\(dark ? "#B1A79A" : "#756D63")}
+        .hljs-keyword,.hljs-selector-tag,.hljs-doctag,.hljs-meta{color:\(dark ? "#C5A4BD" : "#80516E")}
+        .hljs-string,.hljs-regexp,.hljs-addition,.hljs-template-tag{color:\(dark ? "#D3AD8C" : "#88513B")}
+        .hljs-number,.hljs-literal,.hljs-symbol,.hljs-bullet{color:\(dark ? "#D3BB8C" : "#7C5A27")}
+        .hljs-title,.hljs-type,.hljs-built_in,.hljs-attr,.hljs-attribute,.hljs-name,.hljs-selector-id,.hljs-selector-class{color:\(dark ? "#9FBED0" : "#3B6378")}
+        .hljs-subst{color:inherit}
+        """
+    }
     private let dark: Bool
     public init(_ scheme: ColorScheme) { dark = scheme == .dark }
 }
@@ -74,6 +90,16 @@ public enum MeltedLibraryStatus {
     public static let horizontalInset: CGFloat = 24
     public static let verticalInset: CGFloat = 10
     public static let markSize: CGFloat = 16
+}
+
+public enum MeltedCode {
+    public static let inset: CGFloat = 16
+    public static let headerHeight: CGFloat = 36
+    public static let cornerRadius: CGFloat = 10
+    public static let lineSpacing: CGFloat = 4
+    public static let borderWidth: CGFloat = 1
+    public static let inlineSize: CGFloat = 14
+    public static let labelSize: CGFloat = 11
 }
 
 public enum MeltedMotion {

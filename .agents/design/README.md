@@ -1,11 +1,12 @@
 # 设计资源与组件索引
 
-更新：2026-10-17。当前规范为 [UI v1.0](../11-ui-design-system.md)，[Apple 客户端](../06-apple-clients.md)解释页面/状态和后续能力，[复核](../13-design-review.md)记录源码差异与证据。不要将旧原型里的可点击控件理解成现有 App 能力。
+更新：2026-10-17。当前规范为 [UI v1.1](../11-ui-design-system.md)，[Apple 客户端](../06-apple-clients.md)解释页面/状态和后续能力，[复核](../13-design-review.md)记录源码差异与证据。不要将旧原型里的可点击控件理解成现有 App 能力。
 
 ## 当前视觉与资产
 
 - [视觉参考 HTML](reference.html)：本地、无外部依赖，展示真实原生截图、成对颜色与当前规则；主题选择只改变文档外观，不改变静态截图。
-- [tokens.json](tokens.json)：颜色、macOS 布局/阅读/连接指标和 iOS 目标；脚本生成 Swift。version=6 是数值版本，与 UI 文档 v1.0 无需同号。status 保留保守的 design-baseline-not-runtime-verified，含义是整套 token 尚未完成全部运行矩阵，不否定已记录的特定原生截图。
+- [tokens.json](tokens.json)：颜色、macOS 布局/阅读/连接指标和 iOS 目标；脚本生成 Swift。version=7 是数值版本，与 UI 文档 v1.1 无需同号。status 保留保守的 design-baseline-not-runtime-verified，含义是整套 token 尚未完成全部运行矩阵，不否定已记录的特定原生截图。
+- [App 图标](../../assets/app-icon/README.md)：原始 m 与共享 palette 生成 SVG、1024 PNG、ICNS，构建显式绑定。
 - [品牌原始标识](../../assets/brand/mark.svg)：由 [品牌生成器](../../scripts/generate-brand-assets.py)生成 Swift 路径与亮暗 lockup，禁止替换为近似字符或 emoji。
 - [浅色阅读](../../assets/screenshots/reader-light.png)、[深色阅读](../../assets/screenshots/reader-dark.png)、[连接入口](../../assets/screenshots/landing-light.png)：2026-10-17 README 原生截图，实际开发样例，不是模型质量样本。
 - [品牌位置截图与操作](../validation/2026-10-16/brand-position.md)、[法律窗口](../validation/2026-10-17/publication.md)：按记录的构建与场景引用。
@@ -26,6 +27,7 @@
 | [SearchPalette](../../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) / [MeltedFilterChip](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedFilterChip.swift) | 查询面板与条件状态 | 面板圆角 14、建议区最大高 280、条件高 24；当前缺主窗口挂载 |
 | [ReadingHeader](../../apps/macos/Sources/Melted/Features/Reading/ReadingHeader.swift) / [ReadingMetadata](../../apps/macos/Sources/Melted/Features/Reading/ReadingMetadata.swift) | 标题/时间/收藏与文末字段 | 标题 24，正文宽≤720，信息字号 12；窄处重排 |
 | [ReadingEvidence](../../apps/macos/Sources/Melted/Features/Reading/ReadingEvidence.swift) | 状态与编号来源 | 普通状态文末，风险前置，切文收起，无大卡片 |
+| [ReadingCodeBlock](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingCodeBlock.swift) / [CodeHighlighting](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/CodeHighlighting.swift) | 原生代码与离线语法高亮 | 13 pt monospaced、10 pt 圆角、16 pt inset、36 pt 语言/复制栏；未知/超大回退原文 |
 | [ReadingMarkdown](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingMarkdown.swift) | 原生文档 | readingMetricsPt，长表/代码局部横滚，raw HTML/远程图禁用 |
 | [MeltedNotice](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedNotice.swift) / [EmptyState](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/EmptyState.swift) / [LoadingState](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/LoadingState.swift) | 真实失败、无内容和加载 | 轻底色与文字、按需操作；空态最大宽约 320，避免用假成功占位 |
 | [SettingsView](../../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift) / [AboutSettings](../../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) | 外观、账户、关于与法律 sheet | 设置宽 520；法律 sheet 640×520，长文滚动/选择 |
@@ -43,6 +45,7 @@
 python3 .agents/skills/melted-guard/scripts/check_design.py --repo .
 python3 scripts/generate-design-tokens.py --check
 python3 scripts/generate-brand-assets.py --check
+swift scripts/generate-app-icon.swift --check
 git diff --check
 ```
 
@@ -50,4 +53,4 @@ git diff --check
 
 ## 历史探索
 
-[早期复核](history/2026-10-14-design-review.md)与[原型 v0.6](history/reference-v0.6.html)保留网页交互和旧手机方案。reference-*.jpg 八张图片仍放在本目录，具体测量解释在历史复核。旧原型的六组设置、反馈、缓存提示、时间筛选和手机操作不代表当前实现，不能覆盖 UI v1.0。
+[早期复核](history/2026-10-14-design-review.md)与[原型 v0.6](history/reference-v0.6.html)保留网页交互和旧手机方案。reference-*.jpg 八张图片仍放在本目录，具体测量解释在历史复核。旧原型的六组设置、反馈、缓存提示、时间筛选和手机操作不代表当前实现，不能覆盖 UI v1.1。

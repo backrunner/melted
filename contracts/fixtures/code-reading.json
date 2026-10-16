@@ -1,0 +1,72 @@
+{
+  "terms": [
+    {
+      "id": "cat_culture",
+      "kind": "category",
+      "name": "文化"
+    },
+    {
+      "id": "cat_life",
+      "kind": "category",
+      "name": "生活"
+    },
+    {
+      "id": "cat_work",
+      "kind": "category",
+      "name": "工作"
+    },
+    {
+      "id": "cat_reference",
+      "kind": "category",
+      "name": "资料"
+    },
+    {
+      "id": "tag_reading",
+      "kind": "tag",
+      "name": "阅读"
+    },
+    {
+      "id": "tag_city",
+      "kind": "tag",
+      "name": "城市"
+    },
+    {
+      "id": "tag_photo",
+      "kind": "tag",
+      "name": "摄影"
+    },
+    {
+      "id": "sub_weekend",
+      "kind": "subject",
+      "name": "周末安排"
+    }
+  ],
+  "documents": [
+    {
+      "id": "demo_code_reading",
+      "schema_version": 1,
+      "revision": 1,
+      "kind": "item",
+      "content_kind": "reference",
+      "title": "代码也应该好好阅读",
+      "summary": "代码排版开发样例：等宽字体、语法高亮、缩进和长行，保持与正文一致的阅读节奏。",
+      "markdown": "行内代码如 `let title = \"阅读\"` 和 `com.alkinum.melted` 使用等宽字体。下面的内容只是排版样例，不会执行。\n\n## 保留代码本来的结构\n\n```swift\n// 注释、中文和缩进都保留\nstruct Reading {\n    let title = \"一个安静的下午\"\n    let minutes = 20\n    func open() { print(title) }\n}\n```\n\n```ts\nconst reading = { title: \"文化与生活\", minutes: 20 };\nconsole.log(reading.title);\n```\n\n## 长行与未知语言\n\n```json\n{\"title\": \"把资料留到下次阅读\", \"description\": \"这是用于检查局部横向滚动的长行，阅读窗口缩窄或文字放大时也应该保留完整文本\", \"saved\": true, \"minutes\": 20}\n```\n\n```melted-unknown\n    未知语言仍保留原文、缩进和等宽字体\n```\n",
+      "updated_at": "2026-10-17T00:00:00Z",
+      "published_at": null,
+      "category_id": "cat_reference",
+      "tag_ids": [
+        "tag_reading"
+      ],
+      "subject_ids": [],
+      "evidence_status": "not_applicable",
+      "evidence": [],
+      "state": {
+        "read": false,
+        "saved": false,
+        "hidden": false,
+        "version": 1
+      },
+      "is_demo": true
+    }
+  ]
+}
