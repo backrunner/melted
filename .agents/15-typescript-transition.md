@@ -1,15 +1,17 @@
 # TypeScript 服务端与统一搜索迁移
 
-更新：2026-10-15。当前用户指令取代此前 Go、独立下拉筛选与不使用分类胶囊的设计选择。本文件在实施期间记录范围；运行结果另写验收记录。
+首次迁移：2026-10-15；现状同步：2026-10-17。当前用户指令取代此前 Go、独立下拉筛选与不使用分类胶囊的设计选择。本文件在实施期间记录范围；运行结果另写验收记录。
 
-## 本轮范围
+## 迁移范围与后续修订
 
 - 完成阅读详情与 Markdown 精修；去掉空态末尾句号；分类采用轻量胶囊。
 - 隐藏可见窗口标题“资讯”，保留全部/未读/收藏；搜索和分类/标签/关注合并成 Spotlight 式面板，设置位于右侧。
 - TypeScript + Hono 共享应用，Node.js 24 LTS 与 Cloudflare Workers 独立入口。自托管使用 PostgreSQL，Cloudflare 使用 SQLite Durable Objects，无外部数据库依赖。
-- 客户端默认 P-256 凭据挑战登录；私钥按 origin/server_id 存入可同步 Keychain，短期会话留在当前设备。预留并实现可配置 OIDC 浏览器登录（Authorization Code + PKCE），不依赖邮件密码作为默认入口。
+- 迁移初期以 P-256 挑战登录为入口；随后 ADR-017 改为服务器协商 methods/preferred，可用密码、API Key、浏览器或身份密钥。仅在启用 key 时使用按 origin/server_id 隔离的可同步 Keychain，短期会话留在设备；不假定所有服务器都有同一默认方式。
 - 保留现有所有权、分页快照、幂等、refresh 轮换、changes 提交顺序；旧数据库先备份，再通过增量 SQL 迁移。
 - Node Dockerfile/Compose、自托管运行文档、Workers 配置与插件预检；本机服务、数据库和 Workers 模拟器均通过 Apple Container 运行。
+
+当前 UI 以 [11 v1.0](11-ui-design-system.md)为准：品牌移到连接表单标题上方，工作台无品牌，连接仅短淡化，文末字段/来源与三组设置替代早期原型。搜索面板组件存在但主窗口未挂载，见 [当前复核](13-design-review.md)。本文件的部署迁移不代表 UI 全项验收。
 
 ## 框架与平台边界
 
@@ -31,7 +33,7 @@ SQLite DO 单行受平台上限约束，快照按独立文档行保存而不是�
 
 Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库、Redis、S3 或 VPS。外部来源、可选 OIDC/AI provider 属业务连接，密码、API Key、密钥登录与阅读不依赖它们；方法由服务器声明，详见 [认证配置](../server/docs/authentication.md)。
 
-服务器启用密钥登录时，凭据证明私钥持有权，不能证明 Apple 身份。[可同步 Keychain](https://developer.apple.com/documentation/security/ksecattrsynchronizable)随用户已启用的 iCloud Keychain 同步；普通客户端无法读取 Apple 账号作为服务器身份凭证。真实 Apple 身份须配置 Sign in with Apple / 对应 OIDC。不同服务器使用不同密钥，不能跨服务器关联。正式签名、共享 access group 和实体设备上的同步必须另验收；本机 ad-hoc 构建不等于 iCloud 同步已验证。
+服务器启用密钥登录时，凭据证明私钥持有权，不能证明 Apple 身份。[可同步 Keychain](https://developer.apple.com/documentation/security/ksecattrsynchronizable)随用户已启用的 iCloud Keychain 同步；普通客户端无法读取 Apple 账号作为服务器身份凭证。真实 Apple 身份须配置 Sign in with Apple / 对应 OIDC。不同服务器使用不同密钥，不能跨服务器关联。正式签名、共享 access group 和实体设备上的同步必须另验收；当前本机采用 Apple Development 签名，仍不等于 iCloud 同步已验证；固定 Bundle ID 为 com.alkinum.melted。
 
 浏览器登录由 [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) 发起；固定回调、state、nonce、PKCE、一次性短期授权码和 issuer/audience 验证缺一不可。身份关联使用 issuer + subject，不根据相同邮箱自动合并账户。未配置提供方时不显示可用的浏览器登录。
 

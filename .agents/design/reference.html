@@ -1,200 +1,31 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; base-uri 'none'; form-action 'none'">
-<title>Melted 资讯界面</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Melted · 当前设计参考</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:var(--canvas,#F7F6F3);color:var(--text,#2F2B27);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-button,input,select,textarea,summary{accent-color:var(--accent)}
-button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-button:disabled{cursor:default;opacity:.55}
-button{color:inherit}
-svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
-header.sheet-head,main.sheet{max-width:1320px;margin:auto;padding:32px}
-header.sheet-head{padding-bottom:20px}
-h1{font-size:22px;font-weight:600;letter-spacing:0;margin:8px 0}
-header.sheet-head p{color:var(--secondary);margin:0;max-width:800px}
-.controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:24px}
-.controls label{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--secondary)}
-select{border:1px solid var(--secondary);border-radius:6px;padding:5px 8px;background:var(--surface);color:var(--text)}
-.sheet{padding-top:0!important}
-.stage{padding:4px 4px 20px}
-.app{container-type:inline-size;container-name:app;max-width:1120px;height:760px;margin:auto;border:1px solid var(--separator);border-radius:12px;box-shadow:0 8px 28px #3527190a;overflow:hidden;display:flex;flex-direction:column;background:var(--surface)}
-.app.compact{width:680px}
-.app.mobile{width:var(--ios-width);max-width:100%;height:var(--ios-height);border-radius:20px}
-.head{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;padding:12px 20px;min-height:64px;border-bottom:1px solid var(--separator)}
-.brand{flex:none;font-size:18px;font-weight:600;letter-spacing:-.02em}
-.searchbox{display:flex;align-items:center;gap:8px;margin-left:auto;width:240px;min-width:160px;flex:1;max-width:280px;border:1px solid var(--secondary);border-radius:7px;padding:4px 10px;background:var(--canvas);color:var(--secondary)}
-.searchbox input{min-width:0;width:100%;border:0;outline:none;background:transparent;color:var(--text);font-size:13px}
-.searchbox:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.icon-button,.quiet{border:0;background:transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:4px 6px;min-height:32px;min-width:32px;color:var(--accent);border-radius:6px}
-.header-back{display:none}
-.filterbar{display:flex;align-items:center;gap:12px;flex:none;min-width:0}
-.filterbar .filter-compact,.view-menu,.search-toggle{display:none}
-.result-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:0 20px 8px}
-.result-actions:has(button:not([hidden])){display:flex}
-.result-actions:not(:has(button:not([hidden]))){display:none}
-.views{display:flex;gap:2px;border-radius:7px;padding:3px;background:var(--canvas)}
-.views button{border:0;border-radius:5px;min-height:30px;padding:3px 16px;font-size:13px;background:transparent;color:var(--secondary)}
-.views button[aria-pressed=true]{background:var(--selection);color:var(--text);font-weight:600}
-.facets{display:flex;gap:8px;align-items:center}
-.facet{display:flex;gap:8px;align-items:center;border:0;border-radius:6px;padding:4px 8px;min-height:32px;background:transparent;color:var(--secondary);font-size:13px}
-.facet.active{color:var(--accent)}
-.facet{max-width:120px}
-.facet-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.facet .chevron{width:12px;height:12px;stroke-width:1.4}
-.clear{font-size:12px}
-.filterbar .quiet{font-size:12px}
-.body{flex:1;min-height:0;display:grid;grid-template-columns:320px minmax(0,1fr)}
-.list-panel{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--separator);background:var(--canvas)}
-.list-heading{display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px 8px;gap:12px}
-.list-heading h2{font-size:17px;margin:0;font-weight:600}
-.list-heading span{font-size:12px;color:var(--secondary)}
-.query-note{display:flex;gap:4px 12px;flex-wrap:wrap;font-size:12px;color:var(--secondary);padding:0 20px 12px}
-.rows{overflow:auto;flex:1;padding:0 8px 16px}
-.date-group{font-size:12px;font-weight:500;color:var(--secondary);margin:16px 12px 8px}
-.row{display:block;width:100%;padding:14px 12px;margin:4px 0;border:0;border-radius:8px;text-align:left;background:transparent;color:var(--text)}
-.row[aria-pressed=true]{background:var(--selection)}
-.row:hover:not([aria-pressed=true]){background:var(--surface)}
-.row-title{min-height:21px;display:flex;align-items:flex-start;gap:8px}
-.row-title strong{font-size:14px;line-height:1.5;font-weight:400;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.row p{min-height:40.3px;font-size:13px;line-height:1.55;color:var(--secondary);margin:8px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.row[data-unread=true] .row-title strong{font-weight:600}
-.row-meta span{min-width:0;overflow-wrap:anywhere}
-.row-meta time{flex:none}
-.row-meta{display:flex;align-items:baseline;justify-content:space-between;gap:16px;color:var(--secondary);font-size:12px}
-.list-empty{padding:40px 12px;text-align:center;color:var(--secondary)}
-.list-empty strong{display:block;color:var(--text);font-size:15px;font-weight:500;margin-bottom:8px}
-.reading{overflow:auto;min-width:0;background:var(--surface)}
-.reader-tools{min-height:52px;padding:10px 32px;border-bottom:1px solid var(--separator);display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--secondary);font-size:12px}
-.reader-tools button{font-size:12px}
-.content{max-width:784px;margin:auto;padding:32px;overflow-wrap:anywhere}
-.content h2{font-size:calc(24px * var(--zoom));font-weight:600;line-height:1.4;letter-spacing:-.025em;margin:0 0 16px}
-.meta{font-size:12px;color:var(--secondary);margin:0 0 32px}
-.content-info{display:grid;gap:8px;margin:28px 0 0;font-size:12px;color:var(--secondary)}
-.content-info>div{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:baseline}
-.content-info dt,.content-info dd{margin:0}
-.content-info dd{display:flex;gap:16px;flex-wrap:wrap}
-.content-info button{border:0;background:transparent;color:var(--accent);font-size:inherit;padding:2px 0;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:.5px}
-.copy{font-size:calc(16px * var(--zoom));line-height:1.7}
-.copy p{margin:0 0 20px}
-.copy h3{font-size:calc(17px * var(--zoom));font-weight:600;margin:28px 0 12px}
-.copy ul{padding-left:1.25em;margin:0 0 24px}
-.copy li{margin:8px 0}
-.subtle{color:var(--secondary)}
-.evidence{margin-top:24px;padding:16px 0;border-top:1px solid var(--separator);font-size:13px}
-.evidence summary{cursor:pointer;color:var(--accent);padding:4px 0}
-.evidence p{color:var(--secondary);margin:12px 0 0}
-.evidence strong{color:var(--text);font-weight:500}
-.evidence time{display:block;font-size:12px;color:var(--secondary)}
-.actions{display:flex;gap:8px;align-items:center;margin:24px 0 8px}
-.actions button{border:1px solid var(--secondary);color:var(--text);border-radius:6px;background:var(--surface);padding:5px 12px;min-height:32px;min-width:64px}
-.actions button[aria-pressed=true]{background:var(--selection)}
-.feedback-status{font-size:12px;color:var(--secondary);min-height:20px}
-.read-empty{display:grid;place-content:center;min-height:100%;padding:32px;text-align:center;color:var(--secondary)}
-.read-empty h2{font-size:17px;font-weight:500;color:var(--text)}
-.banner{background:var(--canvas);border-bottom:1px solid var(--separator);padding:8px 20px;color:var(--secondary);font-size:12px}
-.legend{font-size:12px;color:var(--secondary);margin:12px 4px 0}
-dialog{background:var(--surface);color:var(--text);border:1px solid var(--separator);border-radius:12px;padding:24px;width:420px;max-width:calc(100vw - 32px);max-height:85vh;box-shadow:0 12px 60px #0003}
-dialog::backdrop{background:#0003}
-.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
-.dialog-head h2{font-size:20px;font-weight:600;margin:0}
-.dialog-head button{min-height:36px}
-.field{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:16px;margin:14px 0}
-.field label{font-size:13px;color:var(--secondary)}
-.field select{width:100%;min-width:0}
-.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
-.dialog-actions button,.feedback-choice{border:1px solid var(--secondary);background:var(--surface);border-radius:6px;padding:6px 14px;min-height:36px}
-.dialog-actions .primary{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
-.feedback-choice{display:block;text-align:left;width:100%;margin:8px 0}
-.settings-row{display:grid;grid-template-columns:100px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--separator);font-size:13px}
-.settings-row>span:first-child{color:var(--secondary)}
-.settings-values{display:grid;gap:6px}
-.settings-caption{font-size:12px;color:var(--secondary);margin-top:20px}
-.settings-section{width:100%;margin-bottom:12px}
-.app.mobile .head{padding:10px 20px;gap:12px}
-.app.mobile .brand{font-size:20px}
-.app.mobile .head{gap:8px}
-.app.mobile .filterbar{flex:1;gap:8px}
-.app.mobile .view-menu{min-height:44px;font-size:17px;max-width:150px}
-.app.mobile .facet{min-height:44px;font-size:15px;padding:4px 8px}
-.app.mobile .search-toggle{margin-left:auto}
-.app.mobile .settings{margin-left:0}
-.app.mobile .icon-button,.app.mobile .quiet{min-width:44px;min-height:44px}
-.app.mobile .rows{padding:0 8px 16px}
-.app.mobile .row-title{min-height:25.5px}
-.app.mobile .row-title strong{font-size:17px}
-.app.mobile .row p{font-size:14px;min-height:43.4px}
-.app.mobile .row-meta{font-size:13px}
-.app.mobile .content{padding:24px 20px 32px}
-.app.mobile .copy{font-size:calc(17px * var(--zoom))}
-.app.mobile .content h2{letter-spacing:0}
-.app.mobile .reader-tools{padding:4px 20px}
-.app.mobile .reader-tools button,.app.mobile .actions button{font-size:17px;min-height:44px}
-.app.mobile .meta,.app.mobile .content-info,.app.mobile .evidence{font-size:13px}
-.app.mobile .content-info button{min-height:44px;min-width:44px;text-align:left;font-size:13px}
-.app.mobile .content-info>div{align-items:center}
-.app.mobile .evidence summary{padding:10px 0;min-height:44px}
-
-html[data-platform=mobile] dialog{width:358px}
-html[data-platform=mobile] dialog button,html[data-platform=mobile] dialog select{min-height:44px;min-width:44px}
-
-@container app (max-width:1059px){.facets{display:none}.filterbar .filter-compact{display:inline-flex}}
-@container app (max-width:859px){.body{display:block}
-.list-panel{height:100%;border-right:0}.reading{display:none;height:100%}
-.app.detail-open .list-panel,.app.detail-open .filterbar,.app.detail-open .searchbox,.app.detail-open .search-toggle{display:none}
-.app.detail-open .reading{display:block}.app.detail-open .header-back{display:inline-flex}
-.app.detail-open .brand{display:inline}.app.detail-open .settings{margin-left:auto}
-}
-@container app (max-width:599px){.head .brand{display:none}.views,.head .searchbox{display:none}
-.view-menu{display:block;min-height:44px;border:0;background:transparent;font-weight:600;padding:4px 0;max-width:150px}
-.search-toggle{display:inline-flex}.filterbar{flex:1;gap:12px}.head{gap:8px}
-.app.detail-open .brand{display:inline}
-}
-@media(max-width:750px){header.sheet-head,main.sheet{padding:20px}
-.app,.app.compact{width:100%;max-width:100%}
-.content{padding:24px}.reader-tools{padding:8px 24px}
-}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}
-}
-
-[hidden]{display:none!important}
+:root{color-scheme:light;--canvas:#F7F6F3;--surface:#FDFDFB;--text:#2F2B27;--secondary:#66605A;--accent:#79603F;--selection:#EDEAE4;--separator:#E2DED7}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}main{max-width:1080px;margin:auto;padding:48px 32px 80px}header{display:flex;justify-content:space-between;align-items:start;gap:24px}h1{font-size:28px;line-height:1.3;margin:8px 0 12px;font-weight:600}h2{font-size:20px;line-height:1.4;margin:0 0 16px}h3{font-size:16px;margin:0 0 8px}p{margin:0 0 16px}.muted,figcaption,.meta{color:var(--secondary);font-size:13px}.meta{margin:0}a{color:var(--accent);text-underline-offset:4px}a:hover{text-decoration-thickness:2px}a:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}select{font:inherit;font-size:13px;color:var(--text);background:var(--surface);padding:6px;border:1px solid var(--secondary);border-radius:8px}label{display:grid;gap:6px;font-size:13px;color:var(--secondary);flex-shrink:0}nav{display:flex;gap:12px 24px;flex-wrap:wrap;margin:24px 0 32px;font-size:14px}section{padding-top:32px;margin-top:32px;border-top:1px solid var(--separator)}figure{margin:20px 0 28px}figure img{width:100%;height:auto;display:block;border:1px solid var(--separator);border-radius:12px}figcaption{margin-top:8px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}.pair figure{margin:0}.rules{display:grid;grid-template-columns:140px 1fr;gap:12px 24px;margin:0}.rules dt{font-weight:600}.rules dd{margin:0}.colors{display:grid;grid-template-columns:1fr 1fr;gap:24px}.swatches{list-style:none;padding:0;margin:0}.swatches li{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;font-size:13px}.swatch{display:block;width:28px;height:28px;border:1px solid var(--secondary);border-radius:6px}code{font-family:ui-monospace,monospace;font-size:.86em}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;vertical-align:top;padding:12px;border-bottom:1px solid var(--separator)}th{font-weight:600}details{margin-top:20px}summary{cursor:pointer;color:var(--accent);width:fit-content}footer{padding-top:24px;margin-top:48px;border-top:1px solid var(--separator)}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--canvas:#232220;--surface:#2C2A27;--text:#F1EBE0;--secondary:#BFB5A7;--accent:#D6BA92;--selection:#403A32;--separator:#504B43}}
+@media(max-width:700px){main{padding:24px 20px 48px}header{flex-wrap:wrap}.pair,.colors{grid-template-columns:1fr}.rules{grid-template-columns:1fr;gap:4px}.rules dd{margin-bottom:16px}h1{font-size:24px}}
 </style>
 </head>
 <body>
-<header class="sheet-head"><h1>Melted 资讯界面</h1><p>2026-10-14 早期设计参考。最新统一搜索和分类胶囊以原生构建及 UI 规范为准。</p>
-<div class="controls" aria-label="设计参考控制">
-<label>平台 <select id="platform"><option value="desktop">Desktop</option><option value="mobile">Mobile（390）</option></select></label>
-<label>外观 <select id="theme"><option value="light">浅色</option><option value="dark">深色</option></select></label>
-<label>窗口 <select id="width"><option value="wide">宽窗</option><option value="compact">窄窗（680）</option></select></label>
-<label>阅读字号 <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
-<label>状态 <select id="state"><option value="ready">已更新</option><option value="partial">部分来源失败</option><option value="offline">离线</option></select></label>
-</div></header>
-<main class="sheet"><div class="stage"><section class="app detail-open" id="app" aria-label="Melted 资讯工作台设计示意">
-<header class="head"><button class="quiet header-back" id="back">‹ 返回结果</button><span class="brand">Melted</span>
-<div class="filterbar" id="filterbar" aria-label="内容筛选">
-<select class="view-menu" id="view-menu" aria-label="资讯视图"><option value="all">全部资讯</option><option value="unread">未读资讯</option><option value="saved">收藏资讯</option></select><div class="views" role="group" aria-label="快捷视图"><button data-view="all" aria-pressed="true">全部</button><button data-view="unread" aria-pressed="false">未读</button><button data-view="saved" aria-pressed="false">收藏</button></div>
-<div class="facets"><button aria-haspopup="dialog" class="facet" id="category-button" data-field="category">分类 <svg class="chevron" aria-hidden="true" viewBox="0 0 12 12"><path d="m3 4.5 3 3 3-3"/></svg></button><button aria-haspopup="dialog" class="facet" id="tag-button" data-field="tag">标签 <svg class="chevron" aria-hidden="true" viewBox="0 0 12 12"><path d="m3 4.5 3 3 3-3"/></svg></button><button aria-haspopup="dialog" class="facet" id="subject-button" data-field="subject">关注 <svg class="chevron" aria-hidden="true" viewBox="0 0 12 12"><path d="m3 4.5 3 3 3-3"/></svg></button></div>
-<button aria-haspopup="dialog" class="facet filter-compact" id="filters-button" data-field="category">筛选</button></div>
-
-<label class="searchbox"><svg aria-hidden="true" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5.5"/><path d="m12 12 3.5 3.5"/></svg><input type="search" id="search" placeholder="搜索整理后的内容" aria-label="搜索整理后的内容"></label>
-<button class="icon-button search-toggle" id="search-toggle" aria-label="搜索资讯" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5.5"/><path d="m12 12 3.5 3.5"/></svg></button>
-<button class="icon-button settings" id="settings" aria-label="设置" title="设置"><svg aria-hidden="true" viewBox="0 0 18 18"><path d="M7.4 2h3.2l.4 1.6 1.3.8 1.6-.4 1.6 2.8-1.2 1.2v1.6l1.2 1.2-1.6 2.8-1.6-.4-1.3.8-.4 1.6H7.4L7 14l-1.3-.8-1.6.4-1.6-2.8 1.2-1.2V8L2.5 6.8 4.1 4l1.6.4L7 3.6Z"/><circle cx="9" cy="9" r="2.4"/></svg></button></header>
-<div class="banner" id="banner" role="status" hidden></div>
-<div class="body"><section class="list-panel" aria-label="内容结果"><div class="list-heading"><h2>资讯</h2><span id="result-count"></span></div><div class="query-note" id="query-note" hidden></div><div class="result-actions"><button class="quiet clear" id="clear" hidden>清除筛选</button><button class="quiet" id="run" hidden>立即获取</button></div><div class="rows" id="rows"></div></section>
-<section class="reading" aria-label="阅读详情"><div id="read-empty" class="read-empty" hidden><div><h2>选择一条内容开始阅读</h2><p>内容会显示在这里。</p></div></div><div id="document"><div class="reader-tools"><time id="updated"></time><button class="quiet" id="save" aria-pressed="false">收藏</button></div><article class="content"><h2 id="title"></h2><p class="meta" id="meta"></p><div class="copy" id="copy"></div><dl class="content-info"><div><dt>分类</dt><dd><button id="content-category"></button></dd></div><div><dt>标签</dt><dd id="content-tags"></dd></div></dl><details class="evidence" id="evidence"><summary>查看依据</summary><div id="evidence-body"></div></details><div class="actions"><button id="helpful" aria-pressed="false">有用</button><button id="feedback">反馈…</button></div><div class="feedback-status" id="feedback-status" role="status" aria-live="polite"></div></article></div></section></div>
-</section></div>
-<p class="legend">设计参考，使用虚构内容。筛选与收藏只在当前页面演示，未连接服务器；各筛选维度演示单选，正式方案支持多选。</p></main>
-<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-head"><h2 id="search-title">搜索资讯</h2><button class="quiet" data-close="search-dialog">完成</button></div><input type="search" id="search-mobile" aria-label="搜索整理后的资讯" placeholder="搜索整理后的资讯" style="width:100%;min-height:44px;padding:8px;border:1px solid var(--secondary);border-radius:6px;background:var(--canvas);color:var(--text)"></dialog>
-<dialog id="filters-dialog" aria-labelledby="filters-title"><div class="dialog-head"><h2 id="filters-title">筛选内容</h2><button class="quiet" data-close="filters-dialog" aria-label="关闭筛选">关闭</button></div><div class="field"><label for="filter-category">分类</label><select id="filter-category"></select></div><div class="field"><label for="filter-tag">标签</label><select id="filter-tag"></select></div><div class="field"><label for="filter-subject">关注</label><select id="filter-subject"></select></div><div class="field"><label for="filter-time">时间</label><select id="filter-time"><option value="all">全部时间</option><option value="today">今天</option><option value="week">近 7 天</option></select></div><p class="settings-caption">不同条件同时满足。关注主题的创建和计划在“设置 → 兴趣与偏好”。</p><div class="dialog-actions"><button id="reset-dialog">重置</button><button class="primary" id="apply-filters">应用筛选</button></div></dialog>
-<dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-head"><h2 id="settings-title">设置</h2><button class="quiet" data-close="settings-dialog" aria-label="关闭设置">关闭</button></div><select class="settings-section" id="settings-section" aria-label="设置分组"><option>兴趣与偏好</option><option>来源与整理</option><option>外观</option><option>通知</option><option>反馈记录</option><option>账户与数据</option></select><div id="settings-content"></div><p class="settings-caption">分组布局示意。尚未连接真实服务；外观可在本页试用。</p></dialog>
-<dialog id="feedback-dialog" aria-labelledby="feedback-title"><div class="dialog-head"><h2 id="feedback-title">你希望怎样调整？</h2><button class="quiet" data-close="feedback-dialog" aria-label="关闭反馈">关闭</button></div><button class="feedback-choice" data-feedback="少看此类">少看此类</button><button class="feedback-choice" data-feedback="需要更多细节">需要更多细节</button><button class="feedback-choice" data-feedback="内容有误">内容有误</button></dialog>
-<script id="design-tokens" type="application/json">
-{
+<main>
+<header><div><p class="meta">Melted · UI v1.0 · 2026-10-17</p><h1>安静、温暖的原生阅读</h1><p class="muted">当前设计参考：真实截图、共享颜色与页面规则</p></div><label for="theme">文档外观<select id="theme"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></label></header>
+<nav aria-label="设计文档导航"><a href="../11-ui-design-system.md">完整 UI 规范</a><a href="README.md">资源与组件</a><a href="../13-design-review.md">实现差异与证据</a><a href="#palette">配色</a><a href="#states">页面与状态</a></nav>
+<p>正文是视觉中心。暖纸白与暖炭灰共用相同层级，褐色只用于必要操作；布局依靠文字、留白和边线，保留原生窗口与控件行为。</p>
+<p class="muted">本页是设计文档，不模拟 App 功能。图片来自已有 macOS 原生构建，内容为公开开发样例；浏览器外观只改变文档，静态截图保持原色。iOS、完整离线与 AI 处理尚未交付。</p>
+<section aria-labelledby="reading"><h2 id="reading">资讯工作台</h2><dl class="rules"><dt>窗口</dt><dd>无导航侧栏、无品牌条，隐藏可见“资讯”标题；宽窗双栏，窄窗列表进入详情</dd><dt>操作</dt><dd>全部 / 未读 / 收藏与最右设置；有条件才显示摘要，不另占筛选行</dd><dt>正文</dt><dd>标题、时间与收藏，必要证据警告；正文后以字段排列分类、标签、关注与依据</dd></dl>
+<div class="pair"><figure><a href="../../assets/screenshots/reader-light.png"><img src="../../assets/screenshots/reader-light.png" alt="浅色原生工作台：左侧分组列表，右侧暖白阅读正文，无顶部品牌" loading="lazy"></a><figcaption>浅色阅读 · 2026-10-17 原生截图</figcaption></figure><figure><a href="../../assets/screenshots/reader-dark.png"><img src="../../assets/screenshots/reader-dark.png" alt="深色原生工作台：暖炭灰环境，米白正文，褐色分类和收藏强调" loading="lazy"></a><figcaption>深色阅读 · 同一设计语言</figcaption></figure></div></section>
+<section aria-labelledby="connection"><h2 id="connection">连接与服务器确认</h2><p>Wordmark 位于表单标题上方，与字段左边线对齐。边缘融化背景保留中央留白；连接后工作台及列表底栏不再展示品牌。</p><p>连接切步只做 220 ms 淡化，登录方式切换关闭布局插值。输入框和按钮保持同列同宽，避免弹簧、水平滑动或错峰进入造成“飞过”。</p><figure><a href="../../assets/screenshots/landing-light.png"><img src="../../assets/screenshots/landing-light.png" alt="Melted 标识位于从这里开始阅读标题上方，下方是服务器地址和连接按钮" loading="lazy"></a><figcaption>连接入口 · 2026-10-17 原生截图；最大内容宽 440 pt，边距 32 pt</figcaption></figure><details><summary>查看服务器确认与深色入口</summary><div class="pair"><figure><img src="../validation/2026-10-16/brand-position/confirmation-light.png" alt="原生服务器确认页：运营者、信任选择与登录操作，品牌在同一表单列" loading="lazy"><figcaption>服务器确认 · 2026-10-16 品牌位置验收</figcaption></figure><figure><img src="../validation/2026-10-16/brand-position/landing-dark.png" alt="暖炭灰主题下的连接表单和低强度融化边缘" loading="lazy"><figcaption>深色连接 · 对应记录中的构建</figcaption></figure></div></details></section>
+<section aria-labelledby="palette"><h2 id="palette">成对语义颜色</h2><p class="muted">直接读取本页内嵌 tokens.json；静态不透明颜色对通过不代表材质、透明度或原生辅助设置已通过</p><div id="palettes" class="colors"></div></section>
+<section aria-labelledby="states"><h2 id="states">页面与状态基线</h2><div class="table-wrap"><table><thead><tr><th scope="col">范围</th><th scope="col">规则</th><th scope="col">当前边界</th></tr></thead><tbody><tr><th scope="row">搜索</th><td>统一输入、分类/标签/关注建议；清条件保留 view</td><td>已有组件和命令状态，主窗口尚未挂载面板</td></tr><tr><th scope="row">依据</th><td>文末按需展开编号来源，风险前置</td><td>没有独立反馈按钮或大核验卡</td></tr><tr><th scope="row">设置</th><td>外观、账户、关于；原生 grouped Form</td><td>来源、偏好、通知、反馈等是后续页面</td></tr><tr><th scope="row">空态 / 失败</th><td>区分无内容、未读空、收藏空、无匹配；提示与操作就地展示</td><td>已加载内容留内存，不称完整离线缓存</td></tr><tr><th scope="row">字号 / 窗口</th><td>阅读 16 pt，100–200%；最小窗口 680×520 pt</td><td>200% 阅读不等于界面全局缩放或 iOS Dynamic Type</td></tr><tr><th scope="row">动效</th><td>选择 120 ms、hover 160 ms，减少动态时冻结/关闭</td><td>旧 page spring 不用于连接流程</td></tr></tbody></table></div><details><summary>查看法律文本的原生证据</summary><div class="pair"><figure><img src="../validation/2026-10-17/publication/license-dark.png" alt="深色原生法律 sheet 显示完整 GNU GPL 第三版文本" loading="lazy"><figcaption>完整 GPL · 可滚动选择，具体操作见验收记录</figcaption></figure><figure><img src="../validation/2026-10-17/publication/third-party-light.png" alt="浅色原生第三方声明 sheet，使用 Markdown 表格显示依赖及许可证" loading="lazy"><figcaption>第三方声明 · 复用原生 Markdown</figcaption></figure></div></details></section>
+<footer><p class="muted">完整页面矩阵、VoiceOver、最低系统与 iOS 尚未全项验收。当前实现差异见<a href="../13-design-review.md">设计复核</a>；旧浏览器测量与手机探索保存在<a href="history/2026-10-14-design-review.md">历史报告</a>和<a href="history/reference-v0.6.html">原型 v0.6</a>，不作为当前原生能力证明。</p></footer>
+</main>
+<script id="design-tokens" type="application/json">{
   "version": 6,
   "status": "design-baseline-not-runtime-verified",
   "themes": {
@@ -375,148 +206,14 @@ html[data-platform=mobile] dialog button,html[data-platform=mobile] dialog selec
     "verticalInset": 10,
     "markSize": 16
   }
-}
-</script>
-<script id="sample-items" type="application/json">[
-  {
-    "id": "workshop",
-    "title": "周末摄影工作坊改到下午",
-    "summary": "时间有调整，地点不变。报名截止时间延后了一天。",
-    "category": "生活",
-    "tags": [
-      "摄影",
-      "周末"
-    ],
-    "subject": "摄影",
-    "time": "14:20",
-    "day": "今天",
-    "date": "2026-10-14",
-    "kind": "安排更新",
-    "meta": "依据主办方通知整理",
-    "copy": "<p>周六的摄影工作坊调整为 <strong>14:00–16:00</strong>，地点仍是河畔艺术空间。</p><p>报名截止时间从周四延至周五 18:00。已经报名的人无需重新提交。</p><h3>现场安排</h3><p>现场提供基础器材，也可以自带相机。</p><p>户外拍摄安排尚未确认。主办方会在活动前一天通知。</p>",
-    "evidence": "<p><strong>主办方更新</strong><time>10 月 14 日</time><br>示例原文：“活动改至 14:00 开始，报名延至周五 18:00。”</p><p><strong>报名说明</strong><time>10 月 12 日</time><br>示例原文：“活动地点为河畔艺术空间。已报名者无需再次提交。”</p><p>两条内容来自同一主办方，不构成独立佐证。此处仅演示依据呈现。</p>",
-    "unread": true,
-    "saved": false,
-    "updated": "今天 14:20 更新"
-  },
-  {
-    "id": "team",
-    "title": "下周协作安排",
-    "summary": "例会移到周二，评审材料仍在周一提交。",
-    "category": "工作",
-    "tags": [
-      "协作"
-    ],
-    "subject": "工作安排",
-    "time": "11:30",
-    "day": "今天",
-    "date": "2026-10-14",
-    "kind": "工作消息",
-    "meta": "来自你提交的团队通知",
-    "copy": "<p>下周例会调整到<strong>周二 10:00</strong>。评审材料仍在<strong>周一 18:00 前</strong>提交。</p><h3>这次的变化</h3><p>会议延后一天，材料截止时间不变。会上先过待确认事项，再讨论后续分工。</p>",
-    "evidence": "<p><strong>团队通知</strong><br>示例原文：“例会移至周二上午十点，材料仍请周一十八点前提交。”</p><p>按授权消息整理，未自动执行日历操作。</p>",
-    "unread": true,
-    "saved": false,
-    "updated": "今天 11:30 更新"
-  },
-  {
-    "id": "book",
-    "title": "本月想读的三本书",
-    "summary": "从阅读清单中留下三本，按城市、自然与日常观察整理。",
-    "category": "资料",
-    "tags": [
-      "阅读"
-    ],
-    "subject": "阅读",
-    "time": "09:10",
-    "day": "今天",
-    "date": "2026-10-14",
-    "kind": "清单整理",
-    "meta": "来自个人阅读清单",
-    "copy": "<p>这份清单围绕三个兴趣：城市里的生活、自然观察，以及普通人的日常记录。</p><h3>阅读顺序</h3><p>先读篇幅较短的日常记录，再看城市观察，最后把自然主题留给周末。</p><p class=\"subtle\">这是根据你提交的笔记整理的阅读安排，不是对书籍质量的客观排名。</p>",
-    "evidence": "<p>示例资料是一份私人清单，只保留原有主题与阅读意图。</p>",
-    "unread": false,
-    "saved": true,
-    "updated": "今天 09:10 更新"
-  },
-  {
-    "id": "city",
-    "title": "阅读笔记：如何观察一座城市",
-    "summary": "从街道尺度、步行节奏和公共空间三个角度整理。",
-    "category": "资料",
-    "tags": [
-      "城市",
-      "阅读"
-    ],
-    "subject": "城市漫步",
-    "time": "13:45",
-    "day": "昨天",
-    "date": "2026-10-13",
-    "kind": "资料整理",
-    "meta": "来自你导入的阅读笔记",
-    "copy": "<p>这份笔记把城市观察分成三个尺度：街道、步行路线和人们愿意停留的地方。</p><h3>值得保留的三个角度</h3><ul><li><strong>街道尺度：</strong>观察建筑与路面之间的空间怎样被使用。</li><li><strong>步行节奏：</strong>记录在哪些地方会自然放慢脚步。</li><li><strong>公共空间：</strong>留意座椅、遮阴和人与人的距离。</li></ul><p class=\"subtle\">以上是阅读提纲，保留笔记作者的观察角度，不作普遍结论。</p>",
-    "evidence": "<p><strong>你导入的笔记</strong><br>示例片段：“从街道尺度、步行节奏、公共空间记录这次散步。”</p><p>这是个人观察，没有改写成已经证实的事实。</p>",
-    "unread": true,
-    "saved": true,
-    "updated": "昨天 13:45 更新"
-  },
-  {
-    "id": "museum",
-    "title": "展览开放时间延长至周日傍晚",
-    "summary": "周末场次增加，预约入口与入场规则保持不变。",
-    "category": "文化",
-    "tags": [
-      "展览",
-      "周末"
-    ],
-    "subject": "城市漫步",
-    "time": "10:00",
-    "day": "昨天",
-    "date": "2026-10-13",
-    "kind": "活动消息",
-    "meta": "依据展览公告整理",
-    "copy": "<p>展览周日开放时间延长至 <strong>18:00</strong>。预约方式与原入场规则保持不变。</p><p class=\"subtle\">此处是界面虚构示例，没有对应的真实活动。</p>",
-    "evidence": "<p>虚构示例公告：“周日延长开放至十八点，预约规则不变。”</p>",
-    "unread": false,
-    "saved": false,
-    "updated": "昨天 10:00 更新"
-  }
-]</script>
+}</script>
 <script>
-const el=id=>document.getElementById(id),tokens=JSON.parse(el('design-tokens').textContent),items=JSON.parse(el('sample-items').textContent),app=el('app');
-const initialFilter=()=>({view:'all',category:'',tag:'',subject:'',time:'all'});let filters=initialFilter(),selected=items[0].id,query='',visible=[];
-const escapeText=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function colors(){for(const [key,value] of Object.entries(tokens.themes[el('theme').value]))document.documentElement.style.setProperty('--'+key,value);document.documentElement.style.colorScheme=el('theme').value;}
-function current(){return items.find(item=>item.id===selected);}
-function renderReader(reset=false){const item=current();el('document').hidden=!item;el('read-empty').hidden=!!item;if(!item)return;for(const key of ['title','meta','updated'])el(key).textContent=item[key];el('content-category').textContent=item.category;el('content-category').onclick=()=>{filters.category=item.category;applyQuery();app.classList.remove('detail-open');};el('copy').innerHTML=item.copy;el('evidence-body').innerHTML=item.evidence;el('content-tags').replaceChildren(...item.tags.map(tag=>{const node=document.createElement('button');node.textContent=tag;node.setAttribute('aria-label','筛选标签：'+tag);node.addEventListener('click',()=>{filters.tag=tag;applyQuery();app.classList.remove('detail-open');});return node;}));el('save').textContent=item.saved?'已收藏':'收藏';el('save').setAttribute('aria-pressed',String(item.saved));el('helpful').setAttribute('aria-pressed',String(!!item.helpful));if(reset){el('evidence').open=false;el('feedback-status').textContent='';document.querySelector('.reading').scrollTop=0;}}
-function renderList(preserveScroll=true){
-  const scrollTop=preserveScroll?el('rows').scrollTop:0;
-  el('rows').replaceChildren();
-  el('result-count').textContent=(el('state').value==='offline'?'缓存中有 ':'')+visible.length+' 条';
-  const conditions=[filters.category&&'分类：'+filters.category,filters.tag&&'标签：'+filters.tag,filters.subject&&'关注：'+filters.subject,filters.time!=='all'&&'时间：'+(filters.time==='today'?'今天':'近 7 天'),query&&'搜索：'+query].filter(Boolean);
-  el('query-note').hidden=!conditions.length;el('query-note').replaceChildren(...conditions.map(text=>{const field=document.createElement('span');field.textContent=text;return field;}));
-  let day='';
-  for(const item of visible){
-    if(item.day!==day){day=item.day;const group=document.createElement('h3');group.className='date-group';group.textContent=day;el('rows').append(group);}
-    const row=document.createElement('button');row.className='row';row.dataset.unread=String(item.unread);
-    row.setAttribute('aria-pressed',String(item.id===selected));
-    row.setAttribute('aria-label',[item.title,item.unread?'未读':'已读',item.saved?'已收藏':'',item.summary.replace(/[。.!]$/,''),item.category,item.time].filter(Boolean).join('，'));
-    row.innerHTML='<div class="row-title"><strong>'+escapeText(item.title)+'</strong></div><p>'+escapeText(item.summary)+'</p><div class="row-meta"><span>'+escapeText(item.category)+'</span><time datetime="'+item.date+'T'+item.time+'">'+item.time+'</time></div>';
-    row.addEventListener('click',()=>{selected=item.id;renderList();app.classList.add('detail-open');renderReader(true);});el('rows').append(row);
-  }
-  if(!visible.length){const empty=document.createElement('div');empty.className='list-empty';empty.innerHTML='<strong>没有匹配的内容</strong><p>试试清除筛选，或换个搜索词。</p>';const button=document.createElement('button');button.className='quiet';button.textContent='清除筛选';button.onclick=clearFilters;empty.append(button);el('rows').append(empty);}
-  el('rows').scrollTop=scrollTop;
-}
-function applyQuery(preserveScroll=false){visible=items.filter(item=>(filters.view!=='unread'||item.unread)&&(filters.view!=='saved'||item.saved)&&(!filters.category||item.category===filters.category)&&(!filters.tag||item.tags.includes(filters.tag))&&(!filters.subject||item.subject===filters.subject)&&(filters.time==='all'||(filters.time==='today'?item.date==='2026-10-14':item.date>='2026-10-08'&&item.date<='2026-10-14'))&&(!query||(item.title+' '+item.summary+' '+item.copy.replace(/<[^>]*>/g,'')+' '+item.tags.join(' ')).toLowerCase().includes(query.toLowerCase())));if(selected&&!visible.some(item=>item.id===selected)){selected=null;app.classList.remove('detail-open');}document.querySelectorAll('[data-view]').forEach(button=>button.setAttribute('aria-pressed',String(filters.view===button.dataset.view)));for(const [field,name] of [['category','分类'],['tag','标签'],['subject','关注']]){el(field+'-button').innerHTML='<span class="facet-label">'+escapeText(filters[field]?name+'：'+filters[field]:name)+'</span>'+'<svg class="chevron" aria-hidden="true" viewBox="0 0 12 12"><path d="m3 4.5 3 3 3-3"/></svg>';el(field+'-button').classList.toggle('active',!!filters[field]);}el('view-menu').value=filters.view;el('clear').hidden=filters.view==='all'&&!filters.category&&!filters.tag&&!filters.subject&&filters.time==='all';el('run').hidden=!filters.subject;renderList(preserveScroll);renderReader();}
-function clearFilters(){filters=initialFilter();applyQuery();}
-function setState(){const state=el('state').value;el('banner').hidden=state==='ready';el('banner').textContent=state==='partial'?'部分来源暂时无法更新。已有内容仍可阅读。':'已离线。最近更新于 14:20，搜索和筛选仅覆盖本机缓存。';renderList();}
-function platform(){const mobile=el('platform').value==='mobile';app.classList.toggle('mobile',mobile);document.documentElement.dataset.platform=mobile?'mobile':'desktop';el('width').disabled=mobile;if(mobile||el('width').value==='compact')app.classList.remove('detail-open');else if(selected)app.classList.add('detail-open');}
-function settings(){const section=el('settings-section').value;const rows={'兴趣与偏好':[['阅读偏好','保留具体时间与不同观点，减少重复和营销表达。'],['关注主题',['摄影','城市漫步','阅读','工作安排']],['获取计划','在这里管理主题目标、来源范围与定时。']],'来源与整理':[['内容来源','RSS、授权链接与主动导入'],['处理与格式','模型能力、传输去向、Markdown / 静态 HTML']],'通知':[['提醒方式','普通更新合并；重要变化按偏好提醒。'],['静默时间','在这里统一配置通知与每日限额。']],'反馈记录':[['处理进度','查看已接收、排队、已应用和撤销的反馈。']],'账户与数据':[['当前服务器','我的服务器（示例）'],['账户与渠道','服务器切换、登录、输出渠道'],['数据管理','导出、缓存、删除账户与清理进度']]};el('settings-content').replaceChildren();if(section==='外观'){const row=document.createElement('div');row.className='field';row.innerHTML='<label for="settings-theme">外观</label><select id="settings-theme"><option value="light">浅色</option><option value="dark">深色</option></select>';el('settings-content').append(row);el('settings-theme').value=el('theme').value;el('settings-theme').onchange=()=>{el('theme').value=el('settings-theme').value;colors();};const note=document.createElement('p');note.className='settings-caption';note.textContent='原生 App 默认跟随系统，并可手动选择；此处演示两种配色。';el('settings-content').append(note);}else for(const [label,value] of rows[section]){const row=document.createElement('div');row.className='settings-row';row.innerHTML='<span>'+escapeText(label)+'</span><span class="settings-values">'+(Array.isArray(value)?value:[value]).map(text=>'<span>'+escapeText(text)+'</span>').join('')+'</span>';el('settings-content').append(row);}}
-for(const field of ['category','tag','subject']){const values=[...new Set(items.flatMap(item=>field==='tag'?item.tags:[item[field]]))];el('filter-'+field).innerHTML='<option value="">不限</option>'+values.map(value=>'<option>'+escapeText(value)+'</option>').join('');}
-document.querySelectorAll('[data-field]').forEach(button=>button.onclick=()=>{for(const field of ['category','tag','subject','time'])el('filter-'+field).value=filters[field];el('filters-dialog').showModal();el('filter-'+button.dataset.field).focus();});
-el('apply-filters').onclick=()=>{for(const field of ['category','tag','subject','time'])filters[field]=el('filter-'+field).value;el('filters-dialog').close();applyQuery();};el('reset-dialog').onclick=()=>{for(const field of ['category','tag','subject'])el('filter-'+field).value='';el('filter-time').value='all';};
-document.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>{filters.view=button.dataset.view;applyQuery();});el('search').oninput=()=>{query=el('search').value.trim();el('search-mobile').value=el('search').value;applyQuery();};el('search-mobile').oninput=()=>{el('search').value=el('search-mobile').value;query=el('search-mobile').value.trim();applyQuery();};el('search-toggle').onclick=()=>{el('search-mobile').value=el('search').value;el('search-dialog').showModal();el('search-mobile').focus();};el('view-menu').onchange=()=>{filters.view=el('view-menu').value;applyQuery();};el('clear').onclick=clearFilters;el('back').onclick=()=>{app.classList.remove('detail-open');};el('settings').onclick=()=>{settings();el('settings-dialog').showModal();};el('settings-section').onchange=settings;document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>el(button.dataset.close).close());
-el('save').onclick=()=>{const item=current();if(!item)return;item.saved=!item.saved;applyQuery(true);if(current())el('feedback-status').textContent='演示：'+(item.saved?'已加入收藏。':'已取消收藏。');};el('helpful').onclick=()=>{const item=current();if(!item)return;item.helpful=!item.helpful;renderReader();el('feedback-status').textContent=el('state').value==='offline'?'演示：已保存在本机，联网后同步。':'演示：反馈已记录，尚未应用到偏好。';};el('feedback').onclick=()=>el('feedback-dialog').showModal();document.querySelectorAll('[data-feedback]').forEach(button=>button.onclick=()=>{el('feedback-status').textContent=el('state').value==='offline'?'演示：已保存在本机，联网后同步。':'演示：已收到“'+button.dataset.feedback+'”，尚未应用到偏好。';el('feedback-dialog').close();});el('run').onclick=()=>{el('banner').hidden=false;el('banner').textContent='设计演示：此处会立即获取“'+filters.subject+'”的新内容；本页未连接真实来源。';};
-el('theme').onchange=colors;el('state').onchange=setState;el('platform').onchange=platform;el('width').onchange=()=>{app.classList.toggle('compact',el('width').value==='compact');platform();};el('zoom').onchange=()=>app.style.setProperty('--zoom',el('zoom').value);
-document.documentElement.style.setProperty('--ios-width',tokens.iosLayoutPt.referenceWidth+'px');document.documentElement.style.setProperty('--ios-height',tokens.iosLayoutPt.referenceHeight+'px');app.style.setProperty('--zoom','1');colors();applyQuery();setState();platform();
-</script></body></html>
+'use strict';
+const tokens=JSON.parse(document.getElementById('design-tokens').textContent);
+const picker=document.getElementById('theme');
+function applyTheme(){const theme=picker.value;if(theme==='system'){document.documentElement.removeAttribute('data-theme');document.documentElement.style.colorScheme='';for(const key of Object.keys(tokens.themes.light))document.documentElement.style.removeProperty('--'+key);}else{document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;for(const [key,value] of Object.entries(tokens.themes[theme]))document.documentElement.style.setProperty('--'+key,value);}}
+picker.addEventListener('change',applyTheme);
+for(const [theme,colors] of Object.entries(tokens.themes)){const group=document.createElement('div');const heading=document.createElement('h3');heading.textContent=theme==='light'?'浅色':'深色';group.append(heading);const list=document.createElement('ul');list.className='swatches';for(const [name,value] of Object.entries(colors)){const row=document.createElement('li');const swatch=document.createElement('span');swatch.className='swatch';swatch.style.backgroundColor=value;swatch.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=name;const code=document.createElement('code');code.textContent=value;row.append(swatch,label,code);list.append(row);}group.append(list);document.getElementById('palettes').append(group);}
+</script>
+</body>
+</html>

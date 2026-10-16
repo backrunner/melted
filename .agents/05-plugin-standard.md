@@ -1,5 +1,7 @@
 # 插件标准草案 v1
 
+更新：2026-10-17。插件执行与模板属于后续能力；当前仅部署预检已实现，原生正文呈现边界与 [UI v1.0](11-ui-design-system.md)一致。
+
 ## 运行形态
 
 自托管支持后续独立进程 HTTP/JSON；Cloudflare 只接受明确声明兼容的 Worker module 或 HTTPS 远程实现，不运行宿主进程、文件系统/原生扩展或任意 WASM 宿主能力。插件版本和协议版本分别管理。独立进程不是自动沙箱，安全隔离需真实操作系统/容器权限；首期只有管理员可安装可执行插件。
@@ -83,7 +85,7 @@ memory 条目稳定 ID、TTL/反馈引用、用户与记录级删除、幂等重
 
 插件可改处理内容与建议，不能绕过身份/所有权、用户传输同意、预算、输出安全和审计。可降低核验深度但必须如实标注范围，不得直接写“已证实”绕开 evidence 规则。Markdown/HTML 都经 host sanitizer。
 
-normalize/extract 可输出通用 InformationUnit，事件聚类与外部核验按内容性质选用；`not_applicable` 是明确产物，不是插件失败。模板只控制正文允许的结构与样式，不能修改原生 App 导航、按钮、字号设置、证据标识或权限提示。主题和渲染边界见 [UI 规范](11-ui-design-system.md)。
+normalize/extract 可输出通用 InformationUnit，事件聚类与外部核验按内容性质选用；`not_applicable` 是明确产物，不是插件失败。静态 HTML 模板仍未接入当前 App。后续模板只控制正文允许的结构与样式，不能修改原生 App 导航、按钮、字号设置、证据标识或权限提示；使用共享亮暗 palette 与阅读宽度，不注入品牌条、背景融化、反馈按钮或大核验卡。主题和渲染边界见 [UI 规范](11-ui-design-system.md)。
 
 失败策略 `stop|skip_optional|use_last_valid`；后者限不影响真实性/权限且有新鲜度限制的阶段，不复用过期证据或别的用户结果。失败断路，管理员可停用/回滚。
 

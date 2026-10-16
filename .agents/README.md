@@ -1,12 +1,14 @@
 # Melted 项目设计
 
-设计日期：2026-10-13 至 2026-10-15（Asia/Singapore）。状态：设计作为实施基线；已开始 TypeScript/macOS 基础版本实现，具体范围与证据见 [实施记录](14-implementation-status.md)。
+更新：2026-10-17。当前基线为 **UI v1.0：暖纸白 / 暖炭灰的原生阅读器**。已依据现有 SwiftUI 组件、品牌位置和原生截图统一规范；已实现、目标、历史证据分开记录，具体范围见 [实施记录](14-implementation-status.md)。
 
 Melted 是个人信息工作台：服务端持续获取和处理信息，用户在原生应用或其他渠道收到经过整理、有证据边界的内容。首期实现 TypeScript 服务端和 Swift macOS 应用，后续加入 iOS。
 
 已确认：产品处理通用信息，首批向开源极客推广；开发者与独立创业者是其中的一部分，不限定其信息主题。先纯开源、验证价值，后续再商业化；保留完整自托管。2026-10-15 用户确认 GPL-3.0-or-later，见根目录 [LICENSE](../LICENSE)；本次不添加 App Store 分发例外。
 
-UI 要求已确认：素雅、有设计感、品质感和现代感，遵循 Apple HIG；采用明亮、温暖的阅读器米白色系，不用绿色，保持对齐、间距和控件排列整齐。desktop/mobile 共享设计语言，同时适配亮暗主题；无导航侧栏，设置集中到标题栏最右侧入口，窗口隐藏可见“资讯”标题，内容语义仍为资讯，收藏/分类/标签/关注筛选并入标题栏，不单独占一行；空间不足时使用筛选面板。避免装饰性 indicator、圆点拼接元信息和模板化 AI 文案，通过排版、留白和对齐保持设计感。视觉与交互以 11 为实施基线，工程约定以 12 为准；具体 token 数值是可验证、可调整的初始选择。
+当前视觉与交互：连接表单标题上方显示 Melted wordmark，连接步骤短淡化；工作台不展示品牌、无导航侧栏、隐藏可见“资讯”标题。原生 toolbar 提供全部/未读/收藏、有效条件摘要与最右设置；统一搜索设计使用菜单/⌘F，但当前面板挂载存在源码缺口。阅读详情使用轻量时间/收藏工具行、稳定正文、文末字段与按需展开来源；风险证据状态前置。设置目前只开放外观、账户、关于，其他页面是后续目标。详见 [UI 规范](11-ui-design-system.md)与[当前复核](13-design-review.md)。
+
+[视觉参考](design/reference.html)展示现有原生截图，[设计资源索引](design/README.md)解释 token、品牌和组件来源。iOS 共享设计语言但尚未实现；不以旧手机网页作为原生交付。
 
 ## 阅读顺序
 
@@ -17,18 +19,18 @@ UI 要求已确认：素雅、有设计感、品质感和现代感，遵循 Appl
 | [03-ai-pipeline-and-quality.md](03-ai-pipeline-and-quality.md) | 多模态、去重、求真、Jev、偏好和记忆 |
 | [04-api-and-data-contracts.md](04-api-and-data-contracts.md) | 账号、摄取、数据模型、同步、Subject 接口 |
 | [05-plugin-standard.md](05-plugin-standard.md) | 插件类型、进程协议、授权、失败和兼容性 |
-| [06-apple-clients.md](06-apple-clients.md) | macOS 页面、离线、Markdown/HTML、iOS 预留 |
+| [06-apple-clients.md](06-apple-clients.md) | 当前页面/组件、同步边界、未来业务页与 iOS |
 | [07-apns-apple-and-license.md](07-apns-apple-and-license.md) | APNs 可行性、自托管、审核及 GPL 分发 |
 | [08-delivery-plan-and-validation.md](08-delivery-plan-and-validation.md) | 工作拆解、依赖、验收与真实运行证据 |
 | [09-market-and-business.md](09-market-and-business.md) | 首批市场、差异、开源增长、商业候选和实验 |
 | [10-decisions-and-risks.md](10-decisions-and-risks.md) | 架构决策、开放问题与风险优先级 |
-| [11-ui-design-system.md](11-ui-design-system.md) | Apple HIG 映射、视觉 token、布局/交互/状态、原生验收 |
+| [11-ui-design-system.md](11-ui-design-system.md) | 当前配色/品牌/组件/动效、差异、页面验收矩阵 |
 | [12-development-standards.md](12-development-standards.md) | TypeScript/Swift、契约、AI、权限、验证与提交约定 |
-| [13-design-review.md](13-design-review.md) | 设计阶段全量审阅、已修正问题、剩余验证边界 |
+| [13-design-review.md](13-design-review.md) | 当前源码核对、设计差异、原生/历史证据索引 |
 | [14-implementation-status.md](14-implementation-status.md) | 已实现能力、阶段状态、后续顺序及原生验证 |
 | [15-typescript-transition.md](15-typescript-transition.md) | TypeScript、双部署、身份与容器调试 |
 
-[melted-guard](skills/melted-guard/SKILL.md) 是后续开发入口；[早期设计参考页](design/reference.html)保留当时的外观/状态探索；最新原生交互以 11 和运行验收为准，[tokens.json](design/tokens.json)保存自定义视觉数值。
+[melted-guard](skills/melted-guard/SKILL.md) 是后续开发入口；[历史设计报告](design/history/2026-10-14-design-review.md)保留早期外观/状态探索；最新原生交互以 11 和带日期的运行验收为准，[tokens.json](design/tokens.json)保存自定义视觉数值。
 
 ## 核心设计建议
 
@@ -46,4 +48,4 @@ UI 要求已确认：素雅、有设计感、品质感和现代感，遵循 Appl
 
 “建议”是本次设计选择，未经用户确认的产品取舍不能当作已批准实现。“目标”是待验证验收线；价格和容量示例是预算假设。外部事实在对应段落附一手来源，查阅日期为 2026-10-13 至 2026-10-14，发行前应再检查。
 
-最初仓库为空且未初始化 Git。当前已有 TypeScript 服务端、PostgreSQL 与 SQLite DO 数据层、共享契约与 Swift 原生 macOS 阅读链路；M0–M5 的完整目标仍按实施记录逐项推进。每次任务重新检查实际文件与验证证据。
+当前已有 TypeScript 服务端、PostgreSQL 与 SQLite DO 数据层、共享契约与 Swift 原生 macOS 阅读链路；公开仓库与 GPL 材料已建立，M0–M5 的完整目标仍按实施记录逐项推进。每次任务重新检查实际文件与验证证据。

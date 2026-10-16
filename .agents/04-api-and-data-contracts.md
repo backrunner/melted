@@ -4,6 +4,8 @@
 
 协议不绑定信息主题。media kind 表达输入格式，content kind 表达消息/资料/陈述等性质，topic/tag 来自可配置标签体系；主题不是硬编码技术枚举。即使没有 Subject，输入也可以按全局偏好整理和交付。
 
+更新：2026-10-17。当前 UI 映射见 [06](06-apple-clients.md)和 [11](11-ui-design-system.md)。下文发现示例描述目标能力，不是当前服务端实际启用值；当前必须由 discovery 返回真实 capability。
+
 ## 发现、信任、登录
 
 匿名 `GET /.well-known/melted` 返回 server_id、运营者、同 origin 的 api_base、协议范围、注册策略、能力、限制、privacy URL、处理目的地版本。服务器自述符合标准不等于可信认证。
@@ -123,7 +125,9 @@ BriefingDocument 是协议内的通用输出封装，kind=item 可承载单条�
 
 ### 统一内容筛选契约
 
-FilterSelection 为 TypeScript/Swift 共用值对象：`view=all|unread|saved`、`q`、`category_ids[]`、`tag_ids[]`、`subject_ids[]`、`from/to`、`sort=updated_desc`。三个快捷视图互斥；搜索与各维度取交集，同一多选维度内部取并集，空数组表示不限制。缺省时间为全部；“今天”等快捷时间按账户时区展开为 UTC 左闭右开区间，跨日重新查询。此模型取代单独 `/v1/search` 的草案，避免搜索与浏览维护两套过滤语义。
+**当前子集**：Swift FilterSelection 为 view/q/categoryIds/tagIds/subjectIds，API 接受对应 snake_case 字段；时间、sort 选择和 facets 接口仍是目标。SearchPalette 组件已有多选交互，但主窗口未挂载，不能把查询 API 可用视为 App 搜索链路完成。当前整体清除 q 与三类 ID 保留 view；字段清除仅清 q。选择词表建议会清空当前 q，完整交互以 11 为准。
+
+**完整目标**：FilterSelection 为 TypeScript/Swift 共用值对象：`view=all|unread|saved`、`q`、`category_ids[]`、`tag_ids[]`、`subject_ids[]`、`from/to`、`sort=updated_desc`。三个快捷视图互斥；搜索与各维度取交集，同一多选维度内部取并集，空数组表示不限制。缺省时间为全部；“今天”等快捷时间按账户时区展开为 UTC 左闭右开区间，跨日重新查询。此模型取代单独 `/v1/search` 的草案，避免搜索与浏览维护两套过滤语义。
 
 内容输出附 `category_id?`、`tag_ids[]`、`subject_ids[]` 及词表 revision；分类/标签从可配置词表映射，模型不能伪造其他用户的 ID。Subject 是用户的持续目标，标签是内容属性；过滤关注内容不会创建订阅、增加采集权限或改变学习规则。默认分类不含固定技术职业限制。
 
@@ -132,6 +136,8 @@ FilterSelection 为 TypeScript/Swift 共用值对象：`view=all|unread|saved`�
 离线筛选/搜索仅覆盖缓存，界面说明“本机缓存”；不把缓存计数当服务器总量。收藏/阅读更新和 taxonomy/Subject 关系变化进入 changes，旧查询结果标记需刷新。隐藏内容默认排除；清除筛选不改正文、偏好或来源。UI 的唯一设置入口不合并 API 权限，各子功能保持原 owner/scope 校验。
 
 ## 同步与离线
+
+当前 API 已提供提交有序 changes 提示，macOS 以 12 秒轮询消费，正文仅留内存。以下 snapshot 落盘、SSE、持久离线重放是后续目标；当前轮询不完整应用远端删除/状态，不宣称完整跨设备复制。
 
 snapshot 返回账户一致快照和 high_watermark；分页绑定固定版本/短期 lease，不能翻页时漂移。完成后从该水位取 changes；changes 返回 upsert/delete/tombstone 与账户过滤的单调序号。
 

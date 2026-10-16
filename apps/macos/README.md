@@ -1,6 +1,6 @@
 # macOS 客户端
 
-SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI 规范](../../.agents/11-ui-design-system.md)，颜色、尺寸和动效以 [tokens.json](../../.agents/design/tokens.json) 为源。
+SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.0](../../.agents/11-ui-design-system.md)，颜色、尺寸和动效以 [tokens.json](../../.agents/design/tokens.json) 为源。
 
 ## 模块边界
 
@@ -17,7 +17,9 @@ SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI 规范]
 | `../apple/Packages/MeltedKit/Sources/MeltedDesignSystem` | 语义 token、Logo、列表行、底栏、连接按钮、错误和空状态 |
 | `../apple/Packages/MeltedKit/Sources/MeltedRendering` | Markdown 渲染及安全链接 |
 
-Features 通过状态和动作组合，不读取 Keychain、不创建 URLSession。阅读子组件接收文档、状态和回调；新页面优先复用这些组件。窗口只编排功能，不再内嵌整段列表、详情或登录表单。连接页统一使用 `ConnectionPage`；底栏使用列表的 `canvas` 色，不叠系统灰色材质。
+Features 通过状态和动作组合，不读取 Keychain、不创建 URLSession。阅读子组件接收文档、状态和回调；新页面优先复用这些组件。窗口只编排功能，不再内嵌整段列表、详情或登录表单。连接页统一使用 `ConnectionPage`；品牌放在连接表单标题上方，连接切步仅透明度变化；工作台和底栏不显示品牌。底栏使用列表的 `canvas` 色，不叠系统灰色材质。组件与实际尺寸见 [设计资源索引](../../.agents/design/README.md)。
+
+当前搜索组件与菜单命令已存在，但 WorkspaceView 尚未挂载 SearchPalette；同步只是 changes 提示轮询，无正文磁盘缓存。已知差异以 [当前设计复核](../../.agents/13-design-review.md)为准，勿根据组件文件宣称链路已完成。
 
 ## 固定开发签名
 
@@ -41,4 +43,4 @@ sh scripts/build-macos.sh
 
 在本目录执行 `swift test`，覆盖启动恢复去重、登录去重、右键目标和取消阅读任务。共享包测试在 `../apple/Packages/MeltedKit` 执行 `swift test`。根目录 `scripts/check.sh` 会运行两组测试以及构建、设计和服务端检查。测试使用隔离的 UserDefaults 与 actor stub，不读写真实钥匙串。
 
-真实窗口和签名证据见 [2026-10-15 验证记录](../../.agents/validation/2026-10-15/ui-modules.md)。
+真实窗口和签名证据按构建与日期保留：见 [品牌与切页](../../.agents/validation/2026-10-16/brand-position.md)、[开源准备](../../.agents/validation/2026-10-17/publication.md)及[完整证据索引](../../.agents/13-design-review.md)。

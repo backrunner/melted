@@ -36,7 +36,7 @@ Melted 是一个通用个人信息工作台。资料、消息、观点和兴趣�
 | | 当前能力 |
 | --- | --- |
 | **安静的阅读界面** | 原生 SwiftUI / AppKit 窗口，暖白与暖炭灰主题；支持 Markdown 标题、列表、引用、代码、表格和最高 200% 阅读字号。 |
-| **少一点寻找** | 全部、未读和收藏视图；通过 `⌘F` 在同一面板组合文本、分类、标签和关注条件。 |
+| **视图与筛选** | 全部、未读和收藏视图；文本/分类/标签/关注查询 API 与搜索面板组件已有，当前原生面板挂载仍待修复。 |
 | **保留判断依据** | 来源按需展开；有佐证、单一来源、尚未确认和存在不同说法分别呈现。客户端显示服务端提供的状态。 |
 | **选择你的服务器** | Node.js + PostgreSQL，或 Cloudflare Workers + SQLite Durable Objects，共用 API 契约和隔离测试。 |
 | **适配服务器的登录方式** | 支持服务器声明的账号密码、API Key、OIDC 浏览器或 P-256 身份密钥；密码和 API Key 只用于交换会话。 |
@@ -115,11 +115,11 @@ python3 scripts/dev.py exec npm run cli -- import-demo ACCOUNT_ID /workspace/con
 | 已有基础 | 后续计划 |
 | --- | --- |
 | 双部署、认证协商、多用户隔离 | 来源采集、持久任务与插件执行 |
-| 搜索筛选、阅读与收藏状态 | AI 整理、证据核验、偏好与记忆 |
+| 查询 API、阅读与收藏状态 | 原生搜索入口修复；AI 整理、核验、偏好与记忆 |
 | macOS 原生阅读器 | 正文磁盘缓存与完整离线同步 |
 | Swift 共享基础包 | iOS、可选 APNs 中继与发行准备 |
 
-搜索目前采用字面子串匹配。查询快照有效期为 5 分钟，上限为 2,000 条、8 MiB。阅读器不执行原始 HTML，也不自动加载远程图片。完整实施范围与验证记录见 [实施记录](.agents/14-implementation-status.md)。
+服务端搜索目前采用字面子串匹配；原生搜索入口的源码缺口见 [当前设计复核](.agents/13-design-review.md)。查询快照有效期为 5 分钟，上限为 2,000 条、8 MiB。阅读器不执行原始 HTML，也不自动加载远程图片。完整实施范围与验证记录见 [实施记录](.agents/14-implementation-status.md)。
 
 ## 开发与贡献
 
@@ -148,7 +148,7 @@ python3 scripts/dev.py down
 | `assets` | 品牌矢量资产与真实应用截图 |
 | `.agents` | 设计、开发约定和带日期的验证记录 |
 
-欢迎通过 [Issue](https://github.com/backrunner/melted/issues) 描述使用场景、问题和建议，也欢迎提交改进。开始前请阅读 [贡献指南](CONTRIBUTING.md)；客户端模块见 [macOS 工程说明](apps/macos/README.md)，设计入口见 [设计索引](.agents/README.md)。
+欢迎通过 [Issue](https://github.com/backrunner/melted/issues) 描述使用场景、问题和建议，也欢迎提交改进。开始前请阅读 [贡献指南](CONTRIBUTING.md)；客户端模块见 [macOS 工程说明](apps/macos/README.md)，设计入口见 [设计索引](.agents/README.md)、[当前 UI 规范](.agents/11-ui-design-system.md)与[视觉资源](.agents/design/README.md)。
 
 ## 许可
 
