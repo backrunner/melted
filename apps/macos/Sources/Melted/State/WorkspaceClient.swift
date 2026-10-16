@@ -11,7 +11,8 @@ protocol WorkspaceClient: Sendable {
     func credentialLogin(_ credential: LoginCredential) async throws -> String
     func browserStart(state: String, verifier: String) async throws -> URL
     func browserExchange(callback: URL, state: String, verifier: String) async throws -> String
-    func seedDevelopmentSamples() async throws
+    func syncAnchor() async throws -> Int
+    func syncChanges(after: Int) async throws -> SyncPage
     func taxonomy() async throws -> [Term]
     func list(_ filter: FilterSelection, cursor: String?) async throws -> BriefingPage
     func detail(_ id: String) async throws -> Briefing

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
+import MeltedCore
 import MeltedDesignSystem
 
 struct LandingView: View {
@@ -10,66 +11,39 @@ struct LandingView: View {
     private var palette: MeltedPalette { MeltedPalette(scheme) }
 
     var body: some View {
-        ConnectionPage {
-            MeltedWordmark()
-            VStack(alignment: .leading, spacing: MeltedReading.headingBodySpacing) {
-                Text("从这里开始阅读")
-                    .font(.system(size: MeltedType.title, weight: .semibold))
-                    .accessibilityAddTraits(.isHeader)
-                Text("连接你的服务器，浏览为你整理的内容。")
-                    .font(.system(size: MeltedType.row))
-                    .foregroundStyle(palette.secondary)
-            }
+        VStack(alignment: .leading, spacing: MeltedConnection.sectionSpacing) {
+            Text("从这里开始阅读")
+                .font(.system(size: MeltedType.title, weight: .semibold))
+                .accessibilityAddTraits(.isHeader)
 
             VStack(alignment: .leading, spacing: MeltedReading.blockInset) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("服务器地址")
-                        .font(.system(size: MeltedType.control, weight: .medium))
+                MeltedField("服务器地址", isFocused: serverAddressFocused) {
                     TextField("https://melted.example.com", text: $model.serverAddress)
-                        .textFieldStyle(.plain)
-                        .font(.system(size: MeltedType.row))
                         .focused($serverAddressFocused)
-                        .padding(.horizontal, MeltedReading.blockInset)
-                        .frame(height: MeltedConnection.controlHeight)
-                        .background(palette.surface, in: RoundedRectangle(cornerRadius: MeltedReading.cornerRadius))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: MeltedReading.cornerRadius)
-                                .strokeBorder(serverAddressFocused ? palette.accent : palette.separator, lineWidth: serverAddressFocused ? 1.5 : 1)
-                        }
-                        .accessibilityLabel("服务器地址")
-                        .disabled(model.connecting)
                         .onSubmit(connect)
                 }
+                .disabled(model.connecting)
+
                 Button(action: connect) {
                     HStack(spacing: 8) {
-                        if model.connecting { ProgressView().controlSize(.small).tint(palette.accentText) }
-                        Text(model.connecting ? "正在连接…" : "连接服务器")
+                        if model.connecting {
+                            ProgressView().controlSize(.small).tint(palette.accentText)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                        Text(model.connecting ? "正在连接…" : "连接")
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: MeltedConnection.controlHeight)
                 }
-                .buttonStyle(MeltedPrimaryButtonStyle(palette: palette))
+                .buttonStyle(MeltedPrimaryButtonStyle())
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canConnect || model.connecting)
 
-                if let error = model.error { ConnectionError(message: error) }
-                Text("连接后，你可以先查看运营者与信息处理说明。")
-                    .font(.system(size: MeltedType.metadata))
-                    .foregroundStyle(palette.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let failure = model.failure {
+                    FailureNotice(failure: failure, model: model)
+                        .transition(.opacity.combined(with: .offset(y: -6)))
+                }
             }
-
-            DisclosureGroup("还没有服务器？") {
-                Text("Melted 可以连接你自己部署或受信任的服务器。请向运营者获取服务器地址；本机开发时先启动项目服务，再使用 http://127.0.0.1:8421。")
-                    .font(.system(size: MeltedType.metadata))
-                    .foregroundStyle(palette.secondary)
-                    .lineSpacing(4)
-                    .textSelection(.enabled)
-                    .padding(.top, 8)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .font(.system(size: MeltedType.control))
-            .foregroundStyle(palette.secondary)
         }
         .task { serverAddressFocused = true }
     }
@@ -80,5 +54,30 @@ struct LandingView: View {
     private func connect() {
         guard canConnect, !model.connecting else { return }
         Task { await model.discover() }
+    }
+}
+
+/// One notice for every connection failure, with the actions that can actually help.
+struct FailureNotice: View {
+    let failure: WorkspaceFailure
+    @ObservedObject var model: WorkspaceModel
+
+    var body: some View {
+        var actions: [MeltedNotice.Action] = []
+        if failure.offersRetry {
+            actions.append(.init("重试", prominent: true) { Task { await model.discover() } })
+        }
+        if failure.offersReverify, model.discovery != nil {
+            actions.append(.init("重新获取登录方式") { Task { await model.discover() } })
+        }
+        if failure.offersRetry, model.connected {
+            actions.append(.init("重新加载内容") { Task { await model.reload() } })
+        }
+        return MeltedNotice(
+            title: failure.message,
+            guidance: failure.guidance,
+            detail: failure.technical,
+            actions: actions
+        )
     }
 }

@@ -4,10 +4,23 @@ import SwiftUI
 import MeltedCore
 
 /// The row's selection owns feedback; pressing an already selected row is inert.
+/// Keyboard focus draws its own ring so it matches the row's rounded shape.
 public struct ContentRowButtonStyle: ButtonStyle {
     public init() {}
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        ContentRowFocusRing(label: configuration.label)
+    }
+}
+
+private struct ContentRowFocusRing<Label: View>: View {
+    let label: Label
+    @Environment(\.isFocused) private var isFocused
+    @Environment(\.colorScheme) private var scheme
+    var body: some View {
+        label.overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(MeltedPalette(scheme).accent.opacity(isFocused ? 0.7 : 0), lineWidth: 2)
+        }
     }
 }
 
@@ -33,7 +46,7 @@ public struct ContentRowView: View {
             // Title - bold and prominent
             Text(item.title)
                 .font(.system(size: 14, weight: item.state.read ? .medium : .bold))
-                .foregroundStyle(isSelected ? palette.accent : palette.text)
+                .foregroundStyle(palette.text)
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -82,7 +95,7 @@ public struct ContentRowView: View {
         .background(backgroundMaterial(palette))
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
-        .animation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback), value: isHovered && !isSelected)
+        .animation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback), value: isHovered)
         .animation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.selection), value: isSelected)
         .accessibilityElement(children: .combine)
         .accessibilityValue(item.state.read ? "已读" : "未读")
@@ -90,15 +103,15 @@ public struct ContentRowView: View {
     }
 
     private func backgroundMaterial(_ palette: MeltedPalette) -> some View {
-        // Keep one shape alive so selection only interpolates its colors and border.
-        RoundedRectangle(cornerRadius: 10)
-            .fill(isSelected ? palette.accent.opacity(0.12) : (isHovered ? palette.canvas.opacity(0.7) : .clear))
+        // Keep one shape alive so hover and selection only interpolate color, never geometry.
+        // Hover is a light wash; selection is the solid sand tone with a hairline accent edge.
+        let fill: Color = isSelected ? palette.selection : (isHovered ? palette.selection.opacity(0.55) : palette.selection.opacity(0))
+        return RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(fill)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(isSelected ? palette.accent.opacity(0.4) : (isHovered ? palette.separator.opacity(0.3) : .clear),
-                                  lineWidth: isSelected ? 1.5 : 0.5)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(palette.accent.opacity(isSelected ? 0.28 : 0), lineWidth: 1)
             )
-            .shadow(color: palette.accent.opacity(isSelected ? 0.15 : 0), radius: 4, x: 0, y: 1)
     }
 
     private var timeFormat: Date.FormatStyle {

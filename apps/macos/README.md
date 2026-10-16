@@ -21,7 +21,7 @@ Features 通过状态和动作组合，不读取 Keychain、不创建 URLSession
 
 ## 固定开发签名
 
-在仓库根运行 `sh scripts/build-macos.sh`。首次构建从有效身份中选择唯一的 Apple Development 证书，将其 SHA-1 指纹和名称写入被 Git 忽略的 `.local/macos-signing.json`。以后只使用该身份，Bundle ID 固定为 `org.melted.desktop.dev`。证书丢失、过期或初次存在多个开发身份时，构建会报错，不会自动换证书或退回 ad-hoc。
+在仓库根运行 `sh scripts/build-macos.sh`。首次构建从有效身份中选择唯一的 Apple Development 证书，将其 SHA-1 指纹和名称写入被 Git 忽略的 `.local/macos-signing.json`。以后只使用该身份，Bundle ID 固定为 `com.alkinum.melted`。证书丢失、过期或初次存在多个开发身份时，构建会报错，不会自动换证书或退回 ad-hoc。
 
 显式选择或续期更换证书：
 

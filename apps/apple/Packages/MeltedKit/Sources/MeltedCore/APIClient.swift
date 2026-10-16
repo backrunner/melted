@@ -107,7 +107,15 @@ public actor APIClient {
     private func accept(_ next: Session) throws -> String {
         try credentials.save(next, server: serverID); session = next; return next.accountId
     }
-    public func seedDevelopmentSamples() async throws { let _: Empty = try await send("/v1/development/seed", method: "POST", body: Data("{}".utf8), token: accessToken()) }
+    /// Current commit sequence, used as the starting point for later change polls.
+    public func syncAnchor() async throws -> Int {
+        try await syncChanges(after: 0).nextCursor
+    }
+
+    /// Commit-ordered hints about content that changed; entities are fetched separately.
+    public func syncChanges(after: Int) async throws -> SyncPage {
+        try await send("/v1/sync/changes", query: [URLQueryItem(name: "after", value: String(after))], token: accessToken())
+    }
     public func restore(account: String) throws -> Bool { session = try credentials.read(server: serverID, account: account); return session != nil }
     public func logout() async throws {
         let token = try await accessToken()

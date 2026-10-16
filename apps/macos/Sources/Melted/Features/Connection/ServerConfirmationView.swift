@@ -9,23 +9,21 @@ struct ServerConfirmationView: View {
     private var palette: MeltedPalette { MeltedPalette(scheme) }
 
     var body: some View {
-        ConnectionPage {
-            HStack {
-                MeltedWordmark()
-                Spacer()
-                Button { model.resetConnection() } label: {
-                    Label("更换服务器", systemImage: "chevron.left")
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: MeltedType.control))
-                .foregroundStyle(palette.secondary)
-                .disabled(model.connecting)
-            }
-
+        VStack(alignment: .leading, spacing: MeltedConnection.sectionSpacing) {
             VStack(alignment: .leading, spacing: MeltedReading.headingBodySpacing) {
-                Text("确认服务器")
-                    .font(.system(size: MeltedType.title, weight: .semibold))
-                    .accessibilityAddTraits(.isHeader)
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text("确认服务器")
+                        .font(.system(size: MeltedType.title, weight: .semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: 8)
+                    Button { model.resetConnection() } label: {
+                        Label("更换服务器", systemImage: "chevron.left")
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: MeltedType.control))
+                    .foregroundStyle(palette.secondary)
+                    .disabled(model.connecting)
+                }
                 Text(model.serverAddress)
                     .font(.system(size: MeltedType.row))
                     .foregroundStyle(palette.secondary)
@@ -34,8 +32,8 @@ struct ServerConfirmationView: View {
             }
 
             if let discovery = model.discovery, let manifest = model.manifest {
-                VStack(alignment: .leading, spacing: MeltedReading.blockInset) {
-                    VStack(alignment: .leading, spacing: 6) {
+                InfoCard {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("运营者")
                             .font(.system(size: MeltedType.metadata))
                             .foregroundStyle(palette.secondary)
@@ -48,26 +46,26 @@ struct ServerConfirmationView: View {
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(MeltedReading.blockInset)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(palette.surface, in: RoundedRectangle(cornerRadius: MeltedReading.cornerRadius))
-                .overlay {
-                    RoundedRectangle(cornerRadius: MeltedReading.cornerRadius)
-                        .strokeBorder(palette.separator, lineWidth: 1)
-                }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Toggle("我信任这台服务器", isOn: $model.acceptedServer)
-                        .toggleStyle(.checkbox)
-                        .font(.system(size: MeltedType.control, weight: .medium))
-                        .disabled(model.connecting)
-                    Text("继续后，你的账户信息将由这台服务器处理。")
-                        .font(.system(size: MeltedType.metadata))
-                        .foregroundStyle(palette.secondary)
+                Toggle(isOn: $model.acceptedServer) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("我信任这台服务器")
+                            .font(.system(size: MeltedType.control, weight: .medium))
+                        Text("账户信息将由此服务器处理")
+                            .font(.system(size: MeltedType.metadata))
+                            .foregroundStyle(palette.secondary)
+                    }
                 }
+                .toggleStyle(MeltedCheckboxStyle())
+                .disabled(model.connecting)
+
                 ConnectionActions(model: model, discovery: discovery)
             }
-            if let error = model.error { ConnectionError(message: error) }
+
+            if let failure = model.failure {
+                FailureNotice(failure: failure, model: model)
+                    .transition(.opacity.combined(with: .offset(y: -6)))
+            }
         }
     }
 }

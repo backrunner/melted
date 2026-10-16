@@ -7,13 +7,14 @@ public struct MeltedWordmark: View {
     public init() {}
     public var body: some View {
         let palette = MeltedPalette(scheme)
-        HStack(spacing: MeltedReading.actionGap) {
+        HStack(spacing: 10) {
             MeltedMark()
                 .fill(palette.accent)
                 .frame(width: MeltedConnection.brandSize, height: MeltedConnection.brandSize)
                 .accessibilityHidden(true)
             Text("Melted")
-                .font(.system(size: MeltedConnection.brandTitle, weight: .semibold))
+                .font(.system(size: MeltedConnection.brandTitle, weight: .semibold, design: .rounded))
+                .tracking(-0.4)
                 .foregroundStyle(palette.text)
         }
         .accessibilityElement(children: .combine)

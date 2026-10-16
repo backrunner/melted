@@ -8,7 +8,7 @@ TypeScript + Hono 双入口：Node 24 / PostgreSQL 与 Workers / SQLite Durable 
 
 Dockerfile、Compose 迁移任务、Wrangler SQLite DO 配置、插件目标预检已提供。Apple Container 内运行所有本机后端、PG、workerd 与测试；旧 Go 源码已删除，数据库旧 schema/增量迁移保留，旧开发库已备份恢复到容器。
 
-资讯列表、详情、词表、多维查询、中文子串搜索、固定快照分页、收藏/已读/隐藏的幂等与版本冲突，以及按账户锁排序提交的 changes 提示。分页快照有 TTL、账户容量与字节上限，不暴露原始信息流。列表的正文与证据字段为空，详情返回管理员导入或本地开发端点载入的已整理样例。
+资讯列表、详情、词表、多维查询、中文子串搜索、固定快照分页、收藏/已读/隐藏的幂等与版本冲突，以及按账户锁排序提交的 changes 提示。分页快照有 TTL、账户容量与字节上限，不暴露原始信息流。列表的正文与证据字段为空，详情返回服务端导入的已整理内容；本机开发数据由管理 CLI 载入，没有面向 App 的样例入口或开发种子端点。
 
 共享 OpenAPI 3.1、JSON Schema 与 TypeScript/Swift fixture；本机开发数据库/构建/测试脚本；Swift Package 分层为 MeltedCore、MeltedDesignSystem、MeltedRendering 和 macOS shell。没有提前引入商业能力。
 
@@ -29,7 +29,7 @@ Dockerfile、Compose 迁移任务、Wrangler SQLite DO 配置、插件目标预�
 
 ## 本轮具体决策
 
-- 先实现可验证的账户到阅读闭环，同时提供跨领域开发样例；所有样例 `is_demo=true`，App 显示来源说明。它们不是模型输出，也不证明信息处理质量。
+- 先实现可验证的账户到阅读闭环。App 不内置占位内容，连接后只显示服务器实际提供的内容；本机开发数据由服务端管理 CLI 的 `import-demo` 命令导入到开发数据库，不经 App 操作。导入数据 `is_demo=true`，非模型输出，也不证明信息处理质量。
 - discovery 返回 `registration=key|closed`；默认 key 允许通过持有证明创建新账户。已有 PG 账户可由管理员绑定公钥，不能根据邮箱自动关联。邀请、恢复、凭据管理 UI 尚未提供。
 - 输入、主动获取、HTML、APNs 与完整 snapshot sync 均声明为未支持；不创建看似可用的占位接口或按钮。
 - 查询首版采用 PostgreSQL / SQLite 字面子串，支持中文，不称为 FTS 或语义搜索；正式容量/召回需要单独验收。

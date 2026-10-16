@@ -5,11 +5,23 @@ import Testing
 import MeltedCore
 @testable import Melted
 
+/// Failures the stub can raise, chosen by test so no non-Sendable error crosses the actor.
+enum StubFailure { case cannotConnect, sessionExpired }
+
 private actor WorkspaceStub: WorkspaceClient {
     var restores = 0
     var logins = 0
     var changedIDs: [String] = []
     var credentialLogins = 0
+    /// When set, discovery and list calls fail instead of returning data.
+    var discoverFailure: StubFailure?
+    var listFailure: StubFailure?
+    var syncPage: SyncPage?
+    var items: [Briefing] = []
+    func failDiscovery(_ failure: StubFailure?) { discoverFailure = failure }
+    func failListing(_ failure: StubFailure?) { listFailure = failure }
+    func serve(_ page: SyncPage) { syncPage = page }
+    func serveItems(_ values: [Briefing]) { items = values }
     let auth: String
     let item: Briefing
     init(auth: String = #"{"methods":["key"],"key_algorithm":"P-256"}"#) throws {
@@ -22,6 +34,7 @@ private actor WorkspaceStub: WorkspaceClient {
     }
     func discover() async throws -> (Discovery, ProcessingManifest) {
         try await Task.sleep(for: .milliseconds(10))
+        if let discoverFailure { throw Self.error(discoverFailure) }
         let discovery = try Wire.decoder().decode(Discovery.self, from: Data(#"{"protocol":{"min":1,"max":1},"server_id":"test","api_base":"/v1","registration":"open","operator":{"name":"Test"},"processing_manifest_version":"1"}"#.utf8))
         var negotiated = discovery
         negotiated.auth = try Wire.decoder().decode(Discovery.Authentication.self, from: Data(auth.utf8))
@@ -41,12 +54,23 @@ private actor WorkspaceStub: WorkspaceClient {
     }
     func browserStart(state: String, verifier: String) throws -> URL { throw APIError.incompatible }
     func browserExchange(callback: URL, state: String, verifier: String) throws -> String { throw APIError.incompatible }
-    func seedDevelopmentSamples() {}
     func taxonomy() -> [Term] { [] }
     func list(_ filter: FilterSelection, cursor: String?) throws -> BriefingPage {
+        if let listFailure { throw Self.error(listFailure) }
         var page = try Wire.decoder().decode(BriefingPage.self, from: Data(#"{"items":[],"query_hash":"test","total":1}"#.utf8))
-        page.items = [item]
+        page.items = items.isEmpty ? [item] : items
+        page.total = page.items.count
         return page
+    }
+    func syncAnchor() throws -> Int { syncPage?.nextCursor ?? 0 }
+    func syncChanges(after: Int) throws -> SyncPage {
+        syncPage ?? SyncPage(changes: [], nextCursor: after, hasMore: false)
+    }
+    private static func error(_ failure: StubFailure) -> Error {
+        switch failure {
+        case .cannotConnect: URLError(.cannotConnectToHost)
+        case .sessionExpired: APIError.response(401, "unauthorized")
+        }
     }
     func detail(_ id: String) -> Briefing { var result = item; result.id = id; return result }
     func setState(_ id: String, state: ReadingState, mutationID: String) -> ReadingState {
@@ -168,4 +192,94 @@ private actor WorkspaceStub: WorkspaceClient {
     #expect(model.authenticationMethod == nil)
     #expect(await stub.logins == 0)
     #expect(await stub.credentialLogins == 0)
+}
+
+
+@Test @MainActor func arrivedContentIsMarkedAndStateChangesAreNot() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true
+    await model.login()
+    var known = stub.item; known.id = "known"
+    var fresh = stub.item; fresh.id = "fresh"
+    fresh.updatedAt = .now
+    await stub.serveItems([known])
+    await model.pollSync(since: .now.addingTimeInterval(-300))
+    #expect(model.isArrived("fresh") == false)
+
+    // An upsert whose entity shows up in the list is drawn attention to.
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 9, entityId: "fresh", kind: "upsert")], nextCursor: 9, hasMore: false))
+    await stub.serveItems([fresh, known])
+    await model.pollSync(since: .now.addingTimeInterval(-300))
+    #expect(model.isArrived("fresh"))
+    #expect(model.isArrived("known") == false)
+
+    // A read/saved change must not trigger an arrival pass, even if the list is stale:
+    // a row that only the arrival pass could pick up stays unmarked.
+    var sneaky = stub.item; sneaky.id = "sneaky"; sneaky.updatedAt = .now
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 10, entityId: "known", kind: "state")], nextCursor: 10, hasMore: false))
+    await stub.serveItems([sneaky, fresh, known])
+    await model.pollSync(since: .now.addingTimeInterval(-300))
+    #expect(model.isArrived("sneaky") == false)
+}
+
+@Test @MainActor func connectionFailuresAreDescribedForTheReader() async throws {
+    let cases: [(StubFailure, WorkspaceFailure.Kind)] = [
+        (.cannotConnect, .cannotReach),
+        (.sessionExpired, .sessionExpired),
+    ]
+    for (stubFailure, expectation) in cases {
+        let suite = "melted-test-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let stub = try WorkspaceStub()
+        await stub.failDiscovery(stubFailure)
+        let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+        await model.discover()
+        let failure = try #require(model.failure)
+        #expect(failure.kind == expectation)
+        #expect(!failure.message.isEmpty)
+        #expect(!failure.guidance.isEmpty)
+        #expect(model.connecting == false)
+    }
+}
+
+@Test @MainActor func refreshFailureKeepsContentAndOnlyRaisesABanner() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true
+    await model.login()
+    #expect(model.items.count == 1)
+
+    await stub.failListing(.cannotConnect)
+    await model.reload()
+    #expect(model.items.count == 1)          // loaded content is kept
+    #expect(model.failure == nil)            // the reading surface is not taken over
+    #expect(model.banner != nil)             // the user is still told
+    model.dismissBanner()
+    #expect(model.banner == nil)
+}
+
+@Test @MainActor func expiredSessionReturnsToConnectionFlow() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true
+    await model.login()
+    #expect(model.connected)
+
+    await stub.failListing(.sessionExpired)
+    await model.reload()
+    #expect(model.connected == false)
+    #expect(model.failure?.kind == .sessionExpired)
+    #expect(model.items.isEmpty)
+    #expect(defaults.string(forKey: "accountID") == nil)
 }

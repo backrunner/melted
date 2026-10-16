@@ -24,51 +24,40 @@ struct CredentialForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedReading.blockInset) {
             if method == .password {
-                field("账号") {
-                    TextField("服务器账号", text: $username)
+                MeltedField("账号", isFocused: focus == .username) {
+                    TextField("", text: $username)
                         .textContentType(.username)
                         .focused($focus, equals: .username)
                         .onSubmit { focus = .secret }
                 }
             }
             if method == .password || method == .apiKey {
-                field(method == .password ? "密码" : "API Key") {
-                    SecureField(method == .password ? "输入密码" : "粘贴服务器签发的 API Key", text: $secret)
+                MeltedField(method == .password ? "密码" : "API Key", isFocused: focus == .secret) {
+                    SecureField("", text: $secret)
                         .textContentType(method == .password ? .password : nil)
                         .focused($focus, equals: .secret)
                         .onSubmit(submit)
                 }
             }
             Button(action: submit) {
-                Text(method == .browser ? "在浏览器中继续" : "登录")
-                    .frame(maxWidth: .infinity)
-                    .frame(height: MeltedConnection.controlHeight)
+                HStack(spacing: 8) {
+                    if model.connecting {
+                        ProgressView().controlSize(.small).tint(palette.accentText)
+                    }
+                    Text(model.connecting ? "正在登录…" : method == .browser ? "在浏览器中继续" : "登录")
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: MeltedConnection.controlHeight)
             }
-            .buttonStyle(MeltedPrimaryButtonStyle(palette: palette))
+            .buttonStyle(MeltedPrimaryButtonStyle())
             .disabled(!ready)
         }
+        .disabled(!model.acceptedServer || model.connecting)
         .onChange(of: model.acceptedServer) { _, accepted in
             if accepted { focus = method == .password ? .username : .secret }
             else { secret = ""; focus = nil }
         }
         .onDisappear { secret = ""; username = "" }
-    }
-    private func field<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(label).foregroundStyle(palette.secondary)
-            content()
-                .textFieldStyle(.plain)
-                .padding(.horizontal, MeltedReading.blockInset)
-                .frame(height: MeltedConnection.controlHeight)
-                .background(palette.surface, in: RoundedRectangle(cornerRadius: MeltedReading.cornerRadius))
-                .overlay {
-                    RoundedRectangle(cornerRadius: MeltedReading.cornerRadius)
-                        .strokeBorder(palette.separator, lineWidth: 1)
-                }
-                .disabled(!model.acceptedServer || model.connecting)
-                .accessibilityLabel(label)
-        }
-        .font(.system(size: MeltedType.control))
     }
     private func submit() {
         guard ready else { return }

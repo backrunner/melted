@@ -3,24 +3,23 @@
 import SwiftUI
 import MeltedDesignSystem
 
+/// Native grouped settings, matching System Settings rows, on the app's canvas color.
 struct SettingsView: View {
     @ObservedObject var model: WorkspaceModel
     @Environment(\.colorScheme) private var scheme
 
-    private var palette: MeltedPalette { MeltedPalette(scheme) }
-
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                AppearanceSettings()
-                AccountSettings(model: model)
-                AboutSettings()
-            }
-            .padding(28)
+        Form {
+            AppearanceSettings()
+            AccountSettings(model: model)
+            AboutSettings()
         }
-        .background(palette.canvas)
-        .frame(width: 640, height: 580)
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .background(MeltedPalette(scheme).canvas)
+        .tint(MeltedPalette(scheme).accent)
+        .frame(width: 520)
+        .frame(minHeight: 460, idealHeight: 540)
         .navigationTitle("设置")
     }
-
 }

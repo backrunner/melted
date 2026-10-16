@@ -19,7 +19,13 @@ final class WorkspaceModel: ObservableObject {
     @Published var loading = false
     @Published var loadingDetail = false
     @Published var mutating = false
-    @Published var error: String?
+    /// Classified failure for the connection flow; surface errors replace the whole screen,
+    /// inline ones sit next to the control that failed.
+    @Published var failure: WorkspaceFailure?
+    /// Failures that happen while already reading keep the loaded content and only raise a banner.
+    @Published var banner: String?
+    /// IDs that arrived with the latest sync, so the list can draw attention to them.
+    @Published private(set) var arrivedIDs: Set<String> = []
     @Published var filter = FilterSelection()
     @Published var terms: [Term] = []
     @Published var items: [Briefing] = []
@@ -35,6 +41,9 @@ final class WorkspaceModel: ObservableObject {
     private var detailGeneration = UUID()
     private var connectionGeneration = UUID()
     private var hasBootstrapped = false
+    private var syncTask: Task<Void, Never>?
+    private var syncCursor: Int?
+    private var arrivalTask: Task<Void, Never>?
 
     init(defaults: UserDefaults = .standard, makeClient: @escaping (URL) -> any WorkspaceClient = { APIClient(url: $0) }) {
         self.defaults = defaults
@@ -47,14 +56,14 @@ final class WorkspaceModel: ObservableObject {
         guard !connecting else { return }
         connectionGeneration = UUID()
         client = nil; discovery = nil; manifest = nil
-        acceptedServer = false; localCredentialOption = false; error = nil
+        acceptedServer = false; localCredentialOption = false; failure = nil; banner = nil
         authenticationMethod = nil
     }
 
     func discover() async {
         guard !connecting else { return }
         let generation = UUID(); connectionGeneration = generation
-        connecting = true; error = nil; discovery = nil; manifest = nil; acceptedServer = false
+        connecting = true; failure = nil; discovery = nil; manifest = nil; acceptedServer = false
         client = nil; authenticationMethod = nil; localCredentialOption = false
         defer { if connectionGeneration == generation { connecting = false } }
         do {
@@ -64,7 +73,10 @@ final class WorkspaceModel: ObservableObject {
             guard generation == connectionGeneration else { return }
             client = candidate; discovery = d; manifest = m
             authenticationMethod = d.auth?.preferredMethod
-        } catch { if generation == connectionGeneration { self.error = message(error) } }
+        } catch {
+            guard generation == connectionGeneration else { return }
+            failure = classify(error, source: .discovery)
+        }
     }
     func bootstrap() async {
         // A reopened window must not start another Keychain restore or replace the active client.
@@ -77,12 +89,21 @@ final class WorkspaceModel: ObservableObject {
               defaults.string(forKey: "manifestVersion") == discovery.processingManifestVersion else { return }
         connecting = true
         defer { connecting = false }
-        do { if try await client.restore(account: account) { acceptedServer = true; connected = true; await loadInitial() } }
-        catch { self.error = message(error) }
+        do {
+            if try await client.restore(account: account) {
+                acceptedServer = true; connected = true; await loadInitial(); startSync()
+            }
+        } catch {
+            let failure = classify(error, source: .restore)
+            // A rejected session is dropped; a transient failure (keychain, network) keeps the
+            // stored account so retrying does not make the user redo the whole connection flow.
+            if failure.kind == .sessionExpired { defaults.removeObject(forKey: "accountID") }
+            self.failure = failure
+        }
     }
     func selectAuthenticationMethod(_ method: AuthenticationMethod) {
         guard !connecting, discovery?.auth?.supportedMethods.contains(method) == true, authenticationMethod != method else { return }
-        authenticationMethod = method; error = nil; localCredentialOption = false
+        authenticationMethod = method; failure = nil; localCredentialOption = false
     }
     func login(localOnly: Bool = false, credential: LoginCredential? = nil) async {
         guard !connecting, acceptedServer, let client, let discovery, let method = authenticationMethod,
@@ -90,7 +111,7 @@ final class WorkspaceModel: ObservableObject {
         if method == .password || method == .apiKey {
             guard credential?.method == method else { return }
         }
-        connecting = true; error = nil; localCredentialOption = false
+        connecting = true; failure = nil; localCredentialOption = false
         defer { connecting = false }
         do {
             let account: String
@@ -117,21 +138,20 @@ final class WorkspaceModel: ObservableObject {
             defaults.set(discovery.serverId, forKey: "serverID")
             defaults.set(discovery.processingManifestVersion, forKey: "manifestVersion")
             defaults.set(account, forKey: "accountID")
-            connected = true; await loadInitial()
-        } catch { self.error = message(error) }
-    }
-    func seedDevelopmentSamples() async {
-        guard discovery?.capabilities?.developmentSamples == true, let client else { return }
-        do { try await client.seedDevelopmentSamples(); await loadInitial() } catch { self.error = message(error) }
+            connected = true; await loadInitial(); startSync()
+        } catch {
+            failure = classify(error, source: .login(method))
+        }
     }
     func loadInitial() async {
         guard let client else { return }
-        do { terms = try await client.taxonomy(); await reload() } catch { self.error = message(error) }
+        do { terms = try await client.taxonomy() } catch { report(error) }
+        await reload()
     }
     func reload() async {
         guard connected, let client else { return }
         let generation = UUID(); queryGeneration = generation; let selection = filter
-        loading = true; error = nil
+        loading = true; failure = nil
         defer { if queryGeneration == generation { loading = false } }
         do {
             try await Task.sleep(for: .milliseconds(180))
@@ -140,7 +160,9 @@ final class WorkspaceModel: ObservableObject {
             guard generation == queryGeneration, selection == filter else { return }
             items = page.items; nextCursor = page.nextCursor; total = page.total
             if let selectedID, !items.contains(where: { $0.id == selectedID }) { self.selectedID = nil; detail = nil }
-        } catch is CancellationError {} catch { if generation == queryGeneration { self.error = message(error) } }
+        } catch is CancellationError {} catch {
+            if generation == queryGeneration { report(error) }
+        }
     }
     func loadMore() async {
         guard let client, let cursor = nextCursor, !loading else { return }
@@ -150,7 +172,9 @@ final class WorkspaceModel: ObservableObject {
             let page = try await client.list(selection, cursor: cursor)
             guard generation == queryGeneration, selection == filter else { return }
             let ids = Set(items.map(\.id)); items += page.items.filter { !ids.contains($0.id) }; nextCursor = page.nextCursor
-        } catch { if generation == queryGeneration { self.error = message(error) } }
+        } catch {
+            if generation == queryGeneration { report(error) }
+        }
     }
     func select() async {
         let generation = UUID(); detailGeneration = generation
@@ -168,7 +192,9 @@ final class WorkspaceModel: ObservableObject {
                 guard generation == detailGeneration, selectedID == id, detail?.id == id else { return }
                 await updateState(for: d, read: true)
             }
-        } catch is CancellationError {} catch { if generation == detailGeneration { self.error = message(error) } }
+        } catch is CancellationError {} catch {
+            if generation == detailGeneration { report(error) }
+        }
     }
     func updateState(saved: Bool? = nil, read: Bool? = nil) async {
         guard let detail else { return }
@@ -178,7 +204,7 @@ final class WorkspaceModel: ObservableObject {
         guard let client, !mutating else { return }
         // Context actions always target their row, even while a different article is open.
         let current = items.first(where: { $0.id == item.id }) ?? item
-        mutating = true; error = nil; defer { mutating = false }
+        mutating = true; defer { mutating = false }
         var state = current.state; if let saved { state.saved = saved }; if let read { state.read = read }
         do {
             let result = try await client.setState(current.id, state: state, mutationID: UUID().uuidString)
@@ -188,7 +214,7 @@ final class WorkspaceModel: ObservableObject {
                 items.removeAll { $0.id == current.id }; total = max(0, total - 1)
                 if selectedID == current.id { selectedID = nil; detail = nil }
             }
-        } catch { self.error = message(error) }
+        } catch { report(error) }
     }
     func logout() async {
         guard let client else { return }
@@ -196,11 +222,15 @@ final class WorkspaceModel: ObservableObject {
             try await client.logout()
             queryGeneration = UUID(); detailGeneration = UUID(); connectionGeneration = UUID()
             connected = false; items = []; terms = []; detail = nil; selectedID = nil; filter = .init()
-            discovery = nil; manifest = nil; acceptedServer = false; error = nil
+            discovery = nil; manifest = nil; acceptedServer = false; failure = nil; banner = nil
             authenticationMethod = nil; localCredentialOption = false
+            arrivedIDs = []; syncCursor = nil
             defaults.removeObject(forKey: "accountID")
-        } catch { self.error = message(error) }
+            stopSync()
+        } catch { report(error) }
     }
+    func dismissBanner() { banner = nil }
+
     func termName(_ id: String?) -> String { terms.first { $0.id == id }?.name ?? "" }
     func toggle(_ id: String, kind: String) {
         switch kind {
@@ -212,17 +242,148 @@ final class WorkspaceModel: ObservableObject {
     }
     private func toggleID(_ id: String, in values: inout [String]) { if values.contains(id) { values.removeAll { $0 == id } } else { values.append(id) } }
     func selectedTerms(_ kind: String) -> [String] { switch kind { case "category": filter.categoryIds; case "tag": filter.tagIds; default: filter.subjectIds } }
-    private func message(_ error: Error) -> String {
-        if let error = error as? APIError {
-            if case .syncCredentialsUnavailable = error { localCredentialOption = true }
-            if case .response(401, _) = error, connected {
-                queryGeneration = UUID(); detailGeneration = UUID()
-                connected = false; items = []; detail = nil; selectedID = nil
-                defaults.removeObject(forKey: "accountID")
-            }
-            return error.localizedDescription
+    // MARK: - Failure classification
+
+    private func classify(_ error: Error, source: FailureSource) -> WorkspaceFailure {
+        if let error = error as? APIError, case .syncCredentialsUnavailable = error { localCredentialOption = true }
+        switch error {
+        case APIError.invalidServer:
+            return .init(kind: .invalidAddress, technical: nil, source: source)
+        case APIError.incompatible:
+            return .init(kind: .incompatible, technical: nil, source: source)
+        case APIError.localCredentials:
+            return .init(kind: .lessThan, technical: nil, source: source)
+        case APIError.syncCredentialsUnavailable:
+            return .init(kind: .lessThan, technical: nil, source: source)
+        case APIError.oversizedResponse:
+            return .init(kind: .unexpected, technical: "oversized_response", source: source)
+        case let APIError.response(status, code):
+            return .init(kind: classify(status: status, code: code), technical: "\(status) \(code)", source: source)
+        default:
+            break
         }
-        if error is DecodingError { return "服务器返回的数据格式无法识别。" }
-        return "连接中断，请检查服务器后重试。当前显示的是本次已加载的内容。"
+        if error is DecodingError {
+            return .init(kind: .unexpected, technical: "decoding_failed", source: source)
+        }
+        let urlError = (error as? URLError) ?? (error as NSError).underlyingURLError
+        switch urlError?.code {
+        case .some(.notConnectedToInternet), .some(.networkConnectionLost), .some(.dataNotAllowed):
+            return .init(kind: .offline, technical: urlError.map { "\($0.code.rawValue)" }, source: source)
+        case .some(.cannotFindHost), .some(.dnsLookupFailed):
+            return .init(kind: .hostNotFound, technical: urlError.map { "\($0.code.rawValue)" }, source: source)
+        case .some(.cannotConnectToHost), .some(.networkConnectionLost), .some(.timedOut), .some(.secureConnectionFailed),
+             .some(.serverCertificateHasBadDate), .some(.serverCertificateUntrusted), .some(.serverCertificateNotYetValid),
+             .some(.serverCertificateHasUnknownRoot), .some(.clientCertificateRejected), .some(.clientCertificateRequired):
+            return .init(kind: .cannotReach, technical: urlError.map { "\($0.code.rawValue)" }, source: source)
+        default:
+            return .init(kind: .unexpected, technical: urlError.map { "\($0.code.rawValue)" }, source: source)
+        }
+    }
+
+    private func classify(status: Int, code: String) -> WorkspaceFailure.Kind {
+        switch (status, code) {
+        case (_, "auth_method_unavailable"): .authMethodUnavailable
+        case (_, "registration_closed"): .registrationClosed
+        case (401, _), (403, _): .sessionExpired
+        case (410, _): .incompatible
+        case (429, _): .busy
+        default: .unexpected
+        }
+    }
+
+    /// Failure while the user already has content: keep what is on screen, say so in a banner.
+    private func report(_ error: Error) {
+        if let error = error as? APIError, case .syncCredentialsUnavailable = error { localCredentialOption = true }
+        if let error = error as? APIError, case let .response(status, _) = error, status == 401 || status == 403 {
+            endSession()
+            failure = classify(error, source: .refresh)
+            return
+        }
+        banner = classify(error, source: .refresh).message
+    }
+
+    /// Drops credentials and returns to the connection flow without discarding the failure shown.
+    private func endSession() {
+        queryGeneration = UUID(); detailGeneration = UUID()
+        stopSync()
+        connected = false; items = []; terms = []; detail = nil; selectedID = nil
+        acceptedServer = false; authenticationMethod = nil; localCredentialOption = false
+        arrivedIDs = []; syncCursor = nil
+        defaults.removeObject(forKey: "accountID")
+    }
+
+    // MARK: - Sync and arrival
+
+    private func startSync() {
+        stopSync()
+        arrivalTask?.cancel()
+        let task = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(12))
+                guard let self, !Task.isCancelled, self.connected, self.client != nil else { return }
+                await self.pollSync(since: Date())
+            }
+        }
+        syncTask = task
+    }
+
+    /// One sync tick. Runs on a timer while reading, and can be driven directly in tests.
+    func pollSync(since: Date) async {
+        guard connected, let client else { return }
+        do {
+            if syncCursor == nil { syncCursor = try await client.syncAnchor() }
+            guard let cursor = syncCursor else { return }
+            let page = try await client.syncChanges(after: cursor)
+            syncCursor = page.nextCursor
+            // Only new content is worth an arrival pass; state-only changes are already local.
+            if page.changes.contains(where: { $0.kind == "upsert" }) { await applyArrivals(since: since) }
+            if page.hasMore { await pollSync(since: since) }
+        } catch is CancellationError {
+            return
+        } catch {
+            // A failed poll must not take over the reading surface; the next tick retries.
+        }
+    }
+
+    private func stopSync() {
+        syncTask?.cancel(); syncTask = nil
+        arrivalTask?.cancel(); arrivalTask = nil
+    }
+
+    /// Reloads the visible page and marks rows that appeared after `since` so the list can highlight them.
+    private func applyArrivals(since: Date) async {
+        guard connected, let client else { return }
+        let generation = queryGeneration; let selection = filter
+        do {
+            let page = try await client.list(selection, cursor: nil)
+            guard generation == queryGeneration, selection == filter else { return }
+            let known = Set(items.map(\.id))
+            let newcomerIDs = page.items.filter { !known.contains($0.id) && $0.updatedAt >= since.addingTimeInterval(-120) }.map(\.id)
+            // Merge rather than replace: pages the reader already loaded must not disappear.
+            let inPage = Set(page.items.map(\.id))
+            items = page.items + items.filter { !inPage.contains($0.id) }
+            nextCursor = nextCursor ?? page.nextCursor
+            total = page.total
+            guard !newcomerIDs.isEmpty else { return }
+            arrivedIDs = Set(newcomerIDs)
+            arrivalTask?.cancel()
+            arrivalTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(9))
+                guard let self, !Task.isCancelled else { return }
+                self.arrivedIDs = []
+            }
+        } catch {
+            // Arrival refresh is best effort; the visible content stays as it is.
+        }
+    }
+}
+
+extension WorkspaceModel {
+    func isArrived(_ id: String) -> Bool { arrivedIDs.contains(id) }
+}
+
+private extension NSError {
+    var underlyingURLError: URLError? {
+        (userInfo[NSUnderlyingErrorKey] as? URLError) ?? (self as? URLError)
     }
 }

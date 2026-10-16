@@ -7,21 +7,18 @@ import MeltedDesignSystem
 struct ContentListView: View {
     @ObservedObject var model: WorkspaceModel
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var palette: MeltedPalette { MeltedPalette(scheme) }
     var body: some View {
         VStack(spacing: 0) {
             if model.loading && model.items.isEmpty {
                 LoadingState("正在载入资讯…")
             } else if model.items.isEmpty {
-                EmptyState(
-                    icon: model.filter.isFiltered || !model.filter.q.isEmpty ? "magnifyingglass" : "tray",
-                    title: model.filter.isFiltered || !model.filter.q.isEmpty ? "没有匹配的内容" : "还没有资讯",
-                    description: model.filter.isFiltered || !model.filter.q.isEmpty ? "试试其他搜索词，或调整筛选条件" : "服务器尚未提供整理后的内容"
-                )
+                emptyState
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    LazyVStack(spacing: 2, pinnedViews: [.sectionHeaders]) {
                         ForEach(groupedItems, id: \.section) { group in
                             Section {
                                 ForEach(group.items) { item in
@@ -36,9 +33,14 @@ struct ContentListView: View {
                                         )
                                     }
                                     .buttonStyle(ContentRowButtonStyle())
+                                    .focusEffectDisabled()
+                                    // A row delivered by the latest sync is highlighted until it settles.
+                                    .meltedArrivalHighlight(model.isArrived(item.id))
                                     .contextMenu {
                                         ContentRowActions(model: model, item: item)
                                     }
+                                    .padding(.horizontal, 10)
+                                    .transition(.meltedArrival)
                                 }
                             } header: {
                                 sectionHeader(group.section)
@@ -67,10 +69,12 @@ struct ContentListView: View {
                             .padding(.top, 12)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.top, 8)
                     .padding(.bottom, 12)
+                    // Rows arriving from a refresh slide in from the top instead of popping.
+                    .animation(reduceMotion ? nil : MeltedMotion.content, value: model.items.map(\.id))
                 }
+                // Keep rows from drawing under the transparent title bar; the pinned header is the top edge.
+                .clipped()
 
                 LibraryStatusBar(total: model.total, loading: model.loading)
             }
@@ -79,23 +83,32 @@ struct ContentListView: View {
     }
 
     @ViewBuilder
-    private func sectionHeader(_ section: TimeSection) -> some View {
-        HStack(spacing: 0) {
-            Text(section.title)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(palette.text)
-                .textCase(.uppercase)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule()
-                        .fill(palette.accent.opacity(0.1))
-                )
-            Spacer()
+    private var emptyState: some View {
+        let searching = !model.filter.q.isEmpty || !model.filter.categoryIds.isEmpty || !model.filter.tagIds.isEmpty || !model.filter.subjectIds.isEmpty
+        switch (searching, model.filter.view) {
+        case (true, _):
+            EmptyState(icon: "line.3.horizontal.decrease", title: "没有匹配的内容", description: "换个关键词，或减少筛选条件",
+                       action: { model.filter.q = ""; model.filter.categoryIds = []; model.filter.tagIds = []; model.filter.subjectIds = [] }, actionLabel: "清除搜索与筛选")
+        case (false, "unread"):
+            EmptyState(icon: "checkmark", title: "全部读完了", description: "新的整理内容到达后会出现在这里")
+        case (false, "saved"):
+            EmptyState(icon: "bookmark", title: "还没有收藏", description: "在阅读时收藏，方便之后回来")
+        default:
+            EmptyState(icon: "tray", title: "还没有资讯", description: "服务器整理好内容后会出现在这里")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(palette.canvas.opacity(0.9))
+    }
+
+    /// Opaque and full-width so rows never show through around or behind it while pinned.
+    private func sectionHeader(_ section: TimeSection) -> some View {
+        Text(section.title)
+            .font(.system(size: MeltedType.metadata, weight: .semibold))
+            .foregroundStyle(palette.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 26)
+            .padding(.top, 12)
+            .padding(.bottom, 6)
+            .background(palette.canvas)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private enum TimeSection: String, CaseIterable {

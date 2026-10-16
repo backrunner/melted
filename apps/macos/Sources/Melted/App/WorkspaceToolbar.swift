@@ -30,16 +30,19 @@ struct WorkspaceToolbar: ToolbarContent {
             ToolbarItem(id: "reading-space", placement: .automatic) { Spacer() }
         }
 
-        ToolbarItem(id: "reading-search", placement: .primaryAction) {
-            Button {
-                searchOpen.toggle()
-            } label: {
-                Label(searchTitle, systemImage: "magnifyingglass")
-                    .labelStyle(.titleAndIcon)
-                    .lineLimit(1)
+        // Search has no toolbar entry: it opens from the keyboard. When filters are active the
+        // toolbar still has to explain the shorter list, so it shows state and a way to clear it.
+        if model.filter.isFiltered || !model.filter.q.isEmpty {
+            ToolbarItem(id: "reading-filter", placement: .primaryAction) {
+                MeltedFilterChip(filterTitle) {
+                    searchOpen = true
+                } clear: {
+                    model.filter.q = ""
+                    model.filter.categoryIds = []
+                    model.filter.tagIds = []
+                    model.filter.subjectIds = []
+                }
             }
-            .help("搜索内容、分类、标签或关注主题（⌘F）")
-            .accessibilityLabel("搜索与筛选")
         }
 
         ToolbarItem(id: "reading-settings", placement: .primaryAction) {
@@ -63,10 +66,10 @@ struct WorkspaceToolbar: ToolbarContent {
         }
     }
 
-    private var searchTitle: String {
+    private var filterTitle: String {
         if !model.filter.q.isEmpty { return model.filter.q }
         let count = model.filter.categoryIds.count + model.filter.tagIds.count + model.filter.subjectIds.count
-        return count > 0 ? "\(count) 个筛选" : "搜索"
+        return count > 0 ? "\(count) 个筛选" : "已筛选"
     }
 
 }

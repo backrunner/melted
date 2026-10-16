@@ -6,7 +6,7 @@
 <title>Melted 资讯界面</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:var(--canvas,#FAF7F0);color:var(--text,#342F29);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+body{margin:0;background:var(--canvas,#F7F6F3);color:var(--text,#2F2B27);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 button,input,select,textarea,summary{accent-color:var(--accent)}
@@ -199,14 +199,14 @@ html[data-platform=mobile] dialog button,html[data-platform=mobile] dialog selec
   "status": "design-baseline-not-runtime-verified",
   "themes": {
     "light": {
-      "canvas": "#FAF7F0",
-      "surface": "#FFFCF6",
-      "text": "#342F29",
-      "secondary": "#706658",
+      "canvas": "#F7F6F3",
+      "surface": "#FDFDFB",
+      "text": "#2F2B27",
+      "secondary": "#66605A",
       "accent": "#79603F",
-      "accentText": "#FFFCF6",
-      "selection": "#F0E7D7",
-      "separator": "#E5DED2",
+      "accentText": "#FDFDFB",
+      "selection": "#EDEAE4",
+      "separator": "#E2DED7",
       "warning": "#835512",
       "danger": "#A33E35"
     },
@@ -358,7 +358,9 @@ html[data-platform=mobile] dialog button,html[data-platform=mobile] dialog selec
   "motionMs": {
     "feedback": 160,
     "selection": 120,
-    "transition": 220
+    "transition": 220,
+    "pageTransition": 350,
+    "stagger": 80
   },
   "connectionMetricsPt": {
     "contentMaximum": 440,

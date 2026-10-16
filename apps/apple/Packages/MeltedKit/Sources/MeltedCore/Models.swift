@@ -42,7 +42,6 @@ public struct Briefing: Codable, Identifiable, Sendable {
     public var evidenceStatus: String
     public var evidence: [Evidence]
     public var state: ReadingState
-    public var isDemo: Bool
 
     public var evidenceLabel: String {
         switch evidenceStatus {
@@ -78,6 +77,25 @@ public struct FilterSelection: Codable, Equatable, Sendable {
         return items
     }
 }
+/// One commit-ordered hint that an entity changed. Entities are always fetched separately.
+public struct SyncChange: Codable, Sendable, Hashable {
+    public var sequence: Int
+    public var entityId: String
+    public var kind: String
+    public init(sequence: Int, entityId: String, kind: String) {
+        self.sequence = sequence; self.entityId = entityId; self.kind = kind
+    }
+}
+
+public struct SyncPage: Codable, Sendable {
+    public var changes: [SyncChange]
+    public var nextCursor: Int
+    public var hasMore: Bool
+    public init(changes: [SyncChange], nextCursor: Int, hasMore: Bool) {
+        self.changes = changes; self.nextCursor = nextCursor; self.hasMore = hasMore
+    }
+}
+
 public struct BriefingPage: Codable, Sendable {
     public var items: [Briefing]
     public var nextCursor: String?
@@ -94,7 +112,8 @@ public struct Discovery: Codable, Sendable {
         public var keyAlgorithm: String?
         public var browserCallback: String?
     }
-    public struct Capabilities: Codable, Sendable { public var developmentSamples: Bool? }
+    /// Reserved so unknown capability keys from newer servers decode without failing.
+    public struct Capabilities: Codable, Sendable {}
     public var auth: Authentication?
     public var capabilities: Capabilities?
     public var `protocol`: ProtocolRange

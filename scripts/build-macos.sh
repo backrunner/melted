@@ -20,7 +20,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleIdentifier</key><string>org.melted.desktop.dev</string>
+<key>CFBundleIdentifier</key><string>com.alkinum.melted</string>
 <key>CFBundleName</key><string>Melted</string>
 <key>CFBundleDisplayName</key><string>Melted</string>
 <key>CFBundleExecutable</key><string>Melted</string>
@@ -28,7 +28,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleShortVersionString</key><string>0.2.0</string>
 <key>CFBundleVersion</key><string>2</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
-<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>org.melted.auth</string><key>CFBundleURLSchemes</key><array><string>melted</string></array></dict></array>
+<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>com.alkinum.melted.auth</string><key>CFBundleURLSchemes</key><array><string>melted</string></array></dict></array>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict></plist>

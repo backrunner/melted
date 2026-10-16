@@ -32,12 +32,14 @@ struct SearchPalette: View {
         } }
     }
     private var selected: [Term] { model.terms.filter { model.selectedTerms($0.kind).contains($0.id) } }
+    private var hasCriteria: Bool { !input.isEmpty || !selected.isEmpty }
+
     var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
-            // Search input - larger and more prominent
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(palette.secondary)
                     .accessibilityHidden(true)
                 NativeSearchField(
@@ -49,197 +51,150 @@ struct SearchPalette: View {
                     onCancel: close,
                     onMove: move
                 )
-                .frame(height: 36)
+                .frame(height: 34)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 18)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
 
-            // Selected filters with improved chip design
             if !selected.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(selected) { term in
-                            Button {
-                                withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
-                                    model.toggle(term.id, kind: term.kind)
-                                }
-                                focusRequest += 1
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: iconForKind(term.kind))
-                                        .font(.system(size: 10, weight: .semibold))
-                                    Text(term.name)
-                                        .font(.system(size: 12, weight: .medium))
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(palette.accent.opacity(0.7))
-                                }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(palette.accent.opacity(0.12))
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(palette.accent.opacity(0.3), lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(palette.accent)
-                            .accessibilityLabel("移除\(kindName(term.kind))：\(term.name)")
-                        }
+                    HStack(spacing: 6) {
+                        ForEach(selected) { term in chip(term) }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 18)
                 }
-                .padding(.bottom, 14)
+                .padding(.bottom, 12)
+                .transition(.opacity)
             }
 
-            Divider()
-                .background(palette.separator)
-
-            // Suggestions with improved visual hierarchy
             if !suggestions.isEmpty {
+                Rectangle().fill(palette.separator).frame(height: 1)
                 ScrollViewReader { proxy in
                     ScrollView {
-                        VStack(spacing: 2) {
+                        VStack(alignment: .leading, spacing: 1) {
                             ForEach(Array(suggestions.enumerated()), id: \.element.id) { index, term in
-                                Button { choose(term) } label: {
-                                    HStack(spacing: 12) {
-                                        // Icon with background
-                                        ZStack {
-                                            Circle()
-                                                .fill(highlighted == index ? palette.accent.opacity(0.15) : palette.surface)
-                                                .frame(width: 28, height: 28)
-                                            Image(systemName: iconForKind(term.kind))
-                                                .font(.system(size: 13, weight: .medium))
-                                                .foregroundStyle(highlighted == index ? palette.accent : palette.secondary)
-                                        }
-
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(term.name)
-                                                .font(.system(size: 13, weight: .medium))
-                                                .foregroundStyle(palette.text)
-
-                                            Text(kindName(term.kind))
-                                                .font(.system(size: 11))
-                                                .foregroundStyle(palette.secondary)
-                                        }
-
-                                        Spacer()
-
-                                        if model.selectedTerms(term.kind).contains(term.id) {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 16))
-                                                .foregroundStyle(palette.accent)
-                                        }
-                                    }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(highlighted == index ? palette.surface.opacity(0.5) : .clear)
-                                    )
-                                    .contentShape(Rectangle())
+                                // A group heading names the kind once instead of repeating it on every row.
+                                if index == 0 || suggestions[index - 1].kind != term.kind {
+                                    Text(kindName(term.kind))
+                                        .font(.system(size: MeltedType.metadata, weight: .semibold))
+                                        .foregroundStyle(palette.secondary)
+                                        .padding(.horizontal, 10)
+                                        .padding(.top, index == 0 ? 4 : 12)
+                                        .padding(.bottom, 4)
+                                        .accessibilityAddTraits(.isHeader)
                                 }
-                                .buttonStyle(.plain)
-                                .id(term.id)
-                                .accessibilityLabel("\(kindName(term.kind))：\(term.name)")
-                                .accessibilityValue(model.selectedTerms(term.kind).contains(term.id) ? "已选择" : "未选择")
-                                .onHover { if $0 { highlighted = index } }
+                                suggestionRow(term, index: index).id(term.id)
                             }
                         }
                         .padding(8)
                     }
-                    .frame(maxHeight: min(CGFloat(suggestions.count) * 50 + 16, 260))
+                    .frame(maxHeight: 280)
+                    .fixedSize(horizontal: false, vertical: true)
                     .onChange(of: highlighted) { _, value in
                         if let value, suggestions.indices.contains(value) { proxy.scrollTo(suggestions[value].id) }
                     }
                 }
-            } else if query.kind != nil {
-                VStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 32))
-                        .foregroundStyle(palette.secondary.opacity(0.4))
-                    Text("没有匹配的筛选项")
-                        .font(.system(size: 13))
-                        .foregroundStyle(palette.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 32)
+            } else if let kind = query.kind {
+                Rectangle().fill(palette.separator).frame(height: 1)
+                Text("没有匹配的\(kindName(kind))")
+                    .font(.system(size: MeltedType.control))
+                    .foregroundStyle(palette.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
             }
 
-            Divider()
-                .background(palette.separator)
-
-            // Footer with improved actions
+            Rectangle().fill(palette.separator).frame(height: 1)
             HStack(spacing: 12) {
-                HStack(spacing: 6) {
-                    if model.loading {
-                        ProgressView()
-                            .controlSize(.small)
-                            .tint(palette.accent)
-                    }
-                    Text(model.loading ? "正在搜索…" : "\(model.total) 条结果")
-                        .font(.system(size: 12))
-                        .foregroundStyle(palette.secondary)
+                if model.loading {
+                    ProgressView().controlSize(.small)
                 }
-
-                if model.filter.isFiltered || !input.isEmpty {
+                Text(model.loading ? "正在搜索…" : "\(model.total) 条结果")
+                    .font(.system(size: MeltedType.metadata))
+                    .foregroundStyle(palette.secondary)
+                    .monospacedDigit()
+                if hasCriteria {
                     Button("清除") {
-                        withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
-                            model.filter = .init()
+                        withAnimation(reduceMotion ? nil : MeltedMotion.content) {
+                            model.filter.q = ""; model.filter.categoryIds = []; model.filter.tagIds = []; model.filter.subjectIds = []
                             input = ""
                         }
                         focusRequest += 1
                     }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(palette.accent)
                     .buttonStyle(.plain)
+                    .font(.system(size: MeltedType.metadata, weight: .medium))
+                    .foregroundStyle(palette.accent)
                 }
-
                 Spacer()
-
-                Button {
-                    close()
-                } label: {
-                    Text("完成")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(palette.accentText)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 7)
-                        .background(palette.accent, in: RoundedRectangle(cornerRadius: 7))
-                }
-                .buttonStyle(.plain)
-                .keyboardShortcut(.return, modifiers: [])
+                Button("完成", action: close)
+                    .buttonStyle(MeltedPrimaryButtonStyle())
+                    .frame(height: 28)
+                    .keyboardShortcut(.return, modifiers: [])
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
         }
         .foregroundStyle(palette.text)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(palette.separator.opacity(0.4), lineWidth: 0.5)
-        )
-        .shadow(color: .black.opacity(scheme == .dark ? 0.5 : 0.12), radius: 28, y: 14)
+        .background(.regularMaterial, in: shape)
+        .overlay { shape.strokeBorder(palette.separator, lineWidth: 1) }
+        .shadow(color: .black.opacity(scheme == .dark ? 0.45 : 0.10), radius: 24, y: 12)
+        .animation(reduceMotion ? nil : MeltedMotion.content, value: selected.map(\.id))
         .onChange(of: input) { _, value in model.filter.q = query.kind == nil ? value : ""; highlighted = nil }
         .onExitCommand(perform: close)
         .accessibilityAddTraits(.isModal)
     }
 
-    private func iconForKind(_ kind: String) -> String {
-        switch kind {
-        case "category": return "folder"
-        case "tag": return "tag"
-        case "subject": return "star"
-        default: return "circle"
+    private func chip(_ term: Term) -> some View {
+        Button {
+            withAnimation(reduceMotion ? nil : MeltedMotion.content) { model.toggle(term.id, kind: term.kind) }
+            focusRequest += 1
+        } label: {
+            HStack(spacing: 5) {
+                Text(term.name)
+                Image(systemName: "xmark")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(palette.secondary)
+            }
+            .font(.system(size: MeltedType.metadata, weight: .medium))
+            .foregroundStyle(palette.text)
+            .padding(.leading, 10)
+            .padding(.trailing, 8)
+            .frame(height: 24)
+            .background(palette.selection, in: Capsule())
+            .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
+        .help("移除\(kindName(term.kind))：\(term.name)")
+        .accessibilityLabel("移除\(kindName(term.kind))：\(term.name)")
     }
+
+    private func suggestionRow(_ term: Term, index: Int) -> some View {
+        let isOn = model.selectedTerms(term.kind).contains(term.id)
+        return Button { choose(term) } label: {
+            HStack(spacing: 10) {
+                Text(term.name)
+                    .font(.system(size: MeltedType.control, weight: isOn ? .semibold : .regular))
+                    .foregroundStyle(palette.text)
+                Spacer(minLength: 8)
+                if isOn {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(palette.accent)
+                }
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 32)
+            .background(highlighted == index ? palette.selection : .clear, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { if $0 { highlighted = index } }
+        .accessibilityLabel("\(kindName(term.kind))：\(term.name)")
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+
     private func kindName(_ kind: String) -> String { kinds.first { $0.0 == kind }?.1 ?? "筛选" }
     private func choose(_ term: Term) {
-        withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.feedback)) {
+        withAnimation(reduceMotion ? nil : MeltedMotion.content) {
             model.toggle(term.id, kind: term.kind)
         }
         input = ""; model.filter.q = ""; highlighted = nil; focusRequest += 1

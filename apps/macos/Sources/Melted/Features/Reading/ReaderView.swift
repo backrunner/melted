@@ -47,9 +47,9 @@ struct ReaderView: View {
                 .id(item.id)
             } else {
                 EmptyState(
-                    icon: "doc.text",
+                    icon: "book",
                     title: "选择一条内容开始阅读",
-                    description: "整理后的信息会在这里展开"
+                    description: "从左侧列表打开，正文会在这里展开"
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }

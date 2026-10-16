@@ -11,15 +11,6 @@ public struct LibraryStatusBar: View {
     public var body: some View {
         let palette = MeltedPalette(scheme)
         HStack(spacing: MeltedReading.actionGap) {
-            HStack(spacing: 6) {
-                MeltedMark()
-                    .fill(palette.accent)
-                    .frame(width: MeltedLibraryStatus.markSize, height: MeltedLibraryStatus.markSize)
-                    .accessibilityHidden(true)
-                Text("Melted")
-                    .fontWeight(.medium)
-            }
-            .accessibilityElement(children: .combine)
             Spacer()
             if loading {
                 ProgressView().controlSize(.mini).accessibilityLabel("正在载入")

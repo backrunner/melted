@@ -4,6 +4,8 @@ import SwiftUI
 import MeltedCore
 import MeltedDesignSystem
 
+/// Appendix below the article: taxonomy and evidence as one quiet labeled grid,
+/// set apart from the body by space and a hairline, in smaller secondary type.
 struct ReadingMetadata: View {
     let item: Briefing
     let termName: (String?) -> String
@@ -11,47 +13,47 @@ struct ReadingMetadata: View {
     let openSource: (URL) -> Void
     @Environment(\.colorScheme) private var scheme
     private var palette: MeltedPalette { MeltedPalette(scheme) }
-    var body: some View {
-        VStack(alignment: .leading, spacing: MeltedReading.blockInset) {
-            Rectangle()
-                .fill(palette.separator.opacity(0.25))
-                .frame(height: 1)
-                .padding(.vertical, 12)
 
-            VStack(alignment: .leading, spacing: 8) {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Rectangle()
+                .fill(palette.separator)
+                .frame(height: 1)
+
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 20, verticalSpacing: 10) {
                 if let category = item.categoryId {
-                    informationField("分类", values: [termName(category)])
+                    row("分类") { value(termName(category)) }
                 }
                 if !item.tagIds.isEmpty {
-                    informationField("标签", values: item.tagIds.map { termName($0) })
+                    row("标签") { value(item.tagIds.map { termName($0) }.joined(separator: "、")) }
                 }
                 if !item.subjectIds.isEmpty {
-                    informationField("关注", values: item.subjectIds.map { termName($0) })
+                    row("关注") { value(item.subjectIds.map { termName($0) }.joined(separator: "、")) }
+                }
+                row("依据") {
+                    ReadingEvidence(item: item, evidenceOpen: $evidenceOpen, openSource: openSource)
                 }
             }
-            ReadingEvidence(item: item, evidenceOpen: $evidenceOpen, openSource: openSource)
-            if item.isDemo {
-                Text("开发样例，用于体验阅读与筛选。内容由项目编写，未经模型处理。")
-                    .font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
-                    .lineSpacing(MeltedReading.titleLineSpacing)
-            }
+        }
+        .padding(.top, MeltedReading.sectionSpacing)
+    }
+
+    private func row<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        GridRow {
+            Text(title)
+                .font(.system(size: MeltedType.metadata, weight: .medium))
+                .foregroundStyle(palette.secondary.opacity(0.8))
+                .gridColumnAlignment(.leading)
+            content()
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-    private func informationField(_ title: String, values: [String]) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(title)
-                .font(.system(size: 11.5, weight: .medium))
-                .foregroundStyle(palette.secondary.opacity(0.8))
-                .frame(width: 50, alignment: .leading)
-            if title == "分类", let category = values.first {
-                CategoryLabel(category, isSelected: false)
-            }
-            else {
-                Text(values.joined(separator: "、"))
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(palette.secondary)
-                    .textSelection(.enabled)
-            }
-        }
+
+    private func value(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: MeltedType.metadata))
+            .foregroundStyle(palette.secondary)
+            .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }

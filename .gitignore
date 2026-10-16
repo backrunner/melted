@@ -13,6 +13,7 @@ server/config.yaml
 server/config.local.yaml
 server/docker-compose.yml
 *.log
+*.profraw
 *.xcuserstate
 xcuserdata/
 

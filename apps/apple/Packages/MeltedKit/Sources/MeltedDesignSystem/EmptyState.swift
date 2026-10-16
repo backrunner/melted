@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 
-/// A polished empty state with icon, title, description, and subtle animation
+/// Empty or no-result state. The symbol sits on a soft tile whose lower edge slowly
+/// melts into a drip, echoing the brand mark; then a title, one line of help, and an optional action.
 public struct EmptyState: View {
     private let icon: String
     private let title: String
@@ -11,7 +12,6 @@ public struct EmptyState: View {
     private let actionLabel: String?
 
     @Environment(\.colorScheme) private var scheme
-    @State private var animationPhase = false
 
     public init(
         icon: String,
@@ -29,65 +29,72 @@ public struct EmptyState: View {
 
     public var body: some View {
         let palette = MeltedPalette(scheme)
-        VStack(spacing: 24) {
-            // Animated icon with glow effect
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                palette.accent.opacity(0.1),
-                                palette.accent.opacity(0.03),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 70
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-                    .scaleEffect(animationPhase ? 1.08 : 1.0)
-                    .opacity(animationPhase ? 0.6 : 0.8)
+        VStack(spacing: 20) {
+            MeltingTile(icon: icon)
+                .meltedEntrance(0)
 
-                Image(systemName: icon)
-                    .font(.system(size: 48, weight: .light))
-                    .foregroundStyle(palette.accent.opacity(0.6))
-                    .accessibilityHidden(true)
-            }
-
-            VStack(spacing: 10) {
+            VStack(spacing: 6) {
                 Text(title)
                     .font(.system(size: MeltedType.section, weight: .semibold))
                     .foregroundStyle(palette.text)
-
                 Text(description)
                     .font(.system(size: MeltedType.control))
                     .foregroundStyle(palette.secondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
+                    .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .meltedEntrance(1)
 
             if let action, let actionLabel {
-                Button(action: action) {
-                    Text(actionLabel)
-                        .font(.system(size: MeltedType.control, weight: .medium))
-                        .foregroundStyle(palette.accentText)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(palette.accent, in: RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 8)
+                Button(actionLabel, action: action)
+                    .buttonStyle(MeltedSecondaryButtonStyle())
+                    .frame(height: 30)
+                    .meltedEntrance(2)
             }
         }
-        .frame(maxWidth: 380)
+        .frame(maxWidth: 320)
         .padding(32)
         .accessibilityElement(children: .combine)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                animationPhase = true
+    }
+}
+
+private struct MeltingTile: View {
+    let icon: String
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        let palette = MeltedPalette(scheme)
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
+            let t = reduceMotion ? 1.2 : timeline.date.timeIntervalSinceReferenceDate
+            Canvas { context, size in
+                // Blur then threshold, so tile, drip and drop fuse into one liquid outline.
+                context.addFilter(.alphaThreshold(min: 0.5, color: palette.accent))
+                context.addFilter(.blur(radius: 4))
+                context.drawLayer { layer in
+                    let tile = CGRect(x: 8, y: 6, width: size.width - 16, height: 64)
+                    layer.fill(Path(roundedRect: tile, cornerRadius: 18, style: .continuous), with: .color(.black))
+                    let x = tile.minX + tile.width * 0.68
+                    let stretch = 0.5 + 0.5 * sin(t * 0.9)
+                    let length = 8 + 14 * stretch
+                    layer.fill(Path(roundedRect: CGRect(x: x - 5, y: tile.maxY - 12, width: 10, height: length + 12), cornerRadius: 5), with: .color(.black))
+                    let cycle = (t * 0.32).truncatingRemainder(dividingBy: 1)
+                    let dropY = tile.maxY + length + cycle * cycle * (size.height - tile.maxY - length + 8)
+                    let r = 5.5 * (1 - 0.35 * cycle)
+                    layer.fill(Path(ellipseIn: CGRect(x: x - r, y: dropY - r, width: r * 2, height: r * 2)), with: .color(.black))
+                }
             }
+            .opacity(scheme == .dark ? 0.2 : 0.13)
         }
+        .frame(width: 80, height: 104)
+        .overlay(alignment: .top) {
+            Image(systemName: icon)
+                .font(.system(size: 26, weight: .regular))
+                .foregroundStyle(palette.accent)
+                .frame(height: 64)
+                .padding(.top, 6)
+        }
+        .accessibilityHidden(true)
     }
 }

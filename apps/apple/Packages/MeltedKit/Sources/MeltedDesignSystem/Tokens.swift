@@ -4,14 +4,14 @@
 import SwiftUI
 
 public struct MeltedPalette {
-    public var canvas: Color { Color(meltedHex: dark ? "232220" : "FAF7F0") }
-    public var surface: Color { Color(meltedHex: dark ? "2C2A27" : "FFFCF6") }
-    public var text: Color { Color(meltedHex: dark ? "F1EBE0" : "342F29") }
-    public var secondary: Color { Color(meltedHex: dark ? "BFB5A7" : "706658") }
+    public var canvas: Color { Color(meltedHex: dark ? "232220" : "F7F6F3") }
+    public var surface: Color { Color(meltedHex: dark ? "2C2A27" : "FDFDFB") }
+    public var text: Color { Color(meltedHex: dark ? "F1EBE0" : "2F2B27") }
+    public var secondary: Color { Color(meltedHex: dark ? "BFB5A7" : "66605A") }
     public var accent: Color { Color(meltedHex: dark ? "D6BA92" : "79603F") }
-    public var accentText: Color { Color(meltedHex: dark ? "2D241A" : "FFFCF6") }
-    public var selection: Color { Color(meltedHex: dark ? "403A32" : "F0E7D7") }
-    public var separator: Color { Color(meltedHex: dark ? "504B43" : "E5DED2") }
+    public var accentText: Color { Color(meltedHex: dark ? "2D241A" : "FDFDFB") }
+    public var selection: Color { Color(meltedHex: dark ? "403A32" : "EDEAE4") }
+    public var separator: Color { Color(meltedHex: dark ? "504B43" : "E2DED7") }
     public var warning: Color { Color(meltedHex: dark ? "DABB7D" : "835512") }
     public var danger: Color { Color(meltedHex: dark ? "EFA599" : "A33E35") }
     private let dark: Bool
@@ -80,6 +80,8 @@ public enum MeltedMotion {
     public static let feedback: Double = 0.16
     public static let selection: Double = 0.12
     public static let transition: Double = 0.22
+    public static let pageTransition: Double = 0.35
+    public static let stagger: Double = 0.08
 }
 
 extension Color {
