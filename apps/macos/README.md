@@ -15,7 +15,7 @@ SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.1](.
 | `Sources/Melted/Features/Settings` | 外观、内容/来源与插件、账户、版本和设置布局组件 |
 | `../apple/Packages/MeltedKit/Sources/MeltedCore` | DTO、API actor、Keychain、密钥证明；不依赖业务 View |
 | `../apple/Packages/MeltedKit/Sources/MeltedDesignSystem` | 语义 token、Logo、列表行、底栏、连接按钮、错误和空状态 |
-| `../apple/Packages/MeltedKit/Sources/MeltedRendering` | Markdown 渲染及安全链接 |
+| `../apple/Packages/MeltedKit/Sources/MeltedRendering` | Markdown、按需图片与 YouTube/B 站播放器、安全链接 |
 
 Features 通过状态和动作组合，不读取 Keychain、不创建 URLSession。阅读子组件接收文档、状态和回调；新页面优先复用这些组件。窗口只编排功能，不再内嵌整段列表、详情或登录表单。连接页统一使用 `ConnectionPage`；品牌放在连接表单标题上方，连接切步仅透明度变化；列表底栏左侧显示紧凑品牌，右侧保留条数/加载状态，工作台顶部不另加品牌条。底栏使用列表的 `canvas` 色，不叠系统灰色材质；“设置 → 外观 → 显示列表底栏”可关闭整条底栏，默认开启，选择即时生效并保存在设备端，关闭后不留占位。组件与实际尺寸见 [设计资源索引](../../.agents/design/README.md)。
 
@@ -46,3 +46,5 @@ sh scripts/build-macos.sh
 真实窗口和签名证据按构建与日期保留：见 [品牌与切页](../../.agents/validation/2026-10-16/brand-position.md)、[开源准备](../../.agents/validation/2026-10-17/publication.md)及[完整证据索引](../../.agents/13-design-review.md)。
 
 App 图标来自 [正式资产](../../assets/app-icon/README.md)，构建复制 ICNS 并设置 CFBundleIconFile。Markdown 代码使用系统等宽字体与自定义亮暗语法色；HighlightSwift 的 SwiftPM 资源包放入 Contents/Resources，完整第三方许可随包。修改品牌后运行 swift scripts/generate-app-icon.swift，静态检查使用 --check。
+
+正文媒体的输入格式、原生组件与加载边界见 [MeltedKit 媒体渲染](../apple/Packages/MeltedKit/README.md)。

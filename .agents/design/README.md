@@ -5,7 +5,7 @@
 ## 当前视觉与资产
 
 - [视觉参考 HTML](reference.html)：本地、无外部依赖，展示真实原生截图、成对颜色与当前规则；主题选择只改变文档外观，不改变静态截图。
-- [tokens.json](tokens.json)：颜色、macOS 布局/阅读/连接指标和 iOS 目标；脚本生成 Swift。version=7 是数值版本，与 UI 文档 v1.1 无需同号。status 保留保守的 design-baseline-not-runtime-verified，含义是整套 token 尚未完成全部运行矩阵，不否定已记录的特定原生截图。
+- [tokens.json](tokens.json)：颜色、macOS 布局/阅读/连接指标和 iOS 目标；脚本生成 Swift。version=9 是数值版本，与 UI 文档 v1.1 无需同号。status 保留保守的 design-baseline-not-runtime-verified，含义是整套 token 尚未完成全部运行矩阵，不否定已记录的特定原生截图。
 - [App 图标](../../assets/app-icon/README.md)：原始 m 与共享 palette 生成 SVG、1024 PNG、ICNS，构建显式绑定。
 - [品牌原始标识](../../assets/brand/mark.svg)：由 [品牌生成器](../../scripts/generate-brand-assets.py)生成 Swift 路径与亮暗 lockup，禁止替换为近似字符或 emoji。
 - [融化标识修订](../validation/2026-10-17/melting-mark.md)：微弯左笔画、普通短中段与右侧长滴坠；旧截图按原记录保留。
@@ -29,7 +29,8 @@
 | [ReadingHeader](../../apps/macos/Sources/Melted/Features/Reading/ReadingHeader.swift) / [ReadingMetadata](../../apps/macos/Sources/Melted/Features/Reading/ReadingMetadata.swift) | 标题/时间/收藏与文末字段 | 标题 24，正文宽≤720，信息字号 12；窄处重排 |
 | [ReadingEvidence](../../apps/macos/Sources/Melted/Features/Reading/ReadingEvidence.swift) | 状态与编号来源 | 普通状态文末，风险前置，切文收起，无大卡片 |
 | [ReadingCodeBlock](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingCodeBlock.swift) / [CodeHighlighting](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/CodeHighlighting.swift) | 原生代码与离线语法高亮 | 13 pt monospaced、10 pt 圆角、16 pt inset、36 pt 语言/复制栏；未知/超大回退原文 |
-| [ReadingMarkdown](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingMarkdown.swift) | 原生文档 | readingMetricsPt，长表/代码局部横滚，raw HTML/远程图禁用 |
+| [ReadingMarkdown](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingMarkdown.swift) | 原生文档 | readingMetricsPt，长表/代码局部横滚，源 HTML 不执行，按需媒体引用 |
+| [ReadingMedia](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/ReadingMedia.swift) / [EmbeddedPlayer](../../apps/apple/Packages/MeltedKit/Sources/MeltedRendering/EmbeddedPlayer.swift) | 图片与官方播放器 | mediaMetricsPt，原生占位/加载/失败/关闭；图片最长展示高 720，播放器最小高 200，默认无外部请求 |
 | [MeltedDisclosure](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedDisclosure.swift) | 插件分区、采集设置、连接技术详情与阅读来源 | 共享箭头、点击区域、展开语义与 220 ms 布局/淡化动画；减少动态效果时关闭动画；各分区独立状态 |
 | [MeltedNotice](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedNotice.swift) / [EmptyState](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/EmptyState.swift) / [LoadingState](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/LoadingState.swift) | 真实失败、无内容和加载 | 轻底色与文字、按需操作；空态最大宽约 320，避免用假成功占位 |
 | [SettingsView](../../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift) / [AboutSettings](../../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) | 外观、账户、关于与法律 sheet | 设置宽 520；法律 sheet 640×520，长文滚动/选择 |

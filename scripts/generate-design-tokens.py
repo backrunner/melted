@@ -34,7 +34,7 @@ for name, value in tokens['macTypographyPt'].items():
 lines += ['}', '', 'public enum MeltedReading {']
 for name, value in tokens['readingMetricsPt'].items():
     lines.append(f'    public static let {name}: CGFloat = {value}')
-for group, name in [('connectionMetricsPt', 'MeltedConnection'), ('libraryStatusMetricsPt', 'MeltedLibraryStatus'), ('noticeMetricsPt', 'MeltedNoticeMetrics'), ('scrollEdgeMetricsPt', 'MeltedScrollEdge'), ('codeMetricsPt', 'MeltedCode'), ('emptyStateMetricsPt', 'MeltedEmptyState'), ('panelMetricsPt', 'MeltedPanelMetrics')]:
+for group, name in [('connectionMetricsPt', 'MeltedConnection'), ('libraryStatusMetricsPt', 'MeltedLibraryStatus'), ('noticeMetricsPt', 'MeltedNoticeMetrics'), ('scrollEdgeMetricsPt', 'MeltedScrollEdge'), ('codeMetricsPt', 'MeltedCode'), ('mediaMetricsPt', 'MeltedMedia'), ('emptyStateMetricsPt', 'MeltedEmptyState'), ('panelMetricsPt', 'MeltedPanelMetrics')]:
     lines += ['}', '', f'public enum {name} {{']
     for name, value in tokens[group].items():
         lines.append(f'    public static let {name}: CGFloat = {value}')

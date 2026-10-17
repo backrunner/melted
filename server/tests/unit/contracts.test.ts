@@ -17,12 +17,13 @@ test("published schemas stay aligned and shared Apple fixtures satisfy the serve
         "utf8",
       ),
     );
-  const [schema, api, briefing, library, filter] = await Promise.all([
+  const [schema, api, briefing, library, filter, media] = await Promise.all([
     read("briefing.schema.json"),
     read("openapi.json"),
     read("fixtures/briefing.json"),
     read("fixtures/development-library.json"),
     read("fixtures/filter.json"),
+    read("fixtures/embedded-media.json"),
   ]);
   assert.deepEqual(
     schema.components.securitySchemes,
@@ -32,6 +33,7 @@ test("published schemas stay aligned and shared Apple fixtures satisfy the serve
     assert.deepEqual(value, api.components.schemas[name]);
   }
   assert.deepEqual(briefingSchema.parse(briefing), briefing);
+  assert.deepEqual(briefingSchema.parse(media), media);
   assert.deepEqual(fixtureSchema.parse(library), library);
   for (const field of api.components.schemas.Briefing.required) {
     const incomplete = { ...briefing };

@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | MeltedCore | DTO、服务器发现/协商认证、API、FilterSelection、Keychain | 正文磁盘缓存、持久 mutation、完整 snapshot 重放 |
 | MeltedDesignSystem | 成对 palette、阅读/布局 token、品牌、表单、列表、空态与 notice | 收敛组件内固定数值、iOS 容器及辅助设置适配 |
-| MeltedRendering | swift-markdown AST 与原生 Markdown 组件 | 附件、完整语法覆盖、受控静态 HTML |
+| MeltedRendering | 原生 Markdown、按需图片、YouTube / B 站受限播放器 | 认证附件、完整语法覆盖、受控静态 HTML |
 | macOS shell | 窗口/菜单、WorkspaceModel、连接/列表/阅读/搜索/设置功能模块 | 偏好、主题、反馈等后续业务页面 |
 
 设计系统维护同一亮暗语言，客户端持有导航、操作、权限、外观和证据状态。服务端只提供内容与允许的语义数据，不能远程定义可执行表单、覆盖 App 外壳或改变字号偏好。
@@ -45,7 +45,7 @@
 
 App 构建包含同一品牌矢量生成的正式 ICNS 图标；资源绑定和生成说明见 [图标](../assets/app-icon/README.md)。
 
-当前默认 Markdown，经 swift-markdown AST 原生渲染；支持标题、段落、强调、列表/任务、引用、代码、表格与受控链接。长表/代码局部横滚、正文重排；raw HTML 不渲染、远程图片不加载、外部 http(s) 只在用户操作后打开。行内代码为系统等宽字体与轻底色；代码块共享低饱和亮暗语法色、语言/复制栏、圆角边框和局部横滚。高亮引擎离线随包，未知语言或大于 64 KiB 回退原文；复制保持缩进/空行，任何正文代码均不执行。法律声明复用阅读排版，完整 GPL 使用可选择等宽文本。
+当前默认 Markdown，经 swift-markdown AST 原生渲染；支持标题、段落、强调、列表/任务、引用、代码、表格与受控链接。长表/代码局部横滚、正文重排；raw HTML 不直接渲染；图片与 YouTube/B 站媒体引用由原生控件按需加载，官方播放器使用独立非持久 WKWebView，不共享会话、不自动播放；其他外部 http(s) 只在用户操作后打开。详见 [媒体约定](../apps/apple/Packages/MeltedKit/README.md)。行内代码为系统等宽字体与轻底色；代码块共享低饱和亮暗语法色、语言/复制栏、圆角边框和局部横滚。高亮引擎离线随包，未知语言或大于 64 KiB 回退原文；复制保持缩进/空行，任何正文代码均不执行。法律声明复用阅读排版，完整 GPL 使用可选择等宽文本。
 
 后续静态 HTML 仅限用户启用后的正文：服务端 sanitize，客户端受限 WKWebView、禁 JS/bridge/表单/任意导航，非持久数据存储、CSP 和资源所有权校验。HTML 失败回退同文档 Markdown。附件只经授权代理/本地资源，不向正文或远站暴露 bearer。禁止远程模板覆盖导航、证据警告和账户操作；这些是目标要求，当前没有 HTML/附件运行链路。
 

@@ -1,0 +1,29 @@
+{
+  "id": "demo_embedded_media",
+  "schema_version": 1,
+  "revision": 1,
+  "kind": "item",
+  "content_kind": "reference",
+  "title": "图片与视频：按需加载的阅读样例",
+  "summary": "用于验证远程图片、YouTube、哔哩哔哩和未知播放器的原生渲染。资源只在点击加载后连接外站。",
+  "markdown": "## 远程图片\n\n图片来自 Google 的公开 WebP 格式样例，默认不发起请求。\n\n![WebP 风景图片](https://www.gstatic.com/webp/gallery/1.webp)\n\n## 行内图片与文字\n\n图片前的**强调文字**。![第二张风景图片](https://www.gstatic.com/webp/gallery/2.webp)图片后的文字和[普通链接](https://developers.google.com/speed/webp/gallery)。\n\n## YouTube\n\n[YouTube 官方播放器文档示例](https://www.youtube.com/watch?v=M7lc1UVf-VE)\n\n## 哔哩哔哩\n\n[哔哩哔哩外链播放器文档示例](https://www.bilibili.com/video/BV1B7411m7LV)\n\n## 已知 iframe 引用\n\n<iframe src=\"https://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1\" allowfullscreen></iframe>\n\n源属性不会直接执行，播放器始终关闭自动播放。\n\n## 未支持的嵌入\n\n<iframe src=\"https://example.org/media\"></iframe>\n\n这类引用只提供浏览器链接，不加载任意内嵌网页。\n\n## 图片失败与重试\n\n![无效图片用于验证失败状态](https://www.gstatic.com/webp/gallery/melted-missing.png)\n\n本页仅为渲染验收样例；能加载播放器页面不代表视频已经播放，版权、地区和网络限制由来源决定。",
+  "updated_at": "2026-10-18T02:00:00Z",
+  "published_at": null,
+  "category_id": null,
+  "tag_ids": [],
+  "subject_ids": [],
+  "evidence_status": "not_applicable",
+  "evidence": [
+    {
+      "title": "Melted 媒体渲染开发样例",
+      "excerpt": "正文由项目编写；图片与视频引用分别来自 Google WebP Gallery、YouTube 和哔哩哔哩官方嵌入文档。"
+    }
+  ],
+  "state": {
+    "read": false,
+    "saved": false,
+    "hidden": false,
+    "version": 1
+  },
+  "is_demo": true
+}

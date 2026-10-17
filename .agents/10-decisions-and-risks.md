@@ -49,6 +49,7 @@
 | ADR-025 | 插件设置以来源集合呈现，DSL 声明 list/table 与多选创建 | 用户要求同时订阅多个来源；每行保留独立来源、任务和幂等键，批量部分失败只重试未完成行 | 已实施，见 [订阅集合验收](validation/2026-10-17/route-settings/README.md)；collection 依 ADR-026 现为必需字段；2026-10-17 用户澄清布局由插件声明确定，list/table 仅为 DSL 渲染与测试能力，移除用户切换 |
 | ADR-026 | 首次发布前只维护当前契约；插件开发使用统一 SDK 与 boilerplate | 用户明确不要未发布版本兼容代码；清除旧 API/配置/数据转换，RSSHub 与新插件共用基类和有界请求工具 | 已实施；见 [插件开发](../server/docs/plugin-development.md) |
 | ADR-027 | 直接 Feed 作为独立采集插件，复用 SDK、解析规范化与设置 DSL | 用户要求 RSSHub 之外的真实 RSS 等订阅；支持 RSS 2.0/Atom 1.0/JSON Feed，运营者限定 origin、多目的地披露、原生 URL/select/integer 和多来源集合 | 已实施；见 [Feed 验收](validation/2026-10-17/feed-collector/README.md) |
+| ADR-028 | 原生 Markdown 接入按需图片与已知官方播放器 | 用户要求嵌入媒体；原生图片与隔离播放器组件共用布局，逐项加载、不自动播放、不执行源 HTML；未知平台保留外链 | 已实施代码与回归；原生画面及真实视频播放待解锁验收，见 [媒体约定](../apps/apple/Packages/MeltedKit/README.md) |
 
 表中按状态区分已确认/已实施与候选设计；不把“待评审”当作常规实现都需重新授权的门槛。实现时若发现反例，记录变更原因、替代方案、验收影响和迁移方式。
 

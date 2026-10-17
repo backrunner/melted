@@ -87,3 +87,13 @@ private func fixture(_ name: String) throws -> Data {
     #expect(try decode(#"{"version":1,"methods":["browser"],"browser_callback":"https://evil.example"}"#).supportedMethods.isEmpty)
     #expect(try decode(#"{"version":1,"methods":["key","browser"],"key_algorithm":"P-256","browser_callback":"melted://auth/callback"}"#).supportedMethods == [.key, .browser])
 }
+
+@Test func sharedMediaBriefingPreservesLinksAndNeverRequiresExecutableHTML() throws {
+    let item = try Wire.decoder().decode(Briefing.self, from: fixture("embedded-media"))
+    #expect(item.id == "demo_embedded_media")
+    #expect(item.markdown.contains("![WebP"))
+    #expect(item.markdown.contains("https://www.youtube.com/watch?v=M7lc1UVf-VE"))
+    #expect(item.markdown.contains("https://www.bilibili.com/video/BV1B7411m7LV"))
+    let again = try Wire.decoder().decode(Briefing.self, from: Wire.encoder().encode(item))
+    #expect(again.markdown == item.markdown)
+}

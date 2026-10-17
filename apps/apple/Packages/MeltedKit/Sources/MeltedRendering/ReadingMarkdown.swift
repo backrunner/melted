@@ -13,7 +13,7 @@ public enum SafeLinks {
     }
 }
 
-/// Render a parsed Markdown tree using native text. HTML and remote images never execute or load.
+/// Native Markdown with opt-in media. Source HTML never executes; supported media references use host-owned components.
 public struct ReadingMarkdown: View {
     private let document: Markdown.Document
     private let scale: CGFloat
@@ -60,7 +60,24 @@ public struct ReadingMarkdown: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader))
         }
-        if let paragraph = node as? Paragraph { return AnyView(SwiftUI.Text(inline(paragraph)).fixedSize(horizontal: false, vertical: true)) }
+        if let paragraph = node as? Paragraph {
+            let children = Array(paragraph.children)
+            if children.count == 1 {
+                let value = (children[0] as? Markdown.Link)?.destination ?? (children[0] as? Markdown.Text)?.string
+                if let media = EmbeddedMedia.video(value, title: (children[0] as? Markdown.Link)?.plainText ?? "") {
+                    return AnyView(ReadingMedia(media: media, scale: scale).id(media))
+                }
+            }
+            let segments = inlineSegments(paragraph)
+            return AnyView(VStack(alignment: .leading, spacing: MeltedReading.paragraphSpacing * scale) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                    switch segment {
+                    case .text(let text): SwiftUI.Text(text).fixedSize(horizontal: false, vertical: true)
+                    case .media(let media): ReadingMedia(media: media, scale: scale).id(media)
+                    }
+                }
+            })
+        }
         if let code = node as? CodeBlock {
             return AnyView(ReadingCodeBlock(source: code.code, info: code.language, scale: scale))
         }
@@ -138,8 +155,42 @@ public struct ReadingMarkdown: View {
                     .padding(.vertical, 12)
             )
         }
-        if node is HTMLBlock { return AnyView(EmptyView()) }
+        if let html = node as? HTMLBlock {
+            if let media = EmbeddedMedia.html(html.rawHTML) { return AnyView(ReadingMedia(media: media, scale: scale).id(media)) }
+            if let url = EmbeddedMedia.htmlLink(html.rawHTML) { return AnyView(Link("在浏览器中查看嵌入内容", destination: url)) }
+            return AnyView(EmptyView())
+        }
         return AnyView(blocks(node, nested: true))
+    }
+
+    private enum InlineSegment { case text(AttributedString), media(EmbeddedMedia) }
+
+    /// Lift images out of inline text without dropping surrounding emphasis, links or prose.
+    private func inlineSegments(_ node: any Markup, weight: Font.Weight = .regular, italic: Bool = false) -> [InlineSegment] {
+        if let image = node as? Markdown.Image, let media = EmbeddedMedia.image(image.source, title: image.plainText) { return [.media(media)] }
+        if let html = node as? InlineHTML, let media = EmbeddedMedia.html(html.rawHTML) { return [.media(media)] }
+        if let html = node as? InlineHTML, let url = EmbeddedMedia.htmlLink(html.rawHTML) {
+            var text = AttributedString("在浏览器中查看嵌入内容")
+            text.link = url; text.underlineStyle = .single
+            return [.text(text)]
+        }
+        if node.childCount == 0 || node is Markdown.Image { return [.text(inline(node, weight: weight, italic: italic))] }
+        let weight: Font.Weight = node is Strong ? .semibold : weight
+        var result: [InlineSegment] = []
+        for child in node.children {
+            for segment in inlineSegments(child, weight: weight, italic: italic || node is Emphasis) {
+                switch segment {
+                case .media: result.append(segment)
+                case .text(var text):
+                    if node is Strikethrough { text.strikethroughStyle = .single }
+                    if let link = node as? Markdown.Link, let url = SafeLinks.url(link.destination) { text.link = url; text.underlineStyle = .single }
+                    guard !text.characters.isEmpty else { continue }
+                    if case .text(let previous) = result.last { result[result.count - 1] = .text(previous + text) }
+                    else { result.append(.text(text)) }
+                }
+            }
+        }
+        return result
     }
 
     private func tableCell(_ cell: any Markup, table: Markdown.Table, column: Int, header: Bool) -> some View {

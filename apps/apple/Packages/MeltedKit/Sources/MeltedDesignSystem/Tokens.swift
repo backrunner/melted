@@ -121,6 +121,16 @@ public enum MeltedCode {
     public static let labelSize: CGFloat = 11
 }
 
+public enum MeltedMedia {
+    public static let minimumPlayerHeight: CGFloat = 200
+    public static let maximumImageHeight: CGFloat = 720
+    public static let placeholderInset: CGFloat = 20
+    public static let contentGap: CGFloat = 12
+    public static let cornerRadius: CGFloat = 10
+    public static let actionHeight: CGFloat = 32
+    public static let iconSize: CGFloat = 28
+}
+
 public enum MeltedEmptyState {
     public static let illustrationWidth: CGFloat = 80
     public static let illustrationHeight: CGFloat = 80
