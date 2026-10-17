@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { rsshubConfigSchema } from "../modules/collectors/config.js";
 import { z } from "zod";
 import { parse } from "../shared/validation.js";
 import { authPolicySchema } from "../modules/identity/auth-policy.js";
@@ -26,6 +27,7 @@ export const configSchema = z
       .transform((v) => new URL(v).origin),
     registration: z.enum(["key", "closed"]).default("key"),
     authentication: authPolicySchema.optional(),
+    rsshub: rsshubConfigSchema.optional(),
     oidc: z
       .object({
         issuer: z.url().startsWith("https://"),
@@ -54,6 +56,14 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
       env.AUTH_CONFIG !== undefined
         ? parseAuthJSON(env.AUTH_CONFIG)
         : undefined,
+    rsshub: env.RSSHUB_CONFIG
+      ? {
+          ...(parseAuthJSON(env.RSSHUB_CONFIG, "RSSHUB_CONFIG") as object),
+          ...(env.RSSHUB_ACCESS_KEY
+            ? { access_key: env.RSSHUB_ACCESS_KEY }
+            : {}),
+        }
+      : undefined,
     oidc: oidcPresent
       ? {
           issuer: env.OIDC_ISSUER,
@@ -63,10 +73,10 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
       : undefined,
   });
 }
-function parseAuthJSON(value: string): unknown {
+function parseAuthJSON(value: string, name = "AUTH_CONFIG"): unknown {
   try {
     return JSON.parse(value);
   } catch {
-    throw new Error("AUTH_CONFIG must be valid JSON");
+    throw new Error(`${name} must be valid JSON`);
   }
 }

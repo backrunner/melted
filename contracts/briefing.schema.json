@@ -345,6 +345,13 @@
               },
               "snapshot_sync": {
                 "type": "boolean"
+              },
+              "collectors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Configured collection plugins; does not imply public ingest or AI processing."
               }
             },
             "required": [
@@ -416,7 +423,33 @@
           },
           "destinations": {
             "type": "array",
-            "maxItems": 0
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "origin": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "purpose": {
+                  "const": "public_feed_collection"
+                },
+                "data_categories": {
+                  "type": "array",
+                  "items": {
+                    "const": "source_route"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "origin",
+                "purpose",
+                "data_categories"
+              ]
+            }
           }
         },
         "required": [

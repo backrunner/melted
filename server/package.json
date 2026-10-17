@@ -22,7 +22,10 @@
     "format:check": "prettier --check src tests",
     "test:unit": "node --import tsx --test --test-concurrency=1 tests/unit/*.test.ts",
     "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts",
-    "credentials": "tsx src/entrypoints/credentials.ts"
+    "credentials": "tsx src/entrypoints/credentials.ts",
+    "worker": "tsx src/entrypoints/collector-worker.ts",
+    "worker:start": "node dist/server/src/entrypoints/collector-worker.js",
+    "test:live:rsshub": "node --import tsx tests/live/rsshub.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { consumeCollections } from "../storage/cloudflare/sources/queue.js";
 import { createApp } from "../http/app.js";
 import { CloudRepository } from "../storage/cloudflare/repository.js";
 import { type CloudBindings } from "../storage/cloudflare/bindings.js";
@@ -10,8 +11,11 @@ export { AccountStore } from "../storage/cloudflare/account-store.js";
 export { ControlStore } from "../storage/cloudflare/control-store.js";
 const app = createApp();
 export default {
+  queue: consumeCollections,
   async fetch(request: Request, env: CloudBindings): Promise<Response> {
     const config = configFromEnv({
+      RSSHUB_CONFIG: env.RSSHUB_CONFIG,
+      RSSHUB_ACCESS_KEY: env.RSSHUB_ACCESS_KEY,
       MELTED_SERVER_ID: env.MELTED_SERVER_ID,
       MELTED_OPERATOR: env.MELTED_OPERATOR,
       PUBLIC_ORIGIN: env.PUBLIC_ORIGIN,

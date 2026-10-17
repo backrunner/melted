@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { registerSourceRoutes } from "./routes/sources.js";
 import { Hono } from "hono";
 import type { AppEnv } from "./context.js";
 import { installMiddleware } from "./middleware.js";
@@ -20,6 +21,7 @@ export function createApp() {
     );
     await next();
   });
+  registerSourceRoutes(app);
   registerContentRoutes(app);
   registerSyncRoutes(app);
   return app;

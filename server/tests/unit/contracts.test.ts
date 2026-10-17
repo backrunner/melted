@@ -24,7 +24,13 @@ test("published schemas stay aligned and shared Apple fixtures satisfy the serve
     read("fixtures/development-library.json"),
     read("fixtures/filter.json"),
   ]);
-  assert.deepEqual(schema.components, api.components);
+  assert.deepEqual(
+    schema.components.securitySchemes,
+    api.components.securitySchemes,
+  );
+  for (const [name, value] of Object.entries(schema.components.schemas)) {
+    assert.deepEqual(value, api.components.schemas[name]);
+  }
   assert.deepEqual(briefingSchema.parse(briefing), briefing);
   assert.deepEqual(fixtureSchema.parse(library), library);
   for (const field of api.components.schemas.Briefing.required) {

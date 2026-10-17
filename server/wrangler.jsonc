@@ -3,7 +3,9 @@
   "name": "melted",
   "main": "src/entrypoints/worker.ts",
   "compatibility_date": "2026-10-14",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
   "vars": {
     "MELTED_SERVER_ID": "replace-with-a-stable-server-id",
@@ -13,17 +15,83 @@
   },
   "durable_objects": {
     "bindings": [
-      {"name": "ACCOUNTS", "class_name": "AccountStore"},
-      {"name": "CONTROL", "class_name": "ControlStore"}
+      {
+        "name": "ACCOUNTS",
+        "class_name": "AccountStore"
+      },
+      {
+        "name": "CONTROL",
+        "class_name": "ControlStore"
+      }
     ]
   },
-  "migrations": [{"tag": "v1", "new_sqlite_classes": ["AccountStore", "ControlStore"]}],
-  "observability": {"enabled": false},
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "AccountStore",
+        "ControlStore"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
   "env": {
     "local": {
       "name": "melted-local",
-      "vars": {"MELTED_SERVER_ID": "melted-cloud-local", "MELTED_OPERATOR": "Melted Cloud 本地测试", "PUBLIC_ORIGIN": "http://127.0.0.1:8787", "REGISTRATION_MODE": "key"},
-      "durable_objects": {"bindings": [{"name": "ACCOUNTS", "class_name": "AccountStore"}, {"name": "CONTROL", "class_name": "ControlStore"}]}
+      "vars": {
+        "MELTED_SERVER_ID": "melted-cloud-local",
+        "MELTED_OPERATOR": "Melted Cloud \u672c\u5730\u6d4b\u8bd5",
+        "PUBLIC_ORIGIN": "http://127.0.0.1:8787",
+        "REGISTRATION_MODE": "key"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "ACCOUNTS",
+            "class_name": "AccountStore"
+          },
+          {
+            "name": "CONTROL",
+            "class_name": "ControlStore"
+          }
+        ]
+      },
+      "queues": {
+        "producers": [
+          {
+            "binding": "COLLECTION_QUEUE",
+            "queue": "melted-collections-local"
+          }
+        ],
+        "consumers": [
+          {
+            "queue": "melted-collections-local",
+            "max_batch_size": 1,
+            "max_batch_timeout": 1,
+            "max_retries": 5
+          }
+        ]
+      }
     }
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "COLLECTION_QUEUE",
+        "queue": "melted-collections"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "melted-collections",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 5,
+        "dead_letter_queue": "melted-collections-dlq",
+        "max_concurrency": 4
+      }
+    ]
   }
 }

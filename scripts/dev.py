@@ -14,6 +14,7 @@ import time
 REPO = Path(__file__).resolve().parent.parent
 LOCAL = REPO / '.local'
 NODE = 'node:24-bookworm-slim'
+RSSHUB_IMAGE = 'ghcr.io/diygod/rsshub@sha256:1db5e6b65a2cbabc95def7e495801ccd50ce5c77ade6408d454867333c28b1a4'
 
 def run(*args, capture=False, check=True, **kwargs):
     return subprocess.run(list(args), cwd=REPO, check=check, text=True,
@@ -35,7 +36,8 @@ def envfile(path, values):
     path.chmod(0o600)
 
 def execute(*args):
-    run('container', 'exec', '--env-file', str(LOCAL/'node.env'), 'melted-tools', *args)
+    extra = ['--env-file', str(LOCAL/'rsshub.env')] if (LOCAL/'rsshub.env').exists() else []
+    run('container', 'exec', '--env-file', str(LOCAL/'node.env'), *extra, 'melted-tools', *args)
 
 def setup():
     LOCAL.mkdir(exist_ok=True, mode=0o700)
@@ -82,21 +84,45 @@ def up():
     if old:
         if old['status']['state']=='running':run('container','stop','melted-api')
         run('container','delete','melted-api')
-    ensure('melted-api',['--env-file',str(LOCAL/'node.env'),'--publish','127.0.0.1:8421:8421',
+    extra = ['--env-file', str(LOCAL/'rsshub.env')] if (LOCAL/'rsshub.env').exists() else []
+    ensure('melted-api',['--env-file',str(LOCAL/'node.env'),*extra,'--publish','127.0.0.1:8421:8421',
                          '--volume',f'{REPO}:/workspace','--workdir','/workspace/server',NODE,
                          'node','dist/server/src/entrypoints/node.js'])
     print('API: http://127.0.0.1:8421; Cloudflare emulator: python3 scripts/dev.py worker')
 
+def rsshub():
+    LOCAL.mkdir(exist_ok=True, mode=0o700)
+    current = state('melted-rsshub')
+    if current and current['configuration']['image']['reference'] != RSSHUB_IMAGE:
+        raise SystemExit('Existing melted-rsshub uses another image; inspect it before replacing the container')
+    ensure('melted-rsshub', ['--cpus','2','--memory','1G','--user','1000:1000',
+                           '--read-only','--tmpfs','/tmp','--tmpfs','/home/node/.npm',
+                           '--env','CACHE_TYPE=memory','--env','DEBUG_INFO=false',
+                           '--env','LOGGER_LEVEL=error','--env','ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=false',RSSHUB_IMAGE])
+    ip = state('melted-rsshub')['status']['networks'][0]['ipv4Address'].split('/')[0]
+    envfile(LOCAL/'rsshub.env', {'MELTED_RSSHUB_IMAGE':RSSHUB_IMAGE, 'RSSHUB_CONFIG':json.dumps({'base_url':f'http://{ip}:1200',
+             'allowed_routes':['/bbc','/abc','/douban/book/latest','/douban/event/hot','/hackernews'],
+             'allow_private':True},separators=(',',':'))})
+    print('RSSHub configured for container commands; run dev.py collector for background collection')
+
+
 action=sys.argv[1] if len(sys.argv)>1 else 'up'
 if action=='setup':setup()
 elif action=='up':up()
-elif action=='worker':execute('npx','wrangler','dev','--env','local','--ip','0.0.0.0','--port','8787','--local','--persist-to','.wrangler/local')
+elif action=='rsshub':rsshub()
+elif action=='collector':execute('npm','run','worker')
+elif action=='worker':
+    extra = []
+    if (LOCAL/'rsshub.env').exists():
+        values = dict(line.split('=',1) for line in (LOCAL/'rsshub.env').read_text().splitlines() if '=' in line)
+        extra = ['--var', 'RSSHUB_CONFIG:' + values['RSSHUB_CONFIG']]
+    execute('npx','wrangler','dev','--env','local','--ip','0.0.0.0','--port','8787','--local','--persist-to','.wrangler/local',*extra)
 elif action=='check':
     execute('npm','run','check');execute('npm','run','format:check');execute('npm','test');execute('npm','run','worker:check')
 elif action=='exec':execute(*sys.argv[2:])
 elif action=='down':
-    for name in ['melted-api','melted-tools','melted-postgres']:
+    for name in ['melted-api','melted-tools','melted-postgres','melted-rsshub']:
         current=state(name)
         if current and current['status']['state']=='running':run('container','stop',name)
 elif action=='logs':run('container','logs','melted-api')
-else:raise SystemExit('Usage: dev.py setup|up|worker|check|exec COMMAND...|down|logs')
+else:raise SystemExit('Usage: dev.py setup|up|worker|rsshub|collector|check|exec COMMAND...|down|logs')

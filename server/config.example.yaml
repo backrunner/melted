@@ -55,3 +55,9 @@ development:
 # authentication:
 #   methods: [key]
 #   preferred: key
+
+# Optional public RSSHub collector. Keys belong in RSSHUB_ACCESS_KEY, not source records.
+# rsshub:
+#   base_url: https://feeds.example.com
+#   allowed_routes: [/bbc, /douban/book/latest, /hackernews]
+#   allow_private: false

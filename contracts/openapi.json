@@ -935,6 +935,435 @@
           }
         }
       }
+    },
+    "/v1/sources": {
+      "get": {
+        "summary": "List up to 100 owned sources; excludes deleted sources and credentials",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Source"
+                      }
+                    }
+                  },
+                  "required": [
+                    "sources"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get_v1_sources"
+      },
+      "post": {
+        "summary": "Create a public RSSHub source; idempotency retained seven days",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+            }
+          }
+        ],
+        "operationId": "post_v1_sources"
+      }
+    },
+    "/v1/sources/{id}": {
+      "get": {
+        "summary": "Read source configuration and health; ETag is the configuration version",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "operationId": "get_v1_sources_id"
+      },
+      "patch": {
+        "summary": "Change source configuration; cancels old generation and clears checkpoint when route changes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourcePatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "operationId": "patch_v1_sources_id"
+      },
+      "delete": {
+        "summary": "Delete source, cancel pending runs and remove its raw items and revisions",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[1-9][0-9]*\"$"
+            }
+          }
+        ],
+        "operationId": "delete_v1_sources_id"
+      }
+    },
+    "/v1/sources/{id}/sync": {
+      "post": {
+        "summary": "Queue or coalesce a manual collection; at most 60 requests per account per minute",
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionReceipt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+            }
+          }
+        ],
+        "operationId": "post_v1_sources_id_sync"
+      }
+    },
+    "/v1/receipts/{id}": {
+      "get": {
+        "summary": "Read an owned collection run; success does not imply AI processing",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRun"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "operationId": "get_v1_receipts_id"
+      }
+    },
+    "/v1/sources/{id}/items": {
+      "get": {
+        "summary": "List raw item metadata by stable ID, excluding bodies; live keyset pagination, not a frozen snapshot",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RawItemSummary"
+                      }
+                    },
+                    "next_cursor": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ],
+        "operationId": "get_v1_sources_id_items"
+      }
+    },
+    "/v1/raw-items/{id}": {
+      "get": {
+        "summary": "Read an owned raw item; HTML is untrusted data and media URLs have not been downloaded",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawItem"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; includes ownership, idempotency and configuration failures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "operationId": "get_v1_raw_items_id"
+      }
     }
   },
   "components": {
@@ -1280,6 +1709,13 @@
               },
               "snapshot_sync": {
                 "type": "boolean"
+              },
+              "collectors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Configured collection plugins; does not imply public ingest or AI processing."
               }
             },
             "required": [
@@ -1351,7 +1787,33 @@
           },
           "destinations": {
             "type": "array",
-            "maxItems": 0
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "origin": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "purpose": {
+                  "const": "public_feed_collection"
+                },
+                "data_categories": {
+                  "type": "array",
+                  "items": {
+                    "const": "source_route"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "origin",
+                "purpose",
+                "data_categories"
+              ]
+            }
           }
         },
         "required": [
@@ -1381,6 +1843,626 @@
           "entity_id",
           "kind"
         ]
+      },
+      "SourceInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
+          },
+          "route": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2048,
+            "description": "Allowed relative RSSHub path, without query, fragment, control characters or path traversal."
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 86400,
+            "default": 900
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "route"
+        ],
+        "additionalProperties": false
+      },
+      "SourcePatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
+          },
+          "route": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2048,
+            "description": "Allowed relative RSSHub path, without query, fragment, control characters or path traversal."
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 86400,
+            "default": 900
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "plugin": {
+            "const": "rsshub"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
+          },
+          "route": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2048,
+            "description": "Allowed relative RSSHub path, without query, fragment, control characters or path traversal."
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 86400,
+            "default": 900
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_poll_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "plugin",
+          "name",
+          "route",
+          "interval_seconds",
+          "enabled",
+          "version",
+          "created_at",
+          "updated_at",
+          "next_poll_at",
+          "last_success_at",
+          "last_run_id",
+          "last_error",
+          "blocked"
+        ],
+        "additionalProperties": false
+      },
+      "CollectionCounts": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inserted": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updated": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duplicates": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalid": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "received",
+          "inserted",
+          "updated",
+          "duplicates",
+          "invalid"
+        ],
+        "additionalProperties": false
+      },
+      "CollectionRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source_id": {
+            "type": "string"
+          },
+          "trigger": {
+            "enum": [
+              "manual",
+              "scheduled"
+            ]
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "complete",
+              "partial",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "counts": {
+            "$ref": "#/components/schemas/CollectionCounts"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "code": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "index",
+                "code"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Per-entry reasons including invalid_item, invalid_text, item_limit, item_too_large, batch_too_large and conflicting_external_id. Partial results do not advance validators."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code",
+                  "retryable"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next_retry_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "trigger",
+          "state",
+          "created_at",
+          "started_at",
+          "finished_at",
+          "attempts",
+          "counts",
+          "warnings",
+          "error",
+          "next_retry_at"
+        ],
+        "additionalProperties": false
+      },
+      "CollectionReceipt": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {
+            "type": "string"
+          },
+          "status_url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "receipt_id",
+          "status_url",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "RawContent": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "html",
+                    "text"
+                  ]
+                },
+                "mime_type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "mime_type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "canonical_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "avatar": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "modified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "mime_type": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "size_in_bytes": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "duration_in_seconds": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "external_id",
+          "title",
+          "parts",
+          "canonical_url",
+          "authors",
+          "language",
+          "published_at",
+          "modified_at",
+          "tags",
+          "media"
+        ],
+        "additionalProperties": false
+      },
+      "RawItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source_id": {
+            "type": "string"
+          },
+          "external_key": {
+            "type": "string"
+          },
+          "content_hash": {
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/RawContent"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "external_key",
+          "content_hash",
+          "content",
+          "revision",
+          "received_at",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "RawItemSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source_id": {
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "canonical_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "media_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "external_id",
+          "title",
+          "canonical_url",
+          "revision",
+          "published_at",
+          "received_at",
+          "updated_at",
+          "media_count"
+        ],
+        "additionalProperties": false
       }
     }
   }

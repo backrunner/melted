@@ -27,6 +27,8 @@ services:
       MELTED_SERVER_ID: ${MELTED_SERVER_ID:?Set a stable MELTED_SERVER_ID}
       MELTED_OPERATOR: ${MELTED_OPERATOR:-Melted}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN}
+      RSSHUB_CONFIG: ${RSSHUB_CONFIG:-}
+      RSSHUB_ACCESS_KEY: ${RSSHUB_ACCESS_KEY:-}
       REGISTRATION_MODE: ${REGISTRATION_MODE:-key}
       OIDC_ISSUER: ${OIDC_ISSUER:-}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
@@ -34,6 +36,41 @@ services:
     ports: ["127.0.0.1:8421:8421"]
     depends_on:
       migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+  collector:
+    build: .
+    command: ["node", "dist/server/src/entrypoints/collector-worker.js"]
+    healthcheck:
+      disable: true # The image's HTTP healthcheck belongs to the API process.
+    environment:
+      DATABASE_URL: postgres://melted:${POSTGRES_PASSWORD}@postgres:5432/melted
+      MELTED_SERVER_ID: ${MELTED_SERVER_ID:?Set a stable MELTED_SERVER_ID}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN}
+      RSSHUB_CONFIG: ${RSSHUB_CONFIG:-}
+      RSSHUB_ACCESS_KEY: ${RSSHUB_ACCESS_KEY:-}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+  rsshub:
+    profiles: [rsshub]
+    image: ghcr.io/diygod/rsshub@sha256:1db5e6b65a2cbabc95def7e495801ccd50ce5c77ade6408d454867333c28b1a4
+    user: "1000:1000"
+    read_only: true
+    tmpfs: ["/tmp", "/home/node/.npm"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      NODE_ENV: production
+      CACHE_TYPE: memory
+      DEBUG_INFO: "false"
+      LOGGER_LEVEL: error
+      ALLOW_USER_SUPPLY_UNSAFE_DOMAIN: "false"
+      ACCESS_KEY: ${RSSHUB_ACCESS_KEY:-}
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit((await fetch('http://127.0.0.1:1200/')).ok ? 0 : 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 volumes:
   postgres:

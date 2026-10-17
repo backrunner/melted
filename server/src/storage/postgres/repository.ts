@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { PostgresSources } from "./sources/repository.js";
 import { listChanges } from "./changes.js";
 import { Database } from "./database.js";
 import { type Config } from "../../config/schema.js";
@@ -17,9 +18,11 @@ import { PostgresBrowserFlows } from "./browser-flows.js";
 import { listBriefings } from "./queries.js";
 
 export class PostgresRepository implements Repository {
+  readonly sources: PostgresSources;
   private content: PostgresContent;
   private browser: PostgresBrowserFlows;
   constructor(readonly db: Database) {
+    this.sources = new PostgresSources(db);
     this.content = new PostgresContent(db);
     this.browser = new PostgresBrowserFlows(db);
   }
@@ -27,7 +30,7 @@ export class PostgresRepository implements Repository {
     try {
       const result = await this.db.query(
         "SELECT 1 FROM schema_migrations WHERE version=$1",
-        ["002_credentials.sql"],
+        ["003_sources.sql"],
       );
       if (!result.rowCount) throw new Error("migration_missing");
     } catch {
@@ -103,6 +106,9 @@ export class PostgresRepository implements Repository {
     return this.browser.exchangeCode(code, challenge, redirect);
   }
   async maintenance() {
+    await this.db.query("DELETE FROM source_requests WHERE created<$1", [
+      Date.now() - 7 * 86400_000,
+    ]);
     await this.db.query(
       "DELETE FROM query_snapshots WHERE expires_at<now(); DELETE FROM auth_challenges WHERE expires_at<now(); DELETE FROM browser_flows WHERE expires_at<now(); DELETE FROM browser_codes WHERE expires_at<now(); DELETE FROM auth_limits WHERE window_start<now()-interval '1 hour'; DELETE FROM mutations WHERE created_at<now()-interval '7 days'; DELETE FROM session_families WHERE expires_at<now();",
     );

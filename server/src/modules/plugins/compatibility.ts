@@ -7,7 +7,13 @@ export const manifestSchema = z
     id: z.string().regex(/^[a-z][a-z0-9.-]{2,99}$/),
     version: z.string().min(1),
     targets: z.array(z.enum(["node", "cloudflare"])).min(1),
-    runtime: z.enum(["node-process", "worker-module", "remote-https", "wasm"]),
+    runtime: z.enum([
+      "builtin",
+      "node-process",
+      "worker-module",
+      "remote-https",
+      "wasm",
+    ]),
     capabilities: z.array(
       z.enum([
         "https",
@@ -27,6 +33,19 @@ export const manifestSchema = z
   })
   .strict();
 export type Manifest = z.infer<typeof manifestSchema>;
+export const pluginSettingsSchema = z
+  .object({
+    plugins: z.array(
+      z.object({ enabled: z.boolean(), manifest: manifestSchema }).strict(),
+    ),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      new Set(value.plugins.map((p) => p.manifest.id)).size ===
+      value.plugins.length,
+    "Duplicate plugin ID",
+  );
 export function checkCompatibility(
   value: unknown,
   target: "node" | "cloudflare",

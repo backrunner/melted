@@ -1,0 +1,11 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "Melted collector contract fixture",
+  "authors": [{"name": "Example publisher"}],
+  "language": "zh-CN",
+  "items": [
+    {"id": "culture-1", "title": "周末展览", "url": "https://example.org/culture/1", "content_html": "<p>公开展览信息</p>", "date_published": "2026-10-17T08:00:00+08:00", "tags": ["文化"]},
+    {"id": "audio-1", "title": "城市声音", "url": "https://example.org/audio/1", "content_text": "本期节目介绍", "attachments": [{"url": "https://example.org/audio/1.mp3", "mime_type": "audio/mpeg", "duration_in_seconds": 120}]},
+    {"id": "community-1", "content_text": "社区活动讨论", "authors": [{"name": "Community"}]}
+  ]
+}

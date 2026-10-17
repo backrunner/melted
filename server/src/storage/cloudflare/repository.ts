@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { CloudSources } from "./sources/proxy.js";
 import { z } from "zod";
 import { type Config } from "../../config/schema.js";
 import { unauthorized } from "../../shared/problem.js";
@@ -36,7 +37,10 @@ function flowID(value: string) {
   return valueID;
 }
 export class CloudRepository implements Repository {
-  constructor(private env: CloudBindings) {}
+  readonly sources: CloudSources;
+  constructor(private env: CloudBindings) {
+    this.sources = new CloudSources(env.ACCOUNTS);
+  }
   private account<T>(owner: string, op: string, payload: unknown = {}) {
     return call<T>(this.env.ACCOUNTS, owner, op, payload);
   }
