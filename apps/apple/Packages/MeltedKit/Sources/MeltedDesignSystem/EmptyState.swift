@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 
-/// Empty or no-result state. The symbol sits on a soft tile whose lower edge slowly
-/// melts into a drip, echoing the brand mark; then a title, one line of help, and an optional action.
+/// A compact illustration and its copy stay still while liquid falls behind them
+/// to the bottom of the available pane. Decorative drawing never takes input.
 public struct EmptyState: View {
     private let icon: String
     private let title: String
@@ -29,9 +29,18 @@ public struct EmptyState: View {
 
     public var body: some View {
         let palette = MeltedPalette(scheme)
-        VStack(spacing: 20) {
-            MeltingTile(icon: icon)
-                .meltedEntrance(0)
+        VStack(spacing: MeltedEmptyState.contentGap) {
+            Color.clear
+                .frame(width: MeltedEmptyState.illustrationWidth, height: MeltedEmptyState.illustrationHeight)
+                .overlay(alignment: .top) {
+                    Image(systemName: icon)
+                        .font(.system(size: 26, weight: .regular))
+                        .foregroundStyle(palette.accent)
+                        .frame(height: MeltedEmptyState.tileSize)
+                        .padding(.top, MeltedEmptyState.tileTop)
+                }
+                .anchorPreference(key: MeltingTileBounds.self, value: .bounds) { $0 }
+                .accessibilityHidden(true)
 
             VStack(spacing: 6) {
                 Text(title)
@@ -55,46 +64,60 @@ public struct EmptyState: View {
         }
         .frame(maxWidth: 320)
         .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .backgroundPreferenceValue(MeltingTileBounds.self) { anchor in
+            GeometryReader { proxy in
+                if let anchor {
+                    EmptyStateLiquid(tileBounds: proxy[anchor])
+                }
+            }
+        }
+        .clipped()
         .accessibilityElement(children: .combine)
     }
 }
 
-private struct MeltingTile: View {
-    let icon: String
+private struct MeltingTileBounds: PreferenceKey {
+    static let defaultValue: Anchor<CGRect>? = nil
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        value = nextValue() ?? value
+    }
+}
+
+private struct EmptyStateLiquid: View {
+    let tileBounds: CGRect
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var seed = Double.random(in: 0...1000)
 
     var body: some View {
         let palette = MeltedPalette(scheme)
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
-            let t = reduceMotion ? 1.2 : timeline.date.timeIntervalSinceReferenceDate
+        TimelineView(.animation(paused: reduceMotion)) { timeline in
+            let t = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
             Canvas { context, size in
-                // Blur then threshold, so tile, drip and drop fuse into one liquid outline.
-                context.addFilter(.alphaThreshold(min: 0.5, color: palette.accent))
-                context.addFilter(.blur(radius: 4))
-                context.drawLayer { layer in
-                    let tile = CGRect(x: 8, y: 6, width: size.width - 16, height: 64)
-                    layer.fill(Path(roundedRect: tile, cornerRadius: 18, style: .continuous), with: .color(.black))
-                    let x = tile.minX + tile.width * 0.68
-                    let stretch = 0.5 + 0.5 * sin(t * 0.9)
-                    let length = 8 + 14 * stretch
-                    layer.fill(Path(roundedRect: CGRect(x: x - 5, y: tile.maxY - 12, width: 10, height: length + 12), cornerRadius: 5), with: .color(.black))
-                    let cycle = (t * 0.32).truncatingRemainder(dividingBy: 1)
-                    let dropY = tile.maxY + length + cycle * cycle * (size.height - tile.maxY - length + 8)
-                    let r = 5.5 * (1 - 0.35 * cycle)
-                    layer.fill(Path(ellipseIn: CGRect(x: x - r, y: dropY - r, width: r * 2, height: r * 2)), with: .color(.black))
+                let tile = CGRect(x: tileBounds.minX + MeltedEmptyState.tileInset,
+                                  y: tileBounds.minY + MeltedEmptyState.tileTop,
+                                  width: MeltedEmptyState.tileSize, height: MeltedEmptyState.tileSize)
+                let corner = MeltedEmptyState.tileCornerRadius
+                context.fill(Path(roundedRect: tile, cornerRadius: corner, style: .continuous),
+                             with: .color(palette.accent))
+                // The drip hangs from the tile's actual bottom edge, rising into the
+                // corners, so its shoulders blend into the outline instead of crossing it.
+                let edge: (Double) -> Double = { x in
+                    let into = min(corner, max(0, abs(x - tile.midX) - (tile.width / 2 - corner)))
+                    return tile.maxY - (corner - sqrt(corner * corner - into * into))
                 }
+                let radius = 6.2
+                // Keep the whole shoulder on the flat edge or the shallow start of a corner.
+                let positionRange = max(0, tile.width / 2 - corner + 3 - radius * 1.18 * MeltedLiquid.Drip.rootSpread)
+                MeltedLiquid.Drip(x: tile.midX, source: edge, pool: { _ in size.height },
+                                  reach: 19, radius: radius, positionRange: positionRange)
+                    .draw(in: &context, time: t, period: 7.6, offset: reduceMotion ? 0 : seed,
+                          seed: seed, tint: palette.accent)
             }
             .opacity(scheme == .dark ? 0.2 : 0.13)
         }
-        .frame(width: 80, height: 104)
-        .overlay(alignment: .top) {
-            Image(systemName: icon)
-                .font(.system(size: 26, weight: .regular))
-                .foregroundStyle(palette.accent)
-                .frame(height: 64)
-                .padding(.top, 6)
-        }
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 }

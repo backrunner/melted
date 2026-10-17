@@ -17,6 +17,7 @@ let package = Package(
         .target(name: "MeltedCore"),
         .target(name: "MeltedDesignSystem", dependencies: ["MeltedCore"]),
         .target(name: "MeltedRendering", dependencies: ["MeltedCore", "MeltedDesignSystem", .product(name: "Markdown", package: "swift-markdown"), .product(name: "HighlightSwift", package: "HighlightSwift")]),
-        .testTarget(name: "MeltedCoreTests", dependencies: ["MeltedCore", "MeltedRendering"])
+        .testTarget(name: "MeltedCoreTests", dependencies: ["MeltedCore", "MeltedRendering"]),
+        .testTarget(name: "MeltedDesignSystemTests", dependencies: ["MeltedDesignSystem"])
     ]
 )

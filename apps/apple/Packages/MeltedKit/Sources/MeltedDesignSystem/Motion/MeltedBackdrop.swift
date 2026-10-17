@@ -8,17 +8,23 @@ import SwiftUI
 public struct MeltedBackdrop: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var seed = Double.random(in: 0...1000)
     public init() {}
 
     public var body: some View {
         let tint = MeltedPalette(scheme).accent
         let dark = scheme == .dark
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
-            let t = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 86_400)
-            ZStack {
+        ZStack {
+            // The glow drifts over tens of seconds; a low refresh is indistinguishable.
+            TimelineView(.animation(minimumInterval: 1 / 20, paused: reduceMotion)) { timeline in
+                let t = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
                 Canvas { context, size in Self.glow(&context, size: size, t: t, tint: tint) }
                     .opacity(dark ? 0.05 : 0.04)
-                Canvas { context, size in Self.melt(&context, size: size, t: t, tint: tint) }
+            }
+            // Falling drops move fast, so the liquid follows the display refresh rate.
+            TimelineView(.animation(paused: reduceMotion)) { timeline in
+                let t = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
+                Canvas { context, size in Self.melt(&context, size: size, t: t, tint: tint, still: reduceMotion, seed: seed) }
                     .opacity(dark ? 0.12 : 0.10)
             }
         }
@@ -42,7 +48,9 @@ public struct MeltedBackdrop: View {
             let x = blob.x * size.width + sin(t * blob.speed + blob.phase) * unit * 0.06
             let y = blob.y * size.height + cos(t * blob.speed * 0.8 + blob.phase) * unit * 0.05
             let r = blob.radius * unit * (1 + 0.08 * sin(t * blob.speed * 1.3 + blob.phase))
-            let rect = CGRect(x: x - r * 1.15, y: y - r, width: r * 2.3, height: r * 2)
+            // The silhouette and gradient must end at the same radius; clipping a
+            // circular gradient to a shorter ellipse leaves a visible dark ring.
+            let rect = CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)
             context.fill(Path(ellipseIn: rect), with: .radialGradient(
                 Gradient(stops: [
                     .init(color: tint.opacity(0.55), location: 0),
@@ -56,53 +64,59 @@ public struct MeltedBackdrop: View {
         }
     }
 
-    /// Drips sit beside the centered content column so falling drops rarely cross text.
-    private static let drips: [(x: Double, width: Double, base: Double, reach: Double, speed: Double, phase: Double, fall: Double)] = [
-        (0.07, 0.020, 0.05, 0.12, 0.35, 0.0, 0.075),
-        (0.17, 0.014, 0.03, 0.08, 0.42, 1.3, 0.090),
-        (0.28, 0.024, 0.06, 0.15, 0.28, 2.6, 0.065),
-        (0.72, 0.018, 0.04, 0.10, 0.38, 3.7, 0.080),
-        (0.83, 0.026, 0.07, 0.17, 0.26, 4.9, 0.060),
-        (0.94, 0.015, 0.03, 0.09, 0.45, 5.8, 0.100),
+    /// Keep the falling lanes in the gutters, including at the minimum window width.
+    private static let drips: [(lane: Double, radius: Double, reach: Double, period: Double, offset: Double)] = [
+        (0.22, 0.013, 0.09, 8.8, 0.0),
+        (0.55, 0.010, 0.06, 10.4, 4.0),
+        (0.86, 0.015, 0.13, 12.2, 7.5),
+        (0.22, 0.011, 0.07, 9.6, 5.2),
+        (0.55, 0.016, 0.14, 11.5, 2.4),
+        (0.86, 0.010, 0.08, 10.8, 8.8),
     ]
 
-    private static func melt(_ context: inout GraphicsContext, size: CGSize, t: Double, tint: Color) {
+    private static func melt(_ context: inout GraphicsContext, size: CGSize, t: Double, tint: Color, still: Bool, seed: Double) {
         let w = size.width, h = size.height
-        let unit = min(w, 1400)
-        // Blur joins nearby shapes; the threshold restores a crisp liquid contour.
-        // Keep the finished Canvas unblurred so the edge stays sharp at display resolution.
-        context.addFilter(.alphaThreshold(min: 0.5, color: tint))
-        context.addFilter(.blur(radius: 14))
-        context.drawLayer { layer in
-            func circle(_ x: Double, _ y: Double, _ r: Double) {
-                layer.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(.black))
-            }
+        let unit = min(w, 1100)
+        let gutter = max(36, (w - MeltedConnection.contentMaximum) / 2 - 24)
+        func ceiling(_ x: Double) -> Double {
+            h * 0.035 + 4 * sin(x / w * .pi * 5 + t * 0.22)
+        }
+        func surface(_ x: Double) -> Double {
+            h - min(48, h * 0.065) + 4 * sin(x / w * .pi * 4 + t * 0.28)
+        }
 
-            let ceiling = h * 0.035
-            layer.fill(Path(CGRect(x: -40, y: -60, width: w + 80, height: 60 + ceiling)), with: .color(.black))
-            for i in 0...9 {
-                circle(w * Double(i) / 9, ceiling * 0.6, ceiling * (1.1 + 0.35 * sin(t * 0.3 + Double(i) * 1.9)))
-            }
+        // Draw the actual liquid surface and use that same height for every impact.
+        // Curved silhouettes need no full-canvas blur, which used to erase small drops.
+        var top = Path()
+        top.move(to: CGPoint(x: -20, y: -20))
+        top.addLine(to: CGPoint(x: w + 20, y: -20))
+        top.addLine(to: CGPoint(x: w + 20, y: ceiling(w)))
+        for step in 0...100 {
+            let x = w * (1 - Double(step) / 100)
+            top.addLine(to: CGPoint(x: x, y: ceiling(x)))
+        }
+        top.addLine(to: CGPoint(x: -20, y: ceiling(0)))
+        top.closeSubpath()
+        context.fill(top, with: .color(tint))
 
-            let pool = h * 0.045
-            layer.fill(Path(CGRect(x: -40, y: h - pool * 0.5, width: w + 80, height: pool + 60)), with: .color(.black))
-            for i in 0...7 {
-                circle(w * Double(i) / 7, h - pool * 0.4, pool * (0.9 + 0.4 * sin(t * 0.25 + Double(i) * 2.3)))
-            }
+        var pool = Path()
+        pool.move(to: CGPoint(x: -20, y: h + 20))
+        pool.addLine(to: CGPoint(x: -20, y: surface(0)))
+        for step in 0...100 {
+            let x = w * Double(step) / 100
+            pool.addLine(to: CGPoint(x: x, y: surface(x)))
+        }
+        pool.addLine(to: CGPoint(x: w + 20, y: surface(w)))
+        pool.addLine(to: CGPoint(x: w + 20, y: h + 20))
+        pool.closeSubpath()
+        context.fill(pool, with: .color(tint))
 
-            for drip in drips {
-                let x = w * drip.x
-                let width = drip.width * unit
-                let stretch = 0.5 + 0.5 * sin(t * drip.speed + drip.phase)
-                let length = h * (drip.base + drip.reach * stretch)
-                layer.fill(Path(roundedRect: CGRect(x: x - width / 2, y: -10, width: width, height: length + 10), cornerRadius: width / 2), with: .color(.black))
-                circle(x, length, width * 0.75)
-
-                // A drop pinches off the bulb, accelerates, and merges into the pool.
-                let cycle = (t * drip.fall + drip.phase).truncatingRemainder(dividingBy: 1)
-                let dropY = length + cycle * cycle * (h - length)
-                circle(x, dropY, width * (0.6 - 0.15 * cycle))
-            }
+        for (index, drip) in drips.enumerated() {
+            let x = index < 3 ? gutter * drip.lane : w - gutter * drip.lane
+            MeltedLiquid.Drip(x: x, source: ceiling, pool: surface, reach: h * drip.reach,
+                              radius: max(5, unit * drip.radius))
+                .draw(in: &context, time: t, period: drip.period, offset: still ? 0 : drip.offset,
+                      seed: seed + Double(index), tint: tint)
         }
     }
 }

@@ -94,6 +94,23 @@ public enum MeltedLibraryStatus {
     public static let brandGap: CGFloat = 6
 }
 
+public enum MeltedNoticeMetrics {
+    public static let inset: CGFloat = 16
+    public static let cornerRadius: CGFloat = 12
+    public static let iconWidth: CGFloat = 16
+    public static let iconGap: CGFloat = 8
+    public static let textSpacing: CGFloat = 4
+    public static let sectionSpacing: CGFloat = 12
+    public static let footerSpacing: CGFloat = 4
+    public static let detailSpacing: CGFloat = 8
+    public static let disclosureHeight: CGFloat = 24
+    public static let actionHeight: CGFloat = 32
+}
+
+public enum MeltedScrollEdge {
+    public static let fadeHeight: CGFloat = 24
+}
+
 public enum MeltedCode {
     public static let inset: CGFloat = 16
     public static let headerHeight: CGFloat = 36
@@ -102,6 +119,16 @@ public enum MeltedCode {
     public static let borderWidth: CGFloat = 1
     public static let inlineSize: CGFloat = 14
     public static let labelSize: CGFloat = 11
+}
+
+public enum MeltedEmptyState {
+    public static let illustrationWidth: CGFloat = 80
+    public static let illustrationHeight: CGFloat = 80
+    public static let contentGap: CGFloat = 16
+    public static let tileSize: CGFloat = 64
+    public static let tileTop: CGFloat = 6
+    public static let tileInset: CGFloat = 8
+    public static let tileCornerRadius: CGFloat = 18
 }
 
 public enum MeltedMotion {
