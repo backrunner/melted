@@ -1,0 +1,265 @@
+{
+  "tested_at": "2026-10-17T15:21:25.132Z",
+  "plugins": [
+    "bluesky@1.0.0",
+    "fediverse@1.0.0",
+    "nostr@1.0.0"
+  ],
+  "worker_errors": 0,
+  "results": [
+    {
+      "runtime": "compiled Node/PostgreSQL",
+      "results": [
+        {
+          "plugin": "bluesky",
+          "configuration": {
+            "target": "bsky.app",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:16.496Z",
+            "finished_at": "2026-10-17T15:21:17.254Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 7,
+              "received": 7,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 7,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:17.539Z",
+            "finished_at": "2026-10-17T15:21:17.574Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 7,
+              "duplicates": 7
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T16:40:55.242Z",
+            "2026-10-16T20:09:31.738Z"
+          ]
+        },
+        {
+          "plugin": "fediverse",
+          "configuration": {
+            "instance": "https://mastodon.social",
+            "target": "Mastodon",
+            "mode": "hashtag",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:18.550Z",
+            "finished_at": "2026-10-17T15:21:19.469Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 10,
+              "received": 10,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:20.568Z",
+            "finished_at": "2026-10-17T15:21:20.668Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 10,
+              "duplicates": 10
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:01:29.662Z",
+            "2026-10-17T15:06:28.891Z"
+          ]
+        },
+        {
+          "plugin": "nostr",
+          "configuration": {
+            "relay": "wss://nos.lol/",
+            "target": "nostr",
+            "mode": "hashtag",
+            "kind": "notes",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:21.576Z",
+            "finished_at": "2026-10-17T15:21:22.485Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 10,
+              "received": 10,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:23.609Z",
+            "finished_at": "2026-10-17T15:21:24.477Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 10,
+              "duplicates": 10
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:17:45.000Z",
+            "2026-10-17T15:18:51.000Z"
+          ]
+        }
+      ]
+    },
+    {
+      "runtime": "workerd/SQLite DO + Alarms + Queues",
+      "results": [
+        {
+          "plugin": "bluesky",
+          "configuration": {
+            "target": "bsky.app",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:16.636Z",
+            "finished_at": "2026-10-17T15:21:17.248Z",
+            "state": "complete",
+            "counts": {
+              "received": 7,
+              "inserted": 7,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 7,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:17.646Z",
+            "finished_at": "2026-10-17T15:21:17.714Z",
+            "state": "complete",
+            "counts": {
+              "received": 7,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 7,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T16:40:55.242Z",
+            "2026-10-16T20:09:31.738Z"
+          ]
+        },
+        {
+          "plugin": "fediverse",
+          "configuration": {
+            "instance": "https://mastodon.social",
+            "target": "Mastodon",
+            "mode": "hashtag",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:18.657Z",
+            "finished_at": "2026-10-17T15:21:19.949Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 10,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:20.957Z",
+            "finished_at": "2026-10-17T15:21:21.213Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 10,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:01:29.662Z",
+            "2026-10-17T15:06:28.891Z"
+          ]
+        },
+        {
+          "plugin": "nostr",
+          "configuration": {
+            "relay": "wss://nos.lol/",
+            "target": "nostr",
+            "mode": "hashtag",
+            "kind": "notes",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:21:21.968Z",
+            "finished_at": "2026-10-17T15:21:22.839Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 10,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:21:24.044Z",
+            "finished_at": "2026-10-17T15:21:25.011Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 10,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:17:45.000Z",
+            "2026-10-17T15:18:51.000Z"
+          ]
+        }
+      ]
+    }
+  ]
+}

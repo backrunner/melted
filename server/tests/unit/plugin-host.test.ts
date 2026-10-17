@@ -24,6 +24,7 @@ import type {
 import { normalizeFeed } from "../../src/modules/ingest/feeds/json-feed.js";
 import { validateResult } from "../../src/modules/ingest/result.js";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
+import social from "../../../contracts/fixtures/social-operator.json" with { type: "json" };
 
 const plugin: CollectorPlugin = {
   manifest: manifestSchema.parse({
@@ -404,6 +405,7 @@ test("published plugin fixture and DSL schema match the installed registry", asy
     z.toJSONSchema(catalogSchema),
   );
   const expected = pluginRegistry.catalog({
+    ...social,
     rsshub: {
       base_url: "https://feeds.example.org",
       allowed_routes: ["/bbc", "/douban/book/latest"],

@@ -126,3 +126,24 @@ private func pluginFixture(_ name: String) throws -> Data {
     let unknown = try Wire.decoder().decode(PluginForm.self, from: Data(#"{"fields":[{"id":"url","type":"text","format":"script","label":"URL","required":true,"max_length":2048}]}"#.utf8))
     #expect(!unknown.supported)
 }
+
+@Test func socialPluginsUseNativeFieldsAndOperatorProvidedChoices() throws {
+    let catalog = try Wire.decoder().decode(PluginCatalog.self, from: pluginFixture("plugin-settings"))
+    for id in ["bluesky", "fediverse", "nostr"] {
+        let plugin = try #require(catalog.plugins.first { $0.id == id })
+        #expect(plugin.supported && plugin.available)
+        #expect(plugin.collection.layout == "table")
+        #expect(plugin.collection.columns.contains { $0.id == "configuration.target" })
+        #expect(plugin.form.error(in: plugin.form.defaults) != nil)
+        var values = plugin.form.defaults
+        values["target"] = .string(id == "bluesky" ? "bsky.app" : "culture")
+        values["mode"] = .string(id == "bluesky" ? "author" : "hashtag")
+        #expect(plugin.form.error(in: values) == nil)
+        #expect(plugin.actions.map(\.effect) == ["collect", "validate"])
+        if id != "bluesky" {
+            let endpoint = try #require(plugin.form.fields.first { $0.id == (id == "nostr" ? "relay" : "instance") })
+            #expect(endpoint.type == "select")
+            #expect(!endpoint.accepts(.string("https://unauthorized.example.org")))
+        }
+    }
+}

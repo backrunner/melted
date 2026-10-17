@@ -259,6 +259,380 @@
       ],
       "available": true,
       "unavailable_reason": null
+    },
+    {
+      "dsl_version": 1,
+      "id": "bluesky",
+      "version": "1.0.0",
+      "title": "Bluesky",
+      "description": "订阅 Bluesky 账号和自定义 Feed 的公开帖子",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "mode",
+            "label": "订阅类型",
+            "required": true,
+            "type": "select",
+            "default": "author",
+            "options": [
+              {
+                "value": "author",
+                "label": "账号"
+              },
+              {
+                "value": "feed",
+                "label": "自定义 Feed"
+              }
+            ]
+          },
+          {
+            "id": "target",
+            "label": "订阅目标",
+            "help": "账号填写 handle 或 DID；自定义 Feed 填写 at://…/app.bsky.feed.generator/…",
+            "required": true,
+            "type": "text",
+            "placeholder": "bsky.app",
+            "max_length": 1000
+          },
+          {
+            "id": "include_replies",
+            "label": "包含回复",
+            "required": true,
+            "type": "boolean",
+            "default": true
+          },
+          {
+            "id": "include_reposts",
+            "label": "包含转发",
+            "required": true,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "id": "max_items",
+            "label": "单次条数上限",
+            "help": "采集最新窗口，不回填完整历史",
+            "required": true,
+            "type": "integer",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 100,
+            "step": 1
+          }
+        ]
+      },
+      "collection": {
+        "layout": "table",
+        "title": "订阅",
+        "columns": [
+          {
+            "scope": "source",
+            "field": "name",
+            "label": "名称"
+          },
+          {
+            "scope": "configuration",
+            "field": "target",
+            "label": "订阅目标"
+          },
+          {
+            "scope": "source",
+            "field": "enabled",
+            "label": "状态"
+          },
+          {
+            "scope": "source",
+            "field": "interval_seconds",
+            "label": "采集间隔"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "获取当前公开内容",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          }
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查订阅目标与服务器授权",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
+    },
+    {
+      "dsl_version": 1,
+      "id": "fediverse",
+      "version": "1.0.0",
+      "title": "Fediverse",
+      "description": "订阅 Mastodon 兼容实例的公开账号和话题",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "instance",
+            "label": "实例",
+            "required": true,
+            "type": "select",
+            "default": "https://mastodon.social",
+            "options": [
+              {
+                "value": "https://mastodon.social",
+                "label": "mastodon.social"
+              }
+            ]
+          },
+          {
+            "id": "mode",
+            "label": "订阅类型",
+            "required": true,
+            "type": "select",
+            "default": "account",
+            "options": [
+              {
+                "value": "account",
+                "label": "账号"
+              },
+              {
+                "value": "hashtag",
+                "label": "话题"
+              }
+            ]
+          },
+          {
+            "id": "target",
+            "label": "订阅目标",
+            "help": "账号不要加开头的 @，话题不要加 #；远程账号须已被所选实例发现",
+            "required": true,
+            "type": "text",
+            "placeholder": "用户名@实例 或话题名称",
+            "max_length": 320
+          },
+          {
+            "id": "include_replies",
+            "label": "包含回复",
+            "required": true,
+            "type": "boolean",
+            "default": true
+          },
+          {
+            "id": "include_boosts",
+            "label": "包含转嘟",
+            "required": true,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "id": "max_items",
+            "label": "单次条数上限",
+            "help": "采集最新公开窗口，最多 40 条",
+            "required": true,
+            "type": "integer",
+            "default": 40,
+            "minimum": 1,
+            "maximum": 40,
+            "step": 1
+          }
+        ]
+      },
+      "collection": {
+        "layout": "table",
+        "title": "订阅",
+        "columns": [
+          {
+            "scope": "source",
+            "field": "name",
+            "label": "名称"
+          },
+          {
+            "scope": "configuration",
+            "field": "target",
+            "label": "订阅目标"
+          },
+          {
+            "scope": "configuration",
+            "field": "instance",
+            "label": "实例"
+          },
+          {
+            "scope": "source",
+            "field": "enabled",
+            "label": "状态"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "获取当前公开内容",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          }
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查订阅目标与服务器授权",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
+    },
+    {
+      "dsl_version": 1,
+      "id": "nostr",
+      "version": "1.0.0",
+      "title": "Nostr",
+      "description": "从公开 relay 订阅已验证签名的短帖和长文",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "relay",
+            "label": "Relay",
+            "required": true,
+            "type": "select",
+            "default": "wss://relay.damus.io/",
+            "options": [
+              {
+                "value": "wss://relay.damus.io/",
+                "label": "wss://relay.damus.io/"
+              }
+            ]
+          },
+          {
+            "id": "mode",
+            "label": "订阅类型",
+            "required": true,
+            "type": "select",
+            "default": "author",
+            "options": [
+              {
+                "value": "author",
+                "label": "作者"
+              },
+              {
+                "value": "hashtag",
+                "label": "话题"
+              }
+            ]
+          },
+          {
+            "id": "target",
+            "label": "订阅目标",
+            "help": "作者填写 npub 公钥或 64 位十六进制公钥；话题不加 #，按原文匹配；不要输入私钥",
+            "required": true,
+            "type": "text",
+            "placeholder": "npub1… 或话题名称",
+            "max_length": 200
+          },
+          {
+            "id": "kind",
+            "label": "内容类型",
+            "required": true,
+            "type": "select",
+            "default": "notes",
+            "options": [
+              {
+                "value": "notes",
+                "label": "短帖"
+              },
+              {
+                "value": "articles",
+                "label": "长文"
+              }
+            ]
+          },
+          {
+            "id": "max_items",
+            "label": "单次条数上限",
+            "help": "采集最新窗口，不回填完整历史",
+            "required": true,
+            "type": "integer",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 100,
+            "step": 1
+          }
+        ]
+      },
+      "collection": {
+        "layout": "table",
+        "title": "订阅",
+        "columns": [
+          {
+            "scope": "source",
+            "field": "name",
+            "label": "名称"
+          },
+          {
+            "scope": "configuration",
+            "field": "target",
+            "label": "订阅目标"
+          },
+          {
+            "scope": "configuration",
+            "field": "relay",
+            "label": "Relay"
+          },
+          {
+            "scope": "source",
+            "field": "enabled",
+            "label": "状态"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "获取当前公开内容",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          }
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查订阅目标与服务器授权",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
     }
   ]
 }

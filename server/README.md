@@ -92,4 +92,6 @@ Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.lo
 
 独立 `feed` 插件直接采集 RSS 2.0、Atom 1.0 和 JSON Feed，设置通过同一 DSL 渲染；见 [Feed 指南](docs/feed.md)。
 
+独立 `bluesky`、`fediverse`、`nostr` 插件分别订阅账号/Feed、Mastodon 兼容账号/话题、公开 relay 的作者/话题；Nostr 校验事件 ID 和 Schnorr 签名。实例与 relay 选项由服务端下发，客户端复用原生多订阅表单。配置、范围和验证见 [社交来源指南](docs/social-collectors.md)。
+
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。

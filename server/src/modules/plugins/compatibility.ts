@@ -17,6 +17,7 @@ export const manifestSchema = z
     capabilities: z.array(
       z.enum([
         "https",
+        "websocket",
         "filesystem",
         "subprocess",
         "native-addon",

@@ -16,6 +16,69 @@
         "required_bindings": []
       }
     },
-    { "enabled": true, "manifest": { "id": "feed", "version": "1.0.0", "targets": ["node", "cloudflare"], "runtime": "builtin", "capabilities": ["https"], "required_bindings": [] } }
+    {
+      "enabled": true,
+      "manifest": {
+        "id": "feed",
+        "version": "1.0.0",
+        "targets": [
+          "node",
+          "cloudflare"
+        ],
+        "runtime": "builtin",
+        "capabilities": [
+          "https"
+        ],
+        "required_bindings": []
+      }
+    },
+    {
+      "enabled": true,
+      "manifest": {
+        "id": "bluesky",
+        "version": "1.0.0",
+        "targets": [
+          "node",
+          "cloudflare"
+        ],
+        "runtime": "builtin",
+        "capabilities": [
+          "https"
+        ],
+        "required_bindings": []
+      }
+    },
+    {
+      "enabled": true,
+      "manifest": {
+        "id": "fediverse",
+        "version": "1.0.0",
+        "targets": [
+          "node",
+          "cloudflare"
+        ],
+        "runtime": "builtin",
+        "capabilities": [
+          "https"
+        ],
+        "required_bindings": []
+      }
+    },
+    {
+      "enabled": true,
+      "manifest": {
+        "id": "nostr",
+        "version": "1.0.0",
+        "targets": [
+          "node",
+          "cloudflare"
+        ],
+        "runtime": "builtin",
+        "capabilities": [
+          "websocket"
+        ],
+        "required_bindings": []
+      }
+    }
   ]
 }

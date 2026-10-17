@@ -1,0 +1,241 @@
+{
+  "tested_at": "2026-10-17T15:13:26.771Z",
+  "plugins": [
+    "bluesky@1.0.0",
+    "fediverse@1.0.0",
+    "nostr@1.0.0"
+  ],
+  "worker_errors": 0,
+  "results": [
+    {
+      "runtime": "compiled Node/PostgreSQL",
+      "results": [
+        {
+          "plugin": "bluesky",
+          "configuration": {
+            "target": "bsky.app",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:00.994Z",
+            "finished_at": "2026-10-17T15:13:01.712Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 7,
+              "received": 7,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 7,
+          "repeat": {
+            "started_at": "2026-10-17T15:13:02.038Z",
+            "finished_at": "2026-10-17T15:13:02.100Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 7,
+              "duplicates": 7
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T16:40:55.242Z",
+            "2026-10-16T20:09:31.738Z"
+          ]
+        },
+        {
+          "plugin": "fediverse",
+          "configuration": {
+            "instance": "https://mastodon.social",
+            "target": "Mastodon",
+            "mode": "hashtag",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:03.047Z",
+            "finished_at": "2026-10-17T15:13:03.728Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 10,
+              "received": 10,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:13:04.059Z",
+            "finished_at": "2026-10-17T15:13:04.209Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 10,
+              "duplicates": 10
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:01:29.662Z",
+            "2026-10-17T15:06:28.891Z"
+          ]
+        },
+        {
+          "plugin": "nostr",
+          "configuration": {
+            "relay": "wss://relay.damus.io/",
+            "target": "nostr",
+            "mode": "hashtag",
+            "kind": "notes",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:05.071Z",
+            "finished_at": null,
+            "state": "queued",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 0,
+              "duplicates": 0
+            },
+            "error": {
+              "code": "relay_connection_failed",
+              "retryable": true
+            },
+            "warnings": []
+          },
+          "stored": 0,
+          "repeat": null,
+          "published_dates": []
+        }
+      ]
+    },
+    {
+      "runtime": "workerd/SQLite DO + Alarms + Queues",
+      "results": [
+        {
+          "plugin": "bluesky",
+          "configuration": {
+            "target": "bsky.app",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:01.136Z",
+            "finished_at": "2026-10-17T15:13:01.847Z",
+            "state": "complete",
+            "counts": {
+              "received": 7,
+              "inserted": 7,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 7,
+          "repeat": {
+            "started_at": "2026-10-17T15:13:02.146Z",
+            "finished_at": "2026-10-17T15:13:02.306Z",
+            "state": "complete",
+            "counts": {
+              "received": 7,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 7,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T16:40:55.242Z",
+            "2026-10-16T20:09:31.738Z"
+          ]
+        },
+        {
+          "plugin": "fediverse",
+          "configuration": {
+            "instance": "https://mastodon.social",
+            "target": "Mastodon",
+            "mode": "hashtag",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:03.158Z",
+            "finished_at": "2026-10-17T15:13:04.102Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 10,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T15:13:05.370Z",
+            "finished_at": "2026-10-17T15:13:05.796Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 10,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T15:01:29.662Z",
+            "2026-10-17T15:06:28.891Z"
+          ]
+        },
+        {
+          "plugin": "nostr",
+          "configuration": {
+            "relay": "wss://relay.damus.io/",
+            "target": "nostr",
+            "mode": "hashtag",
+            "kind": "notes",
+            "max_items": 10
+          },
+          "first": {
+            "started_at": "2026-10-17T15:13:06.378Z",
+            "finished_at": null,
+            "state": "queued",
+            "counts": {
+              "received": 0,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": {
+              "code": "relay_incomplete",
+              "retryable": true
+            },
+            "warnings": []
+          },
+          "stored": 0,
+          "repeat": null,
+          "published_dates": []
+        }
+      ]
+    }
+  ]
+}

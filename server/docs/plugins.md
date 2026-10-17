@@ -4,6 +4,8 @@
 
 直接订阅 RSS/Atom/JSON Feed 的独立 `feed` 插件及运营配置见 [Feed 指南](feed.md)。
 
+独立的 `bluesky`、`fediverse`、`nostr` 插件及运营配置见 [社交来源指南](social-collectors.md)。三者复用相同的来源 API、任务、入库和原生 DSL，没有客户端插件 ID 分支。
+
 ## 层次与扩展
 
 | 层次 | 职责 |
@@ -86,7 +88,7 @@ collect 返回 202 与 `{"status":"accepted","receipt_id":"…"}`；只表示任
 {"rsshub":{"base_url":"https://feeds.example.com","allowed_routes":["/bbc","/douban/book/latest","/hackernews"]}}
 ```
 
-统一使用 `PLUGIN_CONFIG` / YAML `plugins`。`RSSHUB_ACCESS_KEY` 是 RSSHub 的独立服务端 secret。服务端实例地址、网络范围和凭据不放在账户 configuration；公开目录只包含该用户可设置的字段及允许路由提示，processing 单独披露不带凭据的 origin。Cloudflare 只连接运营者配置的公开 HTTPS 实例；本机容器访问按 RSSHub 指南显式授权。
+统一使用 `PLUGIN_CONFIG` / YAML `plugins`。`RSSHUB_ACCESS_KEY` 是 RSSHub 的独立服务端 secret。网络授权范围和凭据留在运营配置；账户只能选择运营者允许的实例/relay，不能新增网络目的地。公开目录只包含可设置字段及公开选项，processing 单独披露不带凭据的 origin。Cloudflare 只连接运营者配置的公开 HTTPS/WSS；Node 内网目标须逐个明确授权。
 
 ## 原生设置与验证
 

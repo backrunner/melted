@@ -1,0 +1,5 @@
+{
+  "bluesky": {},
+  "fediverse": {"instances": [{"origin": "https://mastodon.social"}]},
+  "nostr": {"relays": [{"url": "wss://relay.damus.io"}]}
+}

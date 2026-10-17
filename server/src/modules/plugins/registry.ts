@@ -70,7 +70,13 @@ export class PluginRegistry {
         if (
           destination.id !== descriptor.id ||
           destination.purpose !== "public_feed_collection" ||
-          !["http:", "https:"].includes(origin.protocol) ||
+          ![
+            "http:",
+            "https:",
+            ...(plugin.manifest.capabilities.includes("websocket")
+              ? ["ws:", "wss:"]
+              : []),
+          ].includes(origin.protocol) ||
           origin.username ||
           origin.password ||
           origin.search ||

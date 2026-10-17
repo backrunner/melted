@@ -55,10 +55,13 @@ server/tests/unit/culture-notes-plugin.test.ts
 | `CollectorError({code,retryable,blocked?,retry_after_ms?})` | 采集失败；由 host 持久化重试/阻塞状态 |
 | `requestBytes(url, options)` / `requestJSON(url, options)` | GET、禁止重定向、最多 30 秒/4 MiB；返回 200+有界字节/unknown JSON 或 304；网络错误脱敏，429/5xx 可重试，遵守 Retry-After |
 | `retryAfter(header, now?)` | 转换秒数或 HTTP 日期，保持持久时间可表示 |
+| `openWebSocket(url, signal)` | 已授权的有限 WebSocket 连接：Node ws / Worker fetch upgrade，禁止重定向、分类握手 401/403/429/5xx；调用方必须限时、限制消息并关闭连接 |
 | `collectionResult({items,checkpoint?,warnings?,notModified?})` | 从 RawContent 构造计数与规范化存储 hash，并校验总量/单条大小 |
 | `CollectorContext` / `Configuration` / `RawContent` / `PollResult` | 实现所用的公共类型 |
 
 `requestJSON` 不授权目标地址。插件必须先从运营配置选定目标并校验账户参数，不能从来源正文/账户设置中任意取 URL。请求 options 可缩短 timeoutMs 或缩小 maxBytes，不扩大最大限制；测试可注入 transport。模板使用固定路径和主题参数，不补抓全文或下载附件。
+
+WebSocket 插件声明 `websocket` capability，允许公开披露 WS/WSS origin；它不授予常驻进程或 raw TCP 能力。Nostr 的 [有限 relay 查询](../src/plugins/nostr/relay.ts) 是实例：只发 REQ/CLOSE，在 EOSE 后关闭，有全程 30 秒、帧数与字节上限，失败交回 host 持久重试。Node 接收帧有 512 KiB 上限；Worker 底层帧缓存由 runtime 管理，解码后再执行同一业务限额。
 
 已有条件请求的采集器应把 checkpoint 绑定实例、路由和凭据等实际请求身份；RSSHub 展示了完整做法。无有效 validator 的 304 应报错。host 负责原始条目/revision/receipt/checkpoint 同事务提交，仅完整成功推进 checkpoint；插件不自行持久化重试或游标。
 

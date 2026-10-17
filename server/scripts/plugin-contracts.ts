@@ -20,10 +20,12 @@ import {
 } from "../src/modules/plugins/presets.js";
 import { RSSHubCollector } from "../src/plugins/rsshub/plugin.js";
 import namespace from "../../contracts/fixtures/rsshub-namespace.json" with { type: "json" };
+import social from "../../contracts/fixtures/social-operator.json" with { type: "json" };
 const root = new URL("../../contracts/", import.meta.url);
 const save = (path: string, value: unknown) =>
   writeFile(new URL(path, root), JSON.stringify(value, null, 2) + "\n");
 const catalog = pluginRegistry.catalog({
+  ...social,
   rsshub: {
     base_url: "https://feeds.example.org",
     allowed_routes: ["/bbc", "/douban/book/latest"],

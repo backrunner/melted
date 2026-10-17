@@ -11,6 +11,8 @@ Node 依赖由 server/package-lock.json 锁定，Swift 依赖由 Package.resolve
 | jose | 6.2.12 | OIDC 签名验证 | MIT |
 | js-yaml / @types/js-yaml | 5.4.3 / 4.0.9 | 可选 YAML 配置 / 类型声明 | MIT |
 | sax / @types/sax | 1.6.1 / 1.2.7 | 严格 RSS/Atom XML 解析 / 类型声明 | BlueOak-1.0.0 / MIT |
+| @noble/curves / @noble/hashes / @scure/base | 2.4.0 | Nostr Schnorr 签名、事件哈希与 npub 解码 | MIT |
+| ws / @types/ws | 8.22.0 / 8.18.2 | Node WebSocket 采集与测试 relay / 类型声明 | MIT |
 | TypeScript | 7.0.2 | 类型检查与构建 | Apache-2.0 |
 | Wrangler | 4.151.0 | Cloudflare 构建/部署 | MIT OR Apache-2.0 |
 | Miniflare | 5.20261012.0-beta | workerd 持久性测试 | MIT |

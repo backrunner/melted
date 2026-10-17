@@ -5,9 +5,18 @@ import { PluginRegistry } from "../modules/plugins/registry.js";
 import type { Manifest } from "../modules/plugins/compatibility.js";
 import { rsshubPlugin } from "./rsshub/plugin.js";
 import { feedPlugin } from "./feed/plugin.js";
+import { blueskyPlugin } from "./bluesky/plugin.js";
+import { fediversePlugin } from "./fediverse/plugin.js";
+import { nostrPlugin } from "./nostr/plugin.js";
 
 // The composition root is the only file changed to register another installed module.
-export const installedPlugins = [rsshubPlugin, feedPlugin];
+export const installedPlugins = [
+  rsshubPlugin,
+  feedPlugin,
+  blueskyPlugin,
+  fediversePlugin,
+  nostrPlugin,
+];
 export const pluginRegistry = new PluginRegistry(installedPlugins, settings);
 export function executableBuiltin(manifest: Manifest) {
   return pluginRegistry.matches(manifest);

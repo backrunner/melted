@@ -16,6 +16,7 @@ export {
   type RequestOptions,
 } from "./http.js";
 export { collectionResult } from "./result.js";
+export { openWebSocket } from "./websocket.js";
 export {
   CollectorError,
   type CollectorPlugin,

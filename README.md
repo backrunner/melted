@@ -110,6 +110,8 @@ python3 scripts/dev.py exec npm run cli -- import-demo ACCOUNT_ID /workspace/con
 
 RSSHub 可连接运营者的 HTTPS 实例，或使用可选 Compose profile；macOS“设置 → 内容 → 来源与插件”按服务器 DSL 管理来源并执行插件动作；新增采集器见 [插件机制](server/docs/plugins.md)，独立 worker 与本机运行见 [RSSHub 采集指南](server/docs/rsshub.md)。
 
+也可使用独立插件直接订阅 [RSS / Atom / JSON Feed](server/docs/feed.md)，以及 [Bluesky、Fediverse 与 Nostr](server/docs/social-collectors.md)。Fediverse 当前支持 Mastodon 兼容公开 API；Nostr 使用运营者授权的 relay 并验证事件签名。所有来源复用原生配置、多订阅管理和原始入库流程。
+
 部署步骤、认证与迁移说明见 [部署指南](deploy/README.md)、[认证配置](server/docs/authentication.md) 和 [服务端工程说明](server/README.md)。
 
 ## 项目进度

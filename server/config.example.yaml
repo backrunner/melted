@@ -64,3 +64,12 @@ development:
 #     allowed_routes: [/bbc, /douban/book/latest, /hackernews]
 #   feed:
 #     allowed_origins: [https://feeds.bbci.co.uk, https://www.jsonfeed.org]
+#   bluesky:
+#     service_url: https://public.api.bsky.app
+#   fediverse:
+#     instances:
+#       - origin: https://mastodon.social
+#         # access_token: optional-server-side-token
+#   nostr:
+#     relays:
+#       - url: wss://nos.lol
