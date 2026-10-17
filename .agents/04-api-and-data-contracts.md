@@ -45,7 +45,7 @@ App 先展示运营者及 AI/mem 数据去向，用户同意后才发账号、�
 
 `/v1/sources` 管理账户来源，`/v1/sources/{id}/sync` 幂等返回 202 receipt，`/v1/receipts/{id}` 返回状态/错误/条数。`/v1/sources/{id}/items` 只返回元信息，`/v1/raw-items/{id}?revision=N` 独立鉴权读取原始正文。修改用 expected_version，删除用 If-Match；暂停和删除取消旧 generation，禁止迟到写入。完整字段及限制见 [OpenAPI](../contracts/openapi.json)和 [采集指南](../server/docs/rsshub.md)。
 
-`GET /v1/plugins`、`GET /v1/plugins/{id}` 返回鉴权后的有限设置 DSL；`POST /v1/sources/{id}/actions/{action}` 校验插件/来源版本并执行 collect 或 validate。来源使用 plugin/config_version/configuration，旧 RSSHub route 保留兼容桥。协议、升级与共享 fixture 见 [插件说明](../server/docs/plugins.md)。
+`GET /v1/plugins`、`GET /v1/plugins/{id}` 返回鉴权后的有限设置 DSL；`POST /v1/sources/{id}/actions/{action}` 校验插件/来源版本并执行 collect 或 validate。来源只使用 plugin/config_version/configuration；发布前不保留旧 route 输入、输出或数据转换。协议、升级与共享 fixture 见 [插件说明](../server/docs/plugins.md)。
 
 发现接口声明 plugin_settings v1，collectors 按可用插件声明；processing 返回实例 origin、公开路由请求用途及其版本 hash，不含实例密钥。仅请求用户启用的公开来源，不向实例发送账户凭据、已存正文或附件；通用第三方处理 consent API 仍是后续目标。
 

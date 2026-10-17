@@ -4,7 +4,7 @@
 
 ## 配置实例
 
-实例地址与路由授权由运营者配置，用户只能选择相对路由。默认没有实例，不会自动连接公共服务。配置启用后，discovery 声明 collectors，processing 展示实例 origin、公开路由请求用途及版本 hash；不包含密钥。推荐 `PLUGIN_CONFIG` 的 `rsshub` 配置项；兼容 `RSSHUB_CONFIG` JSON 和 Node YAML 的 `rsshub` 字段。显式环境变量覆盖 YAML。
+实例地址与路由授权由运营者配置，用户只能选择相对路由。默认没有实例，不会自动连接公共服务。配置启用后，discovery 声明 collectors，processing 展示实例 origin、公开路由请求用途及版本 hash；不包含密钥。统一使用 `PLUGIN_CONFIG` 的 `rsshub` 配置项；Node YAML 对应 `plugins.rsshub`。显式环境变量覆盖 YAML。
 
 ```json
 {"base_url":"https://feeds.example.com","allowed_routes":["/bbc","/douban/book/latest","/hackernews"],"allow_private":false}
@@ -34,7 +34,7 @@ RSSHub descriptor 提供新闻、文化生活和社区三组共 21 条内置建�
 
 ```sh
 # 在 .env 中设置（这是明确授权的容器内地址）
-RSSHUB_CONFIG={"base_url":"http://rsshub:1200","allowed_routes":["/bbc","/douban/book/latest","/hackernews"],"allow_private":true}
+PLUGIN_CONFIG={"rsshub":{"base_url":"http://rsshub:1200","allowed_routes":["/bbc","/douban/book/latest","/hackernews"],"allow_private":true}}
 
 docker compose --profile rsshub up --build -d
 ```
@@ -43,7 +43,7 @@ docker compose --profile rsshub up --build -d
 
 ### Cloudflare
 
-配置 `RSSHUB_CONFIG` Worker var 和可选 `RSSHUB_ACCESS_KEY` secret；正式配置使用 HTTPS 实例及 `allow_private:false`。RSSHub 是外部业务来源，Melted 的存储和任务仍只使用 Cloudflare 基础设施。
+配置 `PLUGIN_CONFIG` Worker var（使用上述 rsshub map） 和可选 `RSSHUB_ACCESS_KEY` secret；正式配置使用 HTTPS 实例及 `allow_private:false`。RSSHub 是外部业务来源，Melted 的存储和任务仍只使用 Cloudflare 基础设施。
 
 首次部署先建立 `melted-collections` 和 `melted-collections-dlq` 两个 Queue，再执行现有 `worker:deploy`。`wrangler.jsonc` 包含生产及本地 Queue binding/consumer。每个账户的持久 alarm 负责到期调度、outbox 投递和租约恢复；消费者只接收 owner/run ID，不在队列消息中携带正文或密钥。死信不等于任务成功，账户 outbox/租约 watchdog 可以恢复未完成任务。
 
@@ -59,7 +59,7 @@ docker compose --profile rsshub up --build -d
 | 读取/修改/删除来源 | `GET/PATCH/DELETE /v1/sources/{id}` |
 | 插件设置描述 | `GET /v1/plugins` |
 | 插件动作 | `POST /v1/sources/{id}/actions/{action}` |
-| 兼容手动采集 | `POST /v1/sources/{id}/sync` |
+| 手动采集 | `POST /v1/sources/{id}/sync` |
 | 查询采集状态 | `GET /v1/receipts/{id}` |
 | 原始条目元信息列表 | `GET /v1/sources/{id}/items?limit=30&cursor=…` |
 | 原始正文或历史修订 | `GET /v1/raw-items/{id}?revision=1` |

@@ -21,8 +21,8 @@ server/
 │   │   ├── collectors/      # 汇总已配置插件的处理目的地声明
 │   │   ├── ingest/          # 通用采集结果校验与存储 hash
 │   │   ├── jobs/            # 共享采集执行规则
-│   │   └── plugins/         # 模块接口、注册表、DSL、设置/动作及兼容性检查
-│   ├── plugins/             # 已安装实现与组合根；rsshub 拥有路由/HTTP/JSON Feed
+│   │   └── plugins/         # SDK 基类、注册表、DSL、设置/动作及部署能力检查
+│   ├── plugins/             # 已安装实现与组合根；rsshub 拥有路由/JSON Feed
 │   ├── storage/
 │   │   ├── repository.ts    # 组合领域接口及基础运维接口
 │   │   ├── postgres/        # 连接/事务、迁移、认证、内容、查询、登录流程
@@ -36,6 +36,7 @@ server/
 │   └── benchmarks/         # 开发环境阅读链路基线
 ├── migrations/             # PostgreSQL 增量 SQL；发行时复制进 dist/server/
 ├── scripts/                # 部署/开发辅助脚本
+├── templates/collector/    # 可生成、参与类型检查与测试的采集插件 boilerplate
 ├── config.example.yaml     # Node 配置示例
 ├── wrangler.jsonc          # Worker 入口、bindings 与 DO migration
 └── package.json
@@ -81,11 +82,12 @@ python3 scripts/dev.py exec npm run build
 | `npm run cli -- import-demo ACCOUNT_ID FILE` | 开发用途：向指定账户导入 fixture 内容 |
 | `npm run worker:check` | 插件预检及 Worker dry-run |
 | `npm run worker` / `npm run worker:start` | 独立 Node 采集进程，源码 / 编译入口 |
+| `npm run plugins:new -- culture-notes` | 生成基于 BaseCollectorPlugin 的插件源码与测试 |
 
 编译后的入口为 `dist/server/src/entrypoints/node.js`、`dist/server/src/entrypoints/cli.js`；迁移目录为 `dist/server/migrations/`。Worker 的 Durable Object 导出名称保持 `AccountStore` / `ControlStore`，移动源码不创建新的 DO namespace。
 
 Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.local.yaml`、`config.yaml` 读取；显式 `CONFIG_PATH` 不存在时直接报错，未指定时本机文件优先。显式环境变量覆盖 YAML 默认值，使 Compose 与 Apple Container 不依赖本机配置。配置包含凭据，应保存在本机且不提交。管理 CLI 使用环境变量连接数据库；Workers 使用 bindings。配置加载和部署操作详见 [迁移与部署](../.agents/15-typescript-transition.md) 和 [部署入口](../deploy/README.md)。
 
-已实现内置 `rsshub` 的 `collector.poll`、来源与原始条目接口、PG 持久任务及 DO Alarms/outbox/Queues。注册表与部署预检限制为同一已知版本；第三方任意插件执行仍未开放。新增模块和客户端设置接入见 [插件与 DSL](docs/plugins.md)；配置、限制与真实验收见 [RSSHub 采集](docs/rsshub.md)。
+已实现内置 `rsshub` 的 `collector.poll`、来源与原始条目接口、PG 持久任务及 DO Alarms/outbox/Queues。RSSHub 与 boilerplate 使用同一 SDK 基类；新增受信任编译模块见 [插件开发指南](docs/plugin-development.md)，客户端设置接入见 [插件与 DSL](docs/plugins.md)。注册表与部署预检限制为同一已知版本，动态下载和任意代码执行未开放。配置、限制与真实验收见 [RSSHub 采集](docs/rsshub.md)。
 
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。
