@@ -2,7 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import Foundation
 import Testing
+import Markdown
 @testable import MeltedRendering
+
+@Test func codeBlockHidesOnlyTheFinalLineDelimiter() throws {
+    let document = Document(parsing: "```ts\nconst title = \"阅读\";\nconsole.log(title);\n```\n")
+    let block = try #require(document.child(at: 0) as? CodeBlock)
+    #expect(block.code == "const title = \"阅读\";\nconsole.log(title);\n")
+    #expect(CodeBlockPresentation.text(block.code) == "const title = \"阅读\";\nconsole.log(title);")
+    // Preserve intentional blank lines, indentation and trailing spaces. The
+    // original parsed source remains available to the copy action unchanged.
+    for delimiter in ["\n", "\r\n", "\r"] {
+        let source = "\tfirst  \(delimiter)\(delimiter)last  \(delimiter)\(delimiter)"
+        #expect(CodeBlockPresentation.text(source) == "\tfirst  \(delimiter)\(delimiter)last  \(delimiter)")
+    }
+    #expect(CodeBlockPresentation.text("") == "")
+    #expect(CodeBlockPresentation.text("\n") == "")
+    #expect(CodeBlockPresentation.text("\tlast  ") == "\tlast  ")
+    #expect(block.code.hasSuffix("\n"))
+}
 
 @Test func syntaxColorsPreserveSourceInBothAppearances() async {
     let samples = [

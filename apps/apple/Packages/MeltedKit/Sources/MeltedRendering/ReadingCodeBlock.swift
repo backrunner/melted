@@ -23,7 +23,9 @@ struct ReadingCodeBlock: View {
         let language: String?
         let dark: Bool
     }
-    private var request: Request { .init(source: source, language: CodeHighlighting.language(info), dark: scheme == .dark) }
+    private var request: Request {
+        .init(source: CodeBlockPresentation.text(source), language: CodeHighlighting.language(info), dark: scheme == .dark)
+    }
     private var palette: MeltedPalette { MeltedPalette(scheme) }
     private var languageLabel: String {
         guard let language = request.language, language != "plaintext" else { return "代码" }
@@ -57,7 +59,7 @@ struct ReadingCodeBlock: View {
             Rectangle().fill(palette.separator).frame(height: MeltedCode.borderWidth)
 
             ScrollView(.horizontal, showsIndicators: true) {
-                Text(highlightedRequest == request ? (highlighted ?? AttributedString(source)) : AttributedString(source))
+                Text(highlightedRequest == request ? (highlighted ?? AttributedString(request.source)) : AttributedString(request.source))
                     .font(.system(size: MeltedReading.codeSize * scale, design: .monospaced))
                     .foregroundStyle(palette.text)
                     .lineSpacing(MeltedCode.lineSpacing * scale)
