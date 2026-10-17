@@ -11,6 +11,7 @@ public struct LibraryStatusBar: View {
     public var body: some View {
         let palette = MeltedPalette(scheme)
         HStack(spacing: MeltedReading.actionGap) {
+            MeltedWordmark(style: .compact)
             Spacer()
             if loading {
                 ProgressView().controlSize(.mini).accessibilityLabel("正在载入")

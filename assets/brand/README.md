@@ -4,7 +4,7 @@
 
 - [mark.svg](mark.svg)：32 × 32 矢量源，使用 currentColor。
 - [浅色 lockup](lockup-light.svg) / [深色 lockup](lockup-dark.svg)：README 标识，复用项目亮暗主题颜色。
-- App 的 MeltedMark 使用同一路径，连接表单标识 36 pt，文字 28 pt；主工作台和列表底栏不显示品牌。
+- App 的 MeltedMark 使用同一路径，连接表单标识 36 pt、文字 28 pt；列表底栏左侧使用紧凑字标（标识 16 pt、文字 13 pt、间距 6 pt）。
 - [App 图标](../app-icon/README.md)：暖纸白圆角底板与褐色原始标识，SVG、1024 PNG 和多尺寸 ICNS。
 
 2026-10-17 重新绘制完整轮廓，统一双拱节奏与笔画重量，缩短过长的右侧滴坠；配色、字标字体与页面位置沿用现有设计。不要另加悬浮水滴、光泽、纹理或渐变来表达融化。见[初次重绘验证](../../.agents/validation/2026-10-17/melting-mark.md)与[线条重绘验证](../../.agents/validation/2026-10-17/mark-refinement.md)。

@@ -21,13 +21,13 @@
 | --- | --- | --- |
 | 连接入口 | 标题上方 wordmark、服务器字段、连接/进度、就地失败；共享融化背景 | [ConnectionPage](../apps/macos/Sources/Melted/Features/Connection/ConnectionPage.swift)、[LandingView](../apps/macos/Sources/Melted/Features/Connection/LandingView.swift) |
 | 服务器确认 / 登录 | 地址、运营者与处理声明、信任选择、协商认证、切换与失败 | [ServerConfirmationView](../apps/macos/Sources/Melted/Features/Connection/ServerConfirmationView.swift)、[CredentialForm](../apps/macos/Sources/Melted/Features/Connection/CredentialForm.swift) |
-| 资讯工作台 | 无侧栏、无品牌条；全部/未读/收藏、条件摘要和最右设置；宽窗双栏/窄窗返回 | [WorkspaceView](../apps/macos/Sources/Melted/App/WorkspaceView.swift)、[WorkspaceToolbar](../apps/macos/Sources/Melted/App/WorkspaceToolbar.swift) |
-| 内容列表 | 日期分组、标题/摘要/分类/时间、选择、真实分页、差异化空态、数量底栏 | [ContentListView](../apps/macos/Sources/Melted/Features/Library/ContentListView.swift) |
+| 资讯工作台 | 无侧栏、无顶部品牌条；全部/未读/收藏、条件摘要和最右设置；宽窗双栏/窄窗返回 | [WorkspaceView](../apps/macos/Sources/Melted/App/WorkspaceView.swift)、[WorkspaceToolbar](../apps/macos/Sources/Melted/App/WorkspaceToolbar.swift) |
+| 内容列表 | 日期分组、标题/摘要/分类/时间、选择、真实分页、差异化空态；底栏左侧紧凑品牌、右侧数量 | [ContentListView](../apps/macos/Sources/Melted/Features/Library/ContentListView.swift) |
 | 搜索与筛选 | 组件已有原生字段、组合条件与键盘建议；菜单/⌘F 已有状态但面板尚未挂载 | [SearchPalette](../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) |
 | 阅读详情 | 标题、时间/收藏、必要证据警告、Markdown、文末分类/标签/关注/依据字段 | [ReadingDocumentView](../apps/macos/Sources/Melted/Features/Reading/ReadingDocumentView.swift) |
 | 设置与法律文本 | 外观、账户、关于三个分组，GPL 与第三方声明可滚动 sheet | [SettingsView](../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift)、[AboutSettings](../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) |
 
-连接页最大表单宽 440 pt，品牌只在这列标题上方；连接步骤只用 220 ms 淡化，切换认证方式关闭表单布局插值。工作台不展示 logo，阅读背景不融化。当前列表仍有未读点/收藏图标，与去冗余方向的差异见 [UI 第 8 节](11-ui-design-system.md#8-当前实现差异与后续整理)。
+连接页最大表单宽 440 pt，品牌在这列标题上方；连接步骤只用 220 ms 淡化，切换认证方式关闭表单布局插值。工作台品牌位于列表底栏左侧，阅读背景不融化。当前列表仍有未读点/收藏图标，与去冗余方向的差异见 [UI 第 8 节](11-ui-design-system.md#8-当前实现差异与后续整理)。
 
 搜索设计无常驻 toolbar 入口；只有有效条件才出现可打开/清除的 chip。**当前 WorkspaceView 只更新 searchOpen，没有呈现 SearchPalette，需修复后才能记为可用。** 以下是组件行为与目标交互：整体清除 q/category/tag/subject 保留 view；输入框清除仅清 q。选择一个 taxonomy 建议会清空当前输入/q，再应用所选 ID。时间/排序/facet 和“立即获取”没有现成 UI。条件变化重启请求和分页，状态协调应防止迟到响应覆盖当前查询；模型字段以 [当前契约](../contracts/openapi.json)为准。
 

@@ -19,12 +19,12 @@
 | 组件 / 模块 | 用途 | 当前尺寸与规则 |
 | --- | --- | --- |
 | [MeltedScreen](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedScreen.swift) | 页面底色与可选背景 | 无默认品牌 header；backdrop 只连接时启用 |
-| [ConnectionPage](../../apps/macos/Sources/Melted/Features/Connection/ConnectionPage.swift) / [MeltedWordmark](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedWordmark.swift) | 两步共享连接骨架 | 列宽 440、inset 32、间距 28；标识 36 / 标题 28 |
+| [ConnectionPage](../../apps/macos/Sources/Melted/Features/Connection/ConnectionPage.swift) / [MeltedWordmark](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedWordmark.swift) | 连接骨架与共享字标 | 列宽 440、inset 32、间距 28；连接标识 36 / 标题 28；紧凑标识 16 / 标题 13 / 间距 6 |
 | [MeltedField](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedField.swift) / [按钮样式](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/MeltedButtonStyles.swift) | 原生输入的共享外观、主要/次要动作 | 连接动作高 40；不统一强改所有页面按钮高度 |
 | [MeltedCheckboxStyle](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedCheckboxStyle.swift) / [MeltedSegmentedPicker](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedSegmentedPicker.swift) | 信任与认证/外观选择 | 原生语义和焦点，同组基线，真实状态驱动 |
 | [InfoCard](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/InfoCard.swift) | 运营者/处理声明 | 连接确认用途，不扩展成正文卡片系统 |
 | [ContentRowView](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/ContentRowView.swift) / [CategoryLabel](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/CategoryLabel.swift) | 列表与轻分类 | 圆角 10、inset 16×14、标题 3 行/摘要 4 行；未读点为已知差异 |
-| [LibraryStatusBar](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/LibraryStatusBar.swift) | 列表底栏 | 仅条数/加载，水平 24 / 垂直 10；markSize 旧值不再用于品牌 |
+| [LibraryStatusBar](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/LibraryStatusBar.swift) | 列表底栏 | 左侧紧凑品牌、右侧条数/加载；水平 24 / 垂直 10；空列表仍显示 |
 | [SearchPalette](../../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) / [MeltedFilterChip](../../apps/apple/Packages/MeltedKit/Sources/MeltedDesignSystem/Controls/MeltedFilterChip.swift) | 查询面板与条件状态 | 面板圆角 14、建议区最大高 280、条件高 24；当前缺主窗口挂载 |
 | [ReadingHeader](../../apps/macos/Sources/Melted/Features/Reading/ReadingHeader.swift) / [ReadingMetadata](../../apps/macos/Sources/Melted/Features/Reading/ReadingMetadata.swift) | 标题/时间/收藏与文末字段 | 标题 24，正文宽≤720，信息字号 12；窄处重排 |
 | [ReadingEvidence](../../apps/macos/Sources/Melted/Features/Reading/ReadingEvidence.swift) | 状态与编号来源 | 普通状态文末，风险前置，切文收起，无大卡片 |

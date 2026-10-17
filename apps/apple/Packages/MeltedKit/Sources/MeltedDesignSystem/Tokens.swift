@@ -90,6 +90,8 @@ public enum MeltedLibraryStatus {
     public static let horizontalInset: CGFloat = 24
     public static let verticalInset: CGFloat = 10
     public static let markSize: CGFloat = 16
+    public static let brandTitle: CGFloat = 13
+    public static let brandGap: CGFloat = 6
 }
 
 public enum MeltedCode {

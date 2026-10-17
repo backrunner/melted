@@ -76,8 +76,9 @@ struct ContentListView: View {
                 // Keep rows from drawing under the transparent title bar; the pinned header is the top edge.
                 .clipped()
 
-                LibraryStatusBar(total: model.total, loading: model.loading)
             }
+
+            LibraryStatusBar(total: model.total, loading: model.loading)
         }
         .background(palette.canvas)
     }
