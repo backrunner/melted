@@ -13,12 +13,20 @@ struct AboutSettings: View {
             LabeledContent("版本", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
             LabeledContent("构建", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—")
             LabeledContent("许可协议", value: "GPL-3.0-or-later")
-            Button("查看许可协议") { legalDocument = .license }
-            Button("第三方声明") { legalDocument = .thirdParty }
+            HStack(spacing: 12) {
+                Spacer(minLength: 0)
+                Button { legalDocument = .license } label: {
+                    Text("查看许可协议").frame(minHeight: 32)
+                }
+                Button { legalDocument = .thirdParty } label: {
+                    Text("第三方声明").frame(minHeight: 32)
+                }
+            }
+            .buttonStyle(MeltedSecondaryButtonStyle())
         } header: {
             Text("关于")
         } footer: {
-            Text("© 2026 Melted contributors。你可以依照 GPL-3.0-or-later 再分发和修改本软件；本软件不提供任何担保。")
+            Text("© 2026 Melted contributors")
         }
         .sheet(item: $legalDocument) { document in
             LegalDocumentView(document: document)
