@@ -11,3 +11,5 @@
 | [AppIcon.icns](AppIcon.icns) | macOS 16/32/128/256/512 pt 及各自 2× 图，按尺寸直接渲染 |
 
 生成器为 [generate-app-icon.swift](../../scripts/generate-app-icon.swift)，只依赖 macOS AppKit/CoreGraphics 与 iconutil。仓库根运行 swift scripts/generate-app-icon.swift；--check 在临时目录重建后核对。环境要求 RTK 时用 rtk proxy 包装。构建脚本复制 ICNS 并设置 CFBundleIconFile=AppIcon；Bundle ID 仍为 com.alkinum.melted。图标无需网络字体或第三方图片资源。
+
+Finder 与运行中应用的原生关于面板显示证据见 [系统图标核对](../../.agents/validation/2026-10-17/app-icon-system.md)。

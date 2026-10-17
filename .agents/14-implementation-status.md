@@ -52,5 +52,6 @@
 - [账户设置精简，2026-10-17](validation/2026-10-17/account-settings.md)：退出按钮统一次要样式及危险操作色，删除常驻说明，已核对新构建的亮暗设置窗口。
 - [关于设置精简，2026-10-17](validation/2026-10-17/about-settings.md)：两个许可按钮单行靠右、版权精简，亮暗布局与两个正文入口已实测。
 - [页面文案复核，2026-10-17](validation/2026-10-17/copy-review.md)：精简连接/登录/空态及错误提示，保留必要边界；原生检查与源码复核分开记录。
+- [系统应用图标，2026-10-17](validation/2026-10-17/app-icon-system.md)：正式资产与打包一致，Finder 和原生关于面板已显示正确图标。
 
 所有历史记录保留当时事实；最新源码状态与旧截图不同处以差异清单说明。没有 GitHub Actions 工作流，不把本地检查称为远端 CI；未验证 iCloud Keychain 实体设备同步、最低系统和完整 VoiceOver，不把 Apple Development 签名称为 Developer ID 公证发行。
