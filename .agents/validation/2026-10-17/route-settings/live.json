@@ -1,0 +1,227 @@
+{
+  "tested_at": "2026-10-17T12:43:02.313Z",
+  "rsshub_image": "ghcr.io/diygod/rsshub@sha256:1db5e6b65a2cbabc95def7e495801ccd50ce5c77ade6408d454867333c28b1a4",
+  "worker_errors": 0,
+  "results": [
+    {
+      "runtime": "compiled Node/PostgreSQL",
+      "results": [
+        {
+          "category": "新闻",
+          "route": "/bbc/world-asia",
+          "first": {
+            "started_at": "2026-10-17T12:42:51.035Z",
+            "finished_at": "2026-10-17T12:42:51.229Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 18,
+              "received": 18,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 18,
+          "repeat": {
+            "started_at": "2026-10-17T12:42:52.070Z",
+            "finished_at": "2026-10-17T12:42:52.113Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 18,
+              "duplicates": 18
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T11:44:31.000Z",
+            "2026-10-17T00:41:58.000Z"
+          ]
+        },
+        {
+          "category": "文化生活",
+          "route": "/douban/book/latest/fiction",
+          "first": {
+            "started_at": "2026-10-17T12:42:53.085Z",
+            "finished_at": "2026-10-17T12:42:53.741Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 10,
+              "received": 10,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T12:42:54.099Z",
+            "finished_at": "2026-10-17T12:42:54.116Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 10,
+              "duplicates": 10
+            },
+            "error": null
+          },
+          "published_dates": []
+        },
+        {
+          "category": "社区",
+          "route": "/hackernews",
+          "first": {
+            "started_at": "2026-10-17T12:42:55.109Z",
+            "finished_at": "2026-10-17T12:42:57.086Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 30,
+              "received": 30,
+              "duplicates": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 30,
+          "repeat": {
+            "started_at": "2026-10-17T12:42:58.127Z",
+            "finished_at": "2026-10-17T12:42:58.147Z",
+            "state": "complete",
+            "counts": {
+              "invalid": 0,
+              "updated": 0,
+              "inserted": 0,
+              "received": 30,
+              "duplicates": 30
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T08:21:25.000Z",
+            "2026-10-17T08:37:46.000Z"
+          ]
+        }
+      ]
+    },
+    {
+      "runtime": "workerd/SQLite DO + Alarms + Queues",
+      "results": [
+        {
+          "category": "新闻",
+          "route": "/bbc/world-asia",
+          "first": {
+            "started_at": "2026-10-17T12:42:51.206Z",
+            "finished_at": "2026-10-17T12:42:51.227Z",
+            "state": "complete",
+            "counts": {
+              "received": 18,
+              "inserted": 18,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 18,
+          "repeat": {
+            "started_at": "2026-10-17T12:42:52.219Z",
+            "finished_at": "2026-10-17T12:42:52.246Z",
+            "state": "complete",
+            "counts": {
+              "received": 0,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-16T11:44:31.000Z",
+            "2026-10-17T00:41:58.000Z"
+          ]
+        },
+        {
+          "category": "文化生活",
+          "route": "/douban/book/latest/fiction",
+          "first": {
+            "started_at": "2026-10-17T12:42:53.232Z",
+            "finished_at": "2026-10-17T12:42:59.245Z",
+            "state": "complete",
+            "counts": {
+              "received": 10,
+              "inserted": 10,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 10,
+          "repeat": {
+            "started_at": "2026-10-17T12:43:00.254Z",
+            "finished_at": "2026-10-17T12:43:00.260Z",
+            "state": "complete",
+            "counts": {
+              "received": 0,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": []
+        },
+        {
+          "category": "社区",
+          "route": "/hackernews",
+          "first": {
+            "started_at": "2026-10-17T12:43:01.261Z",
+            "finished_at": "2026-10-17T12:43:01.273Z",
+            "state": "complete",
+            "counts": {
+              "received": 30,
+              "inserted": 30,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null,
+            "warnings": []
+          },
+          "stored": 30,
+          "repeat": {
+            "started_at": "2026-10-17T12:43:02.272Z",
+            "finished_at": "2026-10-17T12:43:02.281Z",
+            "state": "complete",
+            "counts": {
+              "received": 0,
+              "inserted": 0,
+              "updated": 0,
+              "duplicates": 0,
+              "invalid": 0
+            },
+            "error": null
+          },
+          "published_dates": [
+            "2026-10-17T08:21:25.000Z",
+            "2026-10-17T08:37:46.000Z"
+          ]
+        }
+      ]
+    }
+  ]
+}

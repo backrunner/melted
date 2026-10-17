@@ -10,7 +10,7 @@
 | 身份 | 服务器 methods/preferred；预置密码/API Key、P-256、配置后 OIDC；客户端原生表单与 Keychain | 密钥不证明 Apple 身份；账户恢复、设备/多服务器管理 UI 后续 |
 | 内容 API | 词表、q/view/category/tag/subject 查询、中文子串、固定快照分页、详情、幂等状态与提交有序 changes | 不是 FTS/语义搜索；完整 v1 未冻结，无 facets/time UI |
 | RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报；客户端管理通过插件 DSL 提供 |
-| 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作，来源通用 configuration，兼容迁移 | 不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
+| 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作；表单建议、list/table 集合与多选创建，来源通用 configuration，兼容迁移 | 每行独立来源与任务；不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
 | 搜索 | SearchPalette 原生 sheet、NativeSearchField、菜单/⌘F、词表条件、组合查询、Esc 关闭及条件 chip 重开 | 时间/排序/facet 等扩展尚未实现 |
@@ -44,6 +44,8 @@ RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；
 ## 验证与运行入口
 
 插件模块化、设置 DSL 与原生管理见 [2026-10-17 插件验收](validation/2026-10-17/plugin-settings/README.md)。
+
+多来源订阅、路由建议与原生列表/表格见 [2026-10-17 订阅集合验收](validation/2026-10-17/route-settings/README.md)。该记录包含当前构建的深浅色画面、批量添加三类来源的实际入库及独立行操作。
 
 RSSHub 实施及双后端真实来源/恢复测试见 [2026-10-17 采集验收](validation/2026-10-17/rsshub/README.md)与 [提交前复审](validation/2026-10-17/rsshub/review.md)。
 

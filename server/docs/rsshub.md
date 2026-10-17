@@ -14,6 +14,20 @@
 
 实例配置的 `RSSHUB_ACCESS_KEY` 作为服务端秘密单独注入。RSSHub 当前使用 `key` query 验证访问密钥，采集器仅在出站请求时注入，不保存完整请求 URL、不记录上游异常原文，不将密钥传给账户。公开部署需 HTTPS，并在反向代理日志中屏蔽 query。不要把平台 Cookie 放入 Melted 来源配置。首版参考实例不包含登录源、浏览器、Redis 或额外模型服务。
 
+### 路由目录与多订阅
+
+RSSHub descriptor 提供新闻、文化生活和社区三组共 21 条内置建议，全部先通过同一 `allowed_routes` 授权检查，再下发客户端。BBC 的头条/亚洲/世界/商业/科技/中文、ABC 最新新闻、豆瓣新书 9 类和 Hacker News 5 类均保留相对路由。依据为上游 [BBC](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/bbc/index.ts)、[ABC](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/abc/index.ts)、[豆瓣新书](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/douban/book/latest.ts)和 [Hacker News](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/hackernews/index.ts) 的路由元数据，不代表每条路由已实时验收。
+
+运营者可添加最多 50 条 `route_suggestions`，按 value 覆盖同路径标题或增加本实例支持的公开路由。它只改变提示，不扩大授权；未授权建议不会下发。示例：
+
+```json
+{"base_url":"https://feeds.example.com","allowed_routes":["/bbc","/douban/event/hot"],"route_suggestions":[{"value":"/bbc","label":"每日头条","group":"新闻"},{"value":"/douban/event/hot/118172","label":"同城活动","group":"文化生活"}]}
+```
+
+客户端从建议批量勾选多个订阅，也可通过“自定义 RSSHub 订阅”输入允许范围内的其他路由。订阅以多行表格/列表管理，每行单独采集与暂停；更改某一路由不会重置其他行。轮询菜单提供常用间隔，自定义间隔仍以秒保存。路由建议、集合列、批量入口均由通用 DSL 描述，客户端不内置 RSSHub 路径。
+
+本次实际复测三类公开路由与批量原生操作见 [路由与多订阅验收](../../.agents/validation/2026-10-17/route-settings/README.md)。未验证的建议受上游与实例版本影响，失败时按真实 receipt 报告。
+
 ### Node 自托管
 
 可选 `rsshub` Compose profile 使用固定的官方镜像 digest、非 root、只读根文件系统、内存缓存，不公开 RSSHub 端口。Melted 的 `collector` 服务独立于 API 运行，并与 API 共享数据库和 RSSHub 配置。

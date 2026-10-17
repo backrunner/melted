@@ -26,7 +26,7 @@
 
 ## 原生设置 DSL（已实现）
 
-模块接口与注册方法见 [插件开发说明](../server/docs/plugins.md)。`GET /v1/plugins` 返回 DSL v1：text/integer/boolean/select 字段、校验约束与动作描述；来源保存 plugin/config_version/configuration。原生客户端根据有限语法渲染设置，不执行服务端代码、HTML 或任意 URL。动作 ID 由插件定义，v1 效果仅限 host 的 collect/validate，额外动作参数未开放。运营者秘密与账户设置分开。模块升级改变语法或配置版本时拒绝静默回退。
+模块接口与注册方法见 [插件开发说明](../server/docs/plugins.md)。`GET /v1/plugins` 返回 DSL v1：text/integer/boolean/select 字段、校验约束、可选建议、collection 列表/表格与动作描述；来源保存 plugin/config_version/configuration。原生客户端根据有限语法渲染设置，不执行服务端代码、HTML 或任意 URL。动作 ID 由插件定义，v1 效果仅限 host 的 collect/validate，额外动作参数未开放。collection 的每行对应独立来源；列只引用公开 source 字段或声明的 configuration 字段，批量添加按行幂等，不形成跨行原子事务。运营者秘密与账户设置分开。模块升级改变语法或配置版本时拒绝静默回退。
 
 ## Manifest（远程协议目标）
 
