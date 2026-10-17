@@ -16,17 +16,17 @@
 
 ### 路由目录与多订阅
 
-RSSHub descriptor 提供新闻、文化生活和社区三组共 21 条内置建议，全部先通过同一 `allowed_routes` 授权检查，再下发客户端。BBC 的头条/亚洲/世界/商业/科技/中文、ABC 最新新闻、豆瓣新书 9 类和 Hacker News 5 类均保留相对路由。依据为上游 [BBC](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/bbc/index.ts)、[ABC](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/abc/index.ts)、[豆瓣新书](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/douban/book/latest.ts)和 [Hacker News](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/hackernews/index.ts) 的路由元数据，不代表每条路由已实时验收。
+RSSHub 的预设来自运营者实例的 `/api/namespace`，服务端读取全部 feed 路由元数据（不含 `apiRoutes`），不维护精选列表，客户端也不内置平台名单。当前固定实例有 4,006 条路由，包含 Twitter/X 的 10 条路由；这表示目录已接入，不表示所有上游已实测成功。
 
-运营者可添加最多 50 条 `route_suggestions`，按 value 覆盖同路径标题或增加本实例支持的公开路由。它只改变提示，不扩大授权；未授权建议不会下发。示例：
+`collection.preset_catalog` 声明目录入口和批量上限。`GET /v1/plugins/rsshub/presets` 支持 query、limit（1–50）和绑定快照/搜索/授权的 cursor；返回名称、平台、路由格式、原生参数表单、实例配置条件和 allowed。全部路由可查，运营者已开放的路由优先；未开放的路由标明状态，不能添加。
 
-```json
-{"base_url":"https://feeds.example.com","allowed_routes":["/bbc","/douban/event/hot"],"route_suggestions":[{"value":"/bbc","label":"每日头条","group":"新闻"},{"value":"/douban/event/hot/118172","label":"同城活动","group":"文化生活"}]}
-```
+客户端按服务端表单填写用户名、频道或其他参数，调用 `POST /v1/plugins/rsshub/presets/{id}/resolve`，服务端校验并返回相对路由。普通参数按单路径段编码；含路径的参数保留分段；可选位置参数不能跳填。上游正则表达式不执行，无法描述的模板保留完整路由输入。解析结果再次通过插件配置与路由授权检查，不创建来源，不修改账户数据。随后按标准 source API 独立、幂等创建最多 20 个所选订阅；失败项单独重试。手动填写仍在同一添加面板中。
 
-客户端从建议批量勾选多个订阅，也可通过“自定义 RSSHub 订阅”输入允许范围内的其他路由。订阅以多行表格/列表管理，每行单独采集与暂停；更改某一路由不会重置其他行。轮询菜单提供常用间隔，自定义间隔仍以秒保存。路由建议、集合列、批量入口均由通用 DSL 描述，客户端不内置 RSSHub 路径。
+目录请求只访问固定实例，不跟随重定向，限 8 MiB / 15 秒；缓存 5 分钟，每个运行实例至多两份目录，冷请求合并。目录接口与解析接口需账户鉴权，共用每账户每分钟 120 次限额。上游失败保留为明确错误和重试入口。平台说明与路由说明合并后最多 16,000 字符，按需展开并使用原生 Markdown 展示；客户端不执行说明中的脚本，不加载远程图片，也不自动访问链接。普通采集响应仍限制 4 MiB。
 
-本次实际复测三类公开路由与批量原生操作见 [路由与多订阅验收](../../.agents/validation/2026-10-17/route-settings/README.md)。未验证的建议受上游与实例版本影响，失败时按真实 receipt 报告。
+例如开放 Twitter 用户公开时间线需要运营者在 `allowed_routes` 加入 `/twitter/user`，并在 RSSHub 部署中配置其要求。上游 [Twitter 用户路由](https://github.com/DIYgod/RSSHub/blob/master/lib/routes/twitter/user.ts) 声明的配置条件由目录展示；界面不收集 Cookie，不推断密钥是否已配置。上游的可选/必需标记原样反映，具体组合取决于 RSSHub 实例的获取方式。不要开放账号私人时间线或任意抓取代理路由。
+
+最新目录和原生验收见 [完整目录验收](../../.agents/validation/2026-10-17/plugin-preset-catalog/README.md)。此前三类真实采集记录见 [路由与多订阅验收](../../.agents/validation/2026-10-17/route-settings/README.md)；本次没有把全部目录标为真实采集通过。
 
 ### Node 自托管
 
@@ -58,6 +58,7 @@ docker compose --profile rsshub up --build -d
 | 创建/列出来源 | `POST/GET /v1/sources` |
 | 读取/修改/删除来源 | `GET/PATCH/DELETE /v1/sources/{id}` |
 | 插件设置描述 | `GET /v1/plugins` |
+| 目录搜索 / 参数解析 | `GET /v1/plugins/{id}/presets` / `POST /v1/plugins/{id}/presets/{preset}/resolve` |
 | 插件动作 | `POST /v1/sources/{id}/actions/{action}` |
 | 手动采集 | `POST /v1/sources/{id}/sync` |
 | 查询采集状态 | `GET /v1/receipts/{id}` |

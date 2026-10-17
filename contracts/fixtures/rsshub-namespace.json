@@ -1,0 +1,12 @@
+{
+  "bbc": {"name":"BBC", "routes": {"/:category?":{"name":"News","parameters":{"category":"News category"}}}},
+  "twitter": {"name":"X (Twitter)", "routes": {
+    "/user/:id/:routeParams?":{"name":"User timeline","parameters":{"id":"Username","routeParams":"Optional timeline filters"},"features":{"requireConfig":[{"name":"TWITTER_AUTH_TOKEN"}]}},
+    "/home":{"name":"Home timeline"}
+  }, "apiRoutes":{"/api-only":{"name":"Not a feed"}}},
+  "npm": {"name":"npm", "routes": {"/package/:name{(@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*}":{"name":"Package"}}},
+  "test": {"name":"Patterns", "routes": {
+    "/prefix-:value":{"name":"Complex pattern","example":"/test/prefix-news"},
+    "/:first?/:second?":{"name":"Optional positions"}
+  }}
+}

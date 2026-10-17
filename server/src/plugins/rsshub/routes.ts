@@ -18,7 +18,7 @@ export function validRoute(value: string): boolean {
     return (
       isPortableText(decoded) &&
       !/[\u0000-\u001f\u007f]/.test(decoded) &&
-      !/[?#\\\s]/.test(decoded) &&
+      !/[?#\\]/.test(decoded) &&
       !decoded.includes("//") &&
       !decoded.split("/").some((s) => s === "." || s === "..")
     );

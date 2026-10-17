@@ -4,6 +4,8 @@ import Foundation
 
 public protocol PluginClient: Sendable {
     func pluginCatalog() async throws -> PluginCatalog
+    func pluginPresets(_ plugin: PluginDescriptor, query: String, cursor: String?) async throws -> PluginPresetPage
+    func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) async throws -> PluginPresetResolution
     func sources() async throws -> [PluginSource]
     func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) async throws -> PluginSource
     func removeSource(_ source: PluginSource) async throws
@@ -16,6 +18,20 @@ extension APIClient: PluginClient {
         let catalog: PluginCatalog = try await send("/v1/plugins", token: accessToken())
         guard catalog.supported else { throw APIError.incompatible }
         return catalog
+    }
+    public func pluginPresets(_ plugin: PluginDescriptor, query: String, cursor: String?) async throws -> PluginPresetPage {
+        guard plugin.supported, plugin.available, plugin.collection.presetCatalog != nil else { throw APIError.incompatible }
+        let queryItems = [URLQueryItem(name: "query", value: query)] + (cursor.map { [URLQueryItem(name: "cursor", value: $0)] } ?? [])
+        let page: PluginPresetPage = try await send("/v1/plugins/\(plugin.id)/presets", query: queryItems, token: accessToken())
+        guard page.supported else { throw APIError.incompatible }
+        return page
+    }
+    public func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) async throws -> PluginPresetResolution {
+        guard plugin.supported, plugin.available, plugin.collection.presetCatalog != nil, preset.supported, preset.allowed, preset.input.error(in: input) == nil else { throw APIError.incompatible }
+        struct Body: Encodable { let input: PluginConfiguration }
+        let result: PluginPresetResolution = try await send("/v1/plugins/\(plugin.id)/presets/\(preset.id)/resolve", method: "POST", body: Wire.encoder().encode(Body(input: input)), token: accessToken())
+        guard !result.label.isEmpty, result.label.utf16.count <= 400, plugin.form.error(in: result.configuration) == nil else { throw APIError.incompatible }
+        return result
     }
     public func sources() async throws -> [PluginSource] {
         struct Page: Decodable, Sendable { let sources: [PluginSource] }

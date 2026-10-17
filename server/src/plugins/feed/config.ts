@@ -33,18 +33,6 @@ export const feedConfigSchema = z
   .object({
     allowed_origins: z.array(origin.refine(publicOrigin)).max(50).default([]),
     private_origins: z.array(origin).max(10).default([]),
-    suggestions: z
-      .array(
-        z
-          .object({
-            value: z.string().max(2048).refine(isHTTPURL),
-            label: z.string().min(1).max(200),
-            group: z.string().min(1).max(100).optional(),
-          })
-          .strict(),
-      )
-      .max(50)
-      .default([]),
   })
   .strict()
   .refine((c) => {
@@ -52,10 +40,7 @@ export const feedConfigSchema = z
     return (
       origins.length > 0 &&
       origins.length <= 50 &&
-      new Set(origins).size === origins.length &&
-      c.suggestions.every(
-        (s) => isHTTPURL(s.value) && origins.includes(new URL(s.value).origin),
-      )
+      new Set(origins).size === origins.length
     );
   }, "Configure distinct, explicitly authorized feed origins");
 export const feedSettingsSchema = z

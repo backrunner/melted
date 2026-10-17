@@ -72,104 +72,12 @@
           {
             "id": "route",
             "label": "订阅路由",
-            "help": "选择订阅建议，或填写运营者允许的相对路由；无需实例地址",
+            "help": "从实例目录选择来源，或填写运营者允许的相对路由；无需实例地址",
             "required": true,
             "type": "text",
             "placeholder": "/bbc/world-asia",
             "max_length": 2048,
-            "monospaced": true,
-            "suggestions": [
-              {
-                "value": "/bbc",
-                "label": "BBC · 头条",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/bbc/world-asia",
-                "label": "BBC · 亚洲",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/bbc/world",
-                "label": "BBC · 世界",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/bbc/business",
-                "label": "BBC · 商业",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/bbc/technology",
-                "label": "BBC · 科技",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/bbc/chinese",
-                "label": "BBC · 中文",
-                "group": "新闻",
-                "description": "栏目文章、摘要与原文链接"
-              },
-              {
-                "value": "/douban/book/latest/all",
-                "label": "豆瓣新书 · 全部",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/fiction",
-                "label": "豆瓣新书 · 小说",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/prose_poetry",
-                "label": "豆瓣新书 · 文学",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/history",
-                "label": "豆瓣新书 · 历史文化",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/biography",
-                "label": "豆瓣新书 · 社会纪实",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/science",
-                "label": "豆瓣新书 · 科学新知",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/art",
-                "label": "豆瓣新书 · 艺术设计",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/business",
-                "label": "豆瓣新书 · 商业经管",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              },
-              {
-                "value": "/douban/book/latest/comics",
-                "label": "豆瓣新书 · 绘本漫画",
-                "group": "文化生活",
-                "description": "新书介绍、作者与评分；来源可能不提供发布日期"
-              }
-            ]
+            "monospaced": true
           }
         ]
       },
@@ -198,7 +106,8 @@
             "label": "采集间隔"
           }
         ],
-        "add_from_suggestions": {
+        "primary_field": "route",
+        "preset_catalog": {
           "field": "route",
           "maximum": 20
         }
@@ -247,14 +156,7 @@
             "type": "text",
             "placeholder": "https://example.com/feed.xml",
             "max_length": 2048,
-            "format": "url",
-            "suggestions": [
-              {
-                "value": "https://feeds.bbci.co.uk/news/world/rss.xml",
-                "label": "BBC 世界新闻",
-                "group": "新闻"
-              }
-            ]
+            "format": "url"
           },
           {
             "id": "format",
@@ -333,10 +235,7 @@
             "label": "采集间隔"
           }
         ],
-        "add_from_suggestions": {
-          "field": "url",
-          "maximum": 20
-        }
+        "primary_field": "url"
       },
       "actions": [
         {

@@ -770,6 +770,29 @@
                   ]
                 }
               },
+              "primary_field": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.-]{0,99}$"
+              },
+              "preset_catalog": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{0,99}$"
+                  },
+                  "maximum": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  }
+                },
+                "required": [
+                  "field",
+                  "maximum"
+                ],
+                "additionalProperties": false
+              },
               "add_from_suggestions": {
                 "type": "object",
                 "properties": {

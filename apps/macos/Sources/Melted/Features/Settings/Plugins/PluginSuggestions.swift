@@ -34,7 +34,7 @@ struct PluginSuggestions: View {
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollViewReader { proxy in
-                    ScrollView {
+                    MeltedScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             ForEach(Array(filtered.enumerated()), id: \.element.id) { index, suggestion in
                                 if index == 0 || filtered[index - 1].group != suggestion.group {

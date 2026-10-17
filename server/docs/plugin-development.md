@@ -83,7 +83,7 @@ server/tests/unit/culture-notes-plugin.test.ts
 
 text 字段可用 `format: "url"` 声明地址语义；客户端校验格式、服务器执行地址授权，字段本身不会加载资源。
 
-descriptor 必须包含 `collection`，声明 `list` 或 `table`、标题和最多 8 个合法列绑定。每一行是独立 source；`add_from_suggestions` 可提供最多 20 项的批量创建。表单/建议/列/动作都来自插件描述，macOS 负责原生样式、导航与交互。详见 [设置 DSL](plugins.md)。
+descriptor 必须包含 `collection`，声明 `list` 或 `table`、标题和最多 8 个合法列绑定。每一行是独立 source；`add_from_suggestions` 可提供最多 20 项的批量创建；大型动态目录使用互斥的 `preset_catalog` 和基类可选 `presets(operator)` provider（list/resolve），由 host 校验返回值并复核授权。表单/建议/列/动作都来自插件描述，macOS 负责原生样式、导航与交互。详见 [设置 DSL](plugins.md)。
 
 当前 `collect` 和 `validate` 是 host 支持的动作效果；插件声明动作 ID/文案，客户端调用固定的服务器 actions API。扩展新的效果需要先在 host 与契约中实现，不能在 descriptor 放脚本或外部 endpoint。
 

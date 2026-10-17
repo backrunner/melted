@@ -2,74 +2,142 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import test from "node:test";
 import assert from "node:assert/strict";
-import { rsshubPlugin } from "../../src/plugins/rsshub/plugin.js";
+import { RSSHubCollector } from "../../src/plugins/rsshub/plugin.js";
 import { formSchema, validateSettings } from "../../src/modules/plugins/dsl.js";
-
+import metadata from "../../../contracts/fixtures/rsshub-namespace.json" with { type: "json" };
 const operator = {
   base_url: "https://feeds.example.org",
-  allowed_routes: ["/bbc", "/abc", "/douban/book/latest", "/hackernews"],
+  allowed_routes: ["/bbc", "/twitter/user", "/npm", "/test"],
+  access_key: "private-key",
 };
-const suggestions = (config: unknown) => {
-  const field = rsshubPlugin.configure(config).descriptor.form.fields[0]!;
-  assert.equal(field.type, "text");
-  return field.type === "text" ? field.suggestions! : [];
-};
-
-test("route catalog is finite, grouped and restricted by the same authorization as collection", () => {
-  const routes = suggestions(operator);
-  assert.equal(routes.length, 21);
-  assert.deepEqual(
-    new Set(routes.map((r) => r.group)),
-    new Set(["新闻", "文化生活", "社区"]),
+const query = { query: "", limit: 50 };
+function configured(data: unknown = metadata) {
+  return new RSSHubCollector(async () => Response.json(data)).configure(
+    operator,
   );
-  for (const route of routes)
-    rsshubPlugin.configure(operator).validate({ route: route.value });
-  assert.deepEqual(
-    suggestions({ ...operator, allowed_routes: ["/bbc/world"] }).map(
-      (r) => r.value,
-    ),
-    ["/bbc/world"],
-  );
-  assert.equal(suggestions({ ...operator, allowed_routes: ["/bb"] }).length, 0);
+}
+test("instance catalog includes every route, uses declared parameters and reveals requirements without secrets", async () => {
+  const plugin = configured(),
+    provider = plugin.presets!;
+  const page = await provider.list(query);
+  assert.equal(page.total, 6);
+  const routeField = plugin.descriptor.form.fields[0]!;
+  assert(routeField.type === "text");
+  assert.equal(routeField.suggestions, undefined);
+  assert(!JSON.stringify(page).includes(operator.access_key));
+  const twitter = page.presets.find((p) =>
+    p.summary.startsWith("/twitter/user"),
+  )!;
+  assert(twitter.allowed);
+  assert(twitter.requirements.some((r) => r.includes("TWITTER_AUTH_TOKEN")));
+  const resolved = await provider.resolve(twitter.id, { p2: "_RSSHub" });
+  assert.equal(resolved.configuration.route, "/twitter/user/_RSSHub");
+  await assert.rejects(provider.resolve(twitter.id, {}));
+  for (const value of ["../home", "%2e%2e", "user?key=secret", "user#fragment"])
+    await assert.rejects(provider.resolve(twitter.id, { p2: value }));
+  const blocked = page.presets.find((p) => p.summary === "/twitter/home")!;
+  assert(!blocked.allowed);
+  await assert.rejects(provider.resolve(blocked.id, {}), /route_not_allowed/);
+  assert(!page.presets.some((p) => p.summary.includes("api-only")));
 });
-
-test("operator suggestions extend or rename routes but never grant authorization", () => {
-  const routes = suggestions({
-    ...operator,
-    allowed_routes: ["/bbc", "/douban/event/hot"],
-    route_suggestions: [
-      { value: "/bbc", label: "每日头条", group: "新闻" },
-      {
-        value: "/douban/event/hot/118172",
-        label: "同城活动",
-        group: "文化生活",
-      },
-      { value: "/hackernews", label: "未授权" },
-    ],
-  });
-  assert.equal(routes.filter((r) => r.value === "/bbc").length, 1);
-  assert.equal(routes.find((r) => r.value === "/bbc")?.label, "每日头条");
-  assert.ok(routes.some((r) => r.value === "/douban/event/hot/118172"));
-  assert.ok(!routes.some((r) => r.value === "/hackernews"));
-  assert.throws(() =>
-    rsshubPlugin.configure({
-      ...operator,
-      route_suggestions: [{ value: "https://evil.invalid", label: "Bad" }],
-    }),
+test("regex metadata is never executed, path parameters and unsupported templates remain represented", async () => {
+  const provider = configured().presets!,
+    page = await provider.list(query);
+  const npm = page.presets.find((p) => p.summary.startsWith("/npm/"))!;
+  assert.equal(
+    (await provider.resolve(npm.id, { p2: "@scope/package" })).configuration
+      .route,
+    "/npm/package/%40scope/package",
   );
-  assert.throws(
-    () => rsshubPlugin.configure(operator).validate({ route: "/bbc-other" }),
+  const complex = page.presets.find((p) => p.summary.includes("prefix-"))!;
+  assert.equal(complex.input.fields[0]?.id, "route");
+  assert.equal(
+    (await provider.resolve(complex.id, { route: "/test/prefix-news" }))
+      .configuration.route,
+    "/test/prefix-news",
+  );
+  await assert.rejects(
+    provider.resolve(complex.id, { route: "/twitter/home" }),
     /route_not_allowed/,
   );
-  // Suggestions are conveniences, not a closed enum or an authorization list.
-  assert.deepEqual(
-    rsshubPlugin
-      .configure(operator)
-      .validate({ route: "/bbc/science_and_environment" }),
-    { route: "/bbc/science_and_environment" },
+  const optional = page.presets.find((p) => p.summary.includes(":first?"))!;
+  await assert.rejects(
+    provider.resolve(optional.id, { p2: "later" }),
+    /preset_parameter_gap/,
+  );
+  const bbc = page.presets.find((p) => p.summary.startsWith("/bbc"))!;
+  assert.equal(
+    (await provider.resolve(bbc.id, { p1: "world news" })).configuration.route,
+    "/bbc/world%20news",
   );
 });
-
+test("search, pagination and cache bind to query and authorization, coalescing concurrent metadata requests", async () => {
+  let calls = 0;
+  const plugin = new RSSHubCollector(async (url, options) => {
+    calls++;
+    assert.equal(new URL(String(url)).pathname, "/api/namespace");
+    assert.equal(new URL(String(url)).searchParams.get("key"), "private-key");
+    assert.equal(options?.redirect, "manual");
+    return Response.json(metadata);
+  });
+  const provider = plugin.configure(operator).presets!;
+  const [first, same] = await Promise.all([
+    provider.list({ ...query, limit: 2 }),
+    provider.list({ ...query, limit: 2 }),
+  ]);
+  assert.deepEqual(first, same);
+  assert.equal(calls, 1);
+  assert(first.next_cursor);
+  const second = await provider.list({
+    ...query,
+    limit: 2,
+    cursor: first.next_cursor,
+  });
+  assert(!first.presets.some((p) => second.presets.some((s) => s.id === p.id)));
+  assert.equal((await provider.list({ ...query, query: "Twitter" })).total, 2);
+  await assert.rejects(
+    provider.list({
+      ...query,
+      limit: 2,
+      query: "bbc",
+      cursor: first.next_cursor,
+    }),
+    /preset_catalog_changed/,
+  );
+  await assert.rejects(
+    plugin
+      .configure({ ...operator, allowed_routes: ["/bbc"] })
+      .presets!.list({ ...query, limit: 2, cursor: first.next_cursor }),
+    /preset_catalog_changed/,
+  );
+});
+test("malformed, oversized, redirecting and failed catalogs return a stable error and can retry", async () => {
+  for (const response of [
+    () => Response.json({}),
+    () => new Response("x".repeat(8 * 1024 * 1024 + 1)),
+    () =>
+      new Response(null, {
+        status: 302,
+        headers: { Location: "https://evil.invalid" },
+      }),
+    () => {
+      throw new Error("https://feeds.example.org?key=private-key");
+    },
+  ]) {
+    let fail = true;
+    const provider = new RSSHubCollector(async () =>
+      fail ? response() : Response.json(metadata),
+    ).configure(operator).presets!;
+    await assert.rejects(
+      provider.list(query),
+      (error) =>
+        error instanceof Error &&
+        error.message === "preset_catalog_unavailable",
+    );
+    fail = false;
+    assert.equal((await provider.list(query)).total, 6);
+  }
+});
 test("DSL rejects ambiguous, wrongly typed and out-of-range suggestions without restricting custom input", () => {
   const field = {
     id: "count",
@@ -96,4 +164,44 @@ test("DSL rejects ambiguous, wrongly typed and out-of-range suggestions without 
     fields: [{ ...field, suggestions: [{ value: 3, label: "常用" }] }],
   });
   assert.deepEqual(validateSettings(form, { count: 7 }), { count: 7 });
+});
+
+test("nested namespaces, empty root aliases and unicode metadata stay usable", async () => {
+  const provider = configured({
+    "gov/cn": { name: "政务", routes: { "": { name: "Root" } } },
+    bbc: {
+      name: "",
+      routes: {
+        "/": { name: "", parameters: {}, description: "😀".repeat(10000) },
+      },
+    },
+  }).presets!;
+  const page = await provider.list(query);
+  assert.equal(page.total, 2);
+  assert(page.presets.some((p) => p.summary === "/gov/cn"));
+  assert(page.presets.every((p) => p.label && p.group));
+  assert.equal(
+    page.presets.find((p) => p.summary === "/bbc")!.description!.length,
+    16000,
+  );
+});
+
+test("a narrow authorization does not enable a different route sharing a parameterized namespace", async () => {
+  const plugin = new RSSHubCollector(async () =>
+    Response.json({
+      douban: {
+        name: "豆瓣",
+        routes: {
+          "/:id/discussion": { name: "Discussion" },
+          "/book/latest/:type?": { name: "Books" },
+        },
+      },
+    }),
+  ).configure({ ...operator, allowed_routes: ["/douban/book/latest"] });
+  const page = await plugin.presets!.list(query);
+  assert.equal(
+    page.presets.find((p) => p.label === "Discussion")!.allowed,
+    false,
+  );
+  assert.equal(page.presets.find((p) => p.label === "Books")!.allowed, true);
 });

@@ -44,6 +44,8 @@ RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；
 
 ## 验证与运行入口
 
+RSSHub 完整实例目录、参数化预设、普通 Feed 直接输入与通用滚动容器见 [2026-10-17 完整目录验收](validation/2026-10-17/plugin-preset-catalog/README.md)。目录数量与真实采集可用性分开报告。
+
 插件集合按 DSL 固定布局、移除终端用户表格/列表切换，见 [固定布局澄清与验收](validation/2026-10-17/fixed-plugin-layout/README.md)。此前含切换器的截图保留为历史证据。
 
 独立 Feed 插件与通用 URL DSL 见 [2026-10-17 Feed 验收](validation/2026-10-17/feed-collector/README.md)，包含双后端真实 RSS/Atom/JSON Feed 入库、重复采集及本地 CA 配置差异。

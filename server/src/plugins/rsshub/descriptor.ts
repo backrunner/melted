@@ -14,13 +14,14 @@ export const descriptor = descriptorSchema.parse({
   collection: {
     layout: "table",
     title: "订阅",
+    primary_field: "route",
     columns: [
       { scope: "source", field: "name", label: "名称" },
       { scope: "configuration", field: "route", label: "订阅路由" },
       { scope: "source", field: "enabled", label: "状态" },
       { scope: "source", field: "interval_seconds", label: "采集间隔" },
     ],
-    add_from_suggestions: { field: "route", maximum: 20 },
+    preset_catalog: { field: "route", maximum: 20 },
   },
   form: {
     fields: [
@@ -31,7 +32,7 @@ export const descriptor = descriptorSchema.parse({
         placeholder: "/bbc/world-asia",
         max_length: 2048,
         monospaced: true,
-        help: "选择订阅建议，或填写运营者允许的相对路由；无需实例地址",
+        help: "从实例目录选择来源，或填写运营者允许的相对路由；无需实例地址",
       },
     ],
   },

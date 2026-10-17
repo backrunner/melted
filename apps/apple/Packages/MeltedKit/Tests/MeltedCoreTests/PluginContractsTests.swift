@@ -21,7 +21,7 @@ private func pluginFixture(_ name: String) throws -> Data {
     #expect(plugin.form.fields.first?.id == "route")
     #expect(plugin.collection.layout == "table")
     #expect(plugin.collection.columns.map(\.id) == ["source.name", "configuration.route", "source.enabled", "source.interval_seconds"])
-    #expect(plugin.collection.addFromSuggestions?.maximum == 20)
+    #expect(plugin.collection.presetCatalog?.maximum == 20)
     #expect(plugin.actions.map(\.effect) == ["collect", "validate"])
     #expect(catalog.sourceForm.error(in: ["name": .string("新闻"), "enabled": .boolean(true), "interval_seconds": .number(900)]) == nil)
     #expect(plugin.form.error(in: ["route": .string("/bbc/world-asia")]) == nil)
@@ -63,17 +63,17 @@ private func pluginFixture(_ name: String) throws -> Data {
     #expect(try receipt("future").label == "未知任务状态")
 }
 
-@Test func suggestionsSearchAcrossLabelsCategoriesAndRoutesWithoutClosingCustomInput() throws {
+@Test func serverPresetCatalogDecodesParameterizedRoutesWithoutClientPresets() throws {
     let catalog = try Wire.decoder().decode(PluginCatalog.self, from: pluginFixture("plugin-settings"))
-    let field = try #require(catalog.plugins.first?.form.fields.first)
-    #expect(field.monospaced == true)
-    let choices = try #require(field.suggestions)
-    #expect(choices.count == 15)
-    #expect(choices.filter { $0.matches("文化 小说") }.map(\.value) == [.string("/douban/book/latest/fiction")])
-    #expect(choices.filter { $0.matches("BBC business") }.map(\.value) == [.string("/bbc/business")])
-    #expect(choices.allSatisfy { $0.matches("  ") })
-    #expect(choices.allSatisfy { !$0.matches("missing-category") })
-    #expect(field.accepts(.string("/bbc/science_and_environment")))
+    let plugin = try #require(catalog.plugins.first)
+    #expect(plugin.collection.presetCatalog?.field == "route")
+    #expect(plugin.form.fields.first?.suggestions == nil)
+    let page = try Wire.decoder().decode(PluginPresetPage.self, from: pluginFixture("plugin-presets"))
+    #expect(page.supported)
+    let twitter = try #require(page.presets.first { $0.summary.contains("/twitter/user/") })
+    #expect(twitter.requirements.contains { $0.contains("TWITTER_AUTH_TOKEN") })
+    #expect(twitter.input.error(in: [:]) != nil)
+    #expect(twitter.input.error(in: ["p2": .string("_RSSHub")]) == nil)
 }
 
 @Test func optionalSuggestionsAndInvalidMetadata() throws {
@@ -114,6 +114,7 @@ private func pluginFixture(_ name: String) throws -> Data {
     #expect(feed.supported && feed.available)
     let field = try #require(feed.form.fields.first { $0.id == "url" })
     #expect(field.format == "url")
+    #expect(field.suggestions == nil && feed.collection.presetCatalog == nil && feed.collection.addFromSuggestions == nil)
     #expect(feed.collection.columns.contains { $0.id == "configuration.url" })
     #expect(feed.form.error(in: ["url": .string("https://feeds.bbci.co.uk/news/world/rss.xml")]) == nil)
     for value in ["/feed", "https://user:secret@feeds.example.org/a", "https://feeds.example.org/#frag", "https://feeds.example.org/white space", "https://feeds.example.org/%GG", "file:///etc/passwd", "https://feeds.example.org\\@localhost/a"] { #expect(!field.accepts(.string(value))) }

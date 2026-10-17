@@ -9,17 +9,12 @@
 ```json
 {
   "feed": {
-    "allowed_origins": ["https://feeds.bbci.co.uk", "https://github.com", "https://www.jsonfeed.org"],
-    "suggestions": [
-      {"value":"https://feeds.bbci.co.uk/news/world/rss.xml","label":"BBC 世界新闻","group":"新闻"},
-      {"value":"https://github.com/DIYgod/RSSHub/releases.atom","label":"RSSHub 发布记录","group":"项目"},
-      {"value":"https://www.jsonfeed.org/feed.json","label":"JSON Feed 公告","group":"项目"}
-    ]
+    "allowed_origins": ["https://feeds.bbci.co.uk", "https://github.com", "https://www.jsonfeed.org"]
   }
 }
 ```
 
-`allowed_origins` 是运营者信任的精确 HTTPS 站点，不接受通配符、路径、凭据、非默认端口或 IP 地址。账户可选择这些站点上的 Feed 路径和查询参数，不能新增目标服务器。`suggestions` 可省略；建议不是授权规则，所有 URL 都经过同一 origin 检查。多个允许站点会逐一进入 processing manifest，地址变化会改变声明版本，discovery 的 collectors 按插件去重。
+`allowed_origins` 是运营者信任的精确 HTTPS 站点，不接受通配符、路径、凭据、非默认端口或 IP 地址。账户可选择这些站点上的 Feed 路径和查询参数，不能新增目标服务器。普通 Feed 不提供来源预设，用户直接填写 URL，所有 URL 都经过同一 origin 检查。多个允许站点会逐一进入 processing manifest，地址变化会改变声明版本，discovery 的 collectors 按插件去重。
 
 Node 确需内部/HTTP 来源时，只能逐个写入 `private_origins`，例如 `{"private_origins":["http://127.0.0.1:12000"]}`；这明确授权该 origin，不开放其他内网目标。两个列表合计最多 50 个不同 origin。生产 Cloudflare 预检拒绝任何 private_origins。
 
@@ -36,7 +31,7 @@ Node 确需内部/HTTP 来源时，只能逐个写入 `private_origins`，例如
 | `max_items` | integer | 1–100，默认 100；可选 20/50/100 或自定义 |
 | name / enabled / interval_seconds | 共用来源表单 | 名称、自动采集、默认 900 秒且最短 300 秒 |
 
-列表/表格每行对应独立 source、设置、启停、任务和 checkpoint。配置了 suggestions 时可多选批量添加；也可输入自定义地址。`collect` 提交异步任务，`validate` 只检查配置及授权站点，不证明上游实时可用。
+列表/表格每行对应独立 source、设置、启停、任务和 checkpoint。添加时直接填写名称与 Feed 地址，采集格式、条数和间隔放在可折叠的采集设置中。`collect` 提交异步任务，`validate` 只检查配置及授权站点，不证明上游实时可用。
 
 ```json
 {

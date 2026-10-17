@@ -57,7 +57,7 @@ private struct LegalDocumentView: View {
             }
             .padding()
             Divider()
-            ScrollView {
+            MeltedScrollView {
                 if let text {
                     Group {
                         if document == .thirdParty {

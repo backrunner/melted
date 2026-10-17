@@ -10,7 +10,7 @@ struct ConnectionPage<Content: View>: View {
     var body: some View {
         MeltedScreen(backdrop: true) {
             GeometryReader { geometry in
-                ScrollView {
+                MeltedScrollView {
                     VStack(alignment: .leading, spacing: MeltedConnection.sectionSpacing) {
                         MeltedWordmark()
                         content

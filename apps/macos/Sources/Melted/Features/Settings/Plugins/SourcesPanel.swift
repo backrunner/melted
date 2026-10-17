@@ -42,7 +42,7 @@ struct SourcesPanel: View {
                 .menuStyle(.borderlessButton).modifier(MeltedMenuChrome()).fixedSize()
                 .disabled(model.catalog == nil || model.busy)
         } content: {
-            ScrollView {
+            MeltedScrollView {
                 VStack(alignment: .leading, spacing: MeltedPanelMetrics.sectionGap) {
                     if model.loading { ProgressView("正在加载来源").frame(maxWidth: .infinity, alignment: .leading) }
                     if let error = model.error { MeltedNotice(title: error) }

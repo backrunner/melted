@@ -31,22 +31,6 @@ export class FeedCollector extends BaseCollectorPlugin<
       capabilities: ["https"],
     });
   }
-  protected override describe(operator: FeedConfig) {
-    return {
-      ...this.descriptor,
-      form: {
-        fields: this.descriptor.form.fields.map((f) =>
-          f.id === "url" ? { ...f, suggestions: operator.suggestions } : f,
-        ),
-      },
-      collection: {
-        ...this.descriptor.collection,
-        ...(operator.suggestions.length
-          ? { add_from_suggestions: { field: "url", maximum: 20 } }
-          : {}),
-      },
-    };
-  }
   protected destinations(operator: FeedConfig): Destination[] {
     return [...operator.allowed_origins, ...operator.private_origins].map(
       (origin) => ({

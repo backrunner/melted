@@ -240,15 +240,14 @@ test("Feed plugin validates URL DSL, operator origins, format, limits and multip
     disclosure.version,
     (await collectionDisclosure({ feed: operator }, pluginRegistry)).version,
   );
-  const suggestion = plugin.configure({
-    ...operator,
-    suggestions: [{ value: url, label: "Feed" }],
-  });
-  assert.equal(
-    descriptorSchema.parse(suggestion.descriptor).collection
-      .add_from_suggestions?.field,
-    "url",
+  const descriptor = descriptorSchema.parse(
+    plugin.configure(operator).descriptor,
   );
+  assert.equal(descriptor.collection.add_from_suggestions, undefined);
+  assert.equal(descriptor.collection.preset_catalog, undefined);
+  const urlField = descriptor.form.fields.find((f) => f.id === "url");
+  assert(urlField?.type === "text");
+  assert.equal(urlField.suggestions, undefined);
 });
 test("Feed collector revalidates target and binds validators to URL, format and item window", async () => {
   let headers: Headers | undefined,

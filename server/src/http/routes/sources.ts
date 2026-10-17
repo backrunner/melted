@@ -11,6 +11,10 @@ import {
 import { publicRun, publicSource } from "../../modules/sources/lifecycle.js";
 import type { PluginRegistry } from "../../modules/plugins/registry.js";
 import { pluginConfiguration } from "../../plugins/index.js";
+import {
+  presetQuerySchema,
+  presetInputSchema,
+} from "../../modules/plugins/presets.js";
 import { PluginService } from "../../modules/plugins/service.js";
 
 export function registerSourceRoutes(
@@ -26,6 +30,37 @@ export function registerSourceRoutes(
       .plugins.find((p) => p.id === c.req.param("id"));
     if (!plugin) throw new Problem(404, "plugin_not_found");
     return c.json(plugin);
+  });
+  app.get("/v1/plugins/:id/presets", async (c) => {
+    const parsed = presetQuerySchema.safeParse(c.req.query());
+    if (!parsed.success) throw new Problem(400, "invalid_preset_query");
+    const plugin = registry.resolve(
+      c.req.param("id"),
+      pluginConfiguration(c.env.config),
+    );
+    if (!plugin.presets) throw new Problem(404, "preset_catalog_unavailable");
+    await c.env.repository.limit(
+      "plugin-presets:" + c.get("principal").owner,
+      120,
+    );
+    return c.json(await plugin.presets.list(parsed.data));
+  });
+  app.post("/v1/plugins/:id/presets/:preset/resolve", async (c) => {
+    const parsed = presetInputSchema.safeParse(await c.req.json());
+    if (!parsed.success || !/^[a-f0-9]{64}$/.test(c.req.param("preset")))
+      throw new Problem(400, "invalid_preset_input");
+    const plugin = registry.resolve(
+      c.req.param("id"),
+      pluginConfiguration(c.env.config),
+    );
+    if (!plugin.presets) throw new Problem(404, "preset_catalog_unavailable");
+    await c.env.repository.limit(
+      "plugin-presets:" + c.get("principal").owner,
+      120,
+    );
+    return c.json(
+      await plugin.presets.resolve(c.req.param("preset"), parsed.data.input),
+    );
   });
   app.get("/v1/sources", async (c) =>
     c.json({

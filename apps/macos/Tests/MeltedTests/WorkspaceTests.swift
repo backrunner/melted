@@ -37,6 +37,8 @@ private actor WorkspaceStub: WorkspaceClient {
         }
         item = try Wire.decoder().decode(Briefing.self, from: Data(contentsOf: root.appendingPathComponent("contracts/fixtures/briefing.json")))
     }
+    func pluginPresets(_ plugin: PluginDescriptor, query: String, cursor: String?) throws -> PluginPresetPage { throw APIError.incompatible }
+    func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) throws -> PluginPresetResolution { throw APIError.incompatible }
     func pluginCatalog() async throws -> PluginCatalog { throw APIError.incompatible }
     func sources() async throws -> [PluginSource] { throw APIError.incompatible }
     func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) async throws -> PluginSource { throw APIError.incompatible }

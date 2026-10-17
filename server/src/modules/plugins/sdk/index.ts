@@ -33,3 +33,5 @@ export type {
   PollResult,
   Checkpoint,
 } from "../../sources/types.js";
+
+export type { PresetProvider, PresetQuery, PluginPreset } from "../presets.js";

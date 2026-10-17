@@ -23,8 +23,18 @@ private actor SettingsClient: PluginClient {
     var holdNextRead = false
     var heldRead: CheckedContinuation<[PluginSource], Never>?
     var heldSources: [PluginSource] = []
+    var heldPreset: CheckedContinuation<Void, Never>?
+    func presetIsHeld() -> Bool { heldPreset != nil }
+    func releasePreset() { heldPreset?.resume(); heldPreset = nil }
     init() throws { catalog = try settingsFixture("plugin-settings"); stored = [try settingsFixture("plugin-source")] }
     func pluginCatalog() -> PluginCatalog { catalog }
+    func pluginPresets(_ plugin: PluginDescriptor, query: String, cursor: String?) async throws -> PluginPresetPage {
+        if query == "old" { await withCheckedContinuation { heldPreset = $0 } }
+        let page: PluginPresetPage = try settingsFixture("plugin-presets")
+        if query == "new" { return try Wire.decoder().decode(PluginPresetPage.self, from: Data(#"{"presets":[],"total":0,"next_cursor":null}"#.utf8)) }
+        return page
+    }
+    func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) throws -> PluginPresetResolution { throw APIError.incompatible }
     func sources() async -> [PluginSource] {
         if holdNextRead {
             holdNextRead = false; heldSources = stored
@@ -110,6 +120,8 @@ private actor BatchClient: PluginClient {
     var requests: [String: Int] = [:]
     init() throws { catalog = try settingsFixture("plugin-settings") }
     func pluginCatalog() -> PluginCatalog { catalog }
+    func pluginPresets(_ plugin: PluginDescriptor, query: String, cursor: String?) throws -> PluginPresetPage { try settingsFixture("plugin-presets") }
+    func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) throws -> PluginPresetResolution { throw APIError.incompatible }
     func sources() -> [PluginSource] { Array(stored.values) }
     func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) throws -> PluginSource {
         requests[requestID, default: 0] += 1
@@ -145,4 +157,20 @@ private actor BatchClient: PluginClient {
     #expect(model.sources.count == 3)
     #expect(await client.stored.count == 3)
     #expect(await client.requests == ["first": 1, "lost": 2, "last": 1])
+}
+
+@Test @MainActor func latePresetSearchCannotOverwriteNewerResults() async throws {
+    let client = try SettingsClient(), settings = SourceSettingsModel(client: client)
+    await settings.load()
+    let plugin = try #require(settings.catalog?.plugins.first)
+    let catalog = PluginPresetCatalogModel()
+    let old = Task { await catalog.load(model: settings, plugin: plugin, query: "old") }
+    for _ in 0..<500 {
+        if await client.presetIsHeld() { break }
+        try await Task.sleep(for: .milliseconds(1))
+    }
+    #expect(await client.presetIsHeld())
+    await catalog.load(model: settings, plugin: plugin, query: "new")
+    await client.releasePreset(); await old.value
+    #expect(catalog.total == 0 && catalog.presets.isEmpty && catalog.error == nil && !catalog.loading)
 }

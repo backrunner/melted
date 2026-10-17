@@ -410,13 +410,6 @@ test("published plugin fixture and DSL schema match the installed registry", asy
     },
     feed: {
       allowed_origins: ["https://feeds.bbci.co.uk", "https://www.nasa.gov"],
-      suggestions: [
-        {
-          value: "https://feeds.bbci.co.uk/news/world/rss.xml",
-          label: "BBC 世界新闻",
-          group: "新闻",
-        },
-      ],
     },
   });
   assert.deepEqual(await read("fixtures/plugin-settings.json"), expected);

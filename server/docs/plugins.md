@@ -95,3 +95,13 @@ macOS 设置的“内容 → 来源与插件”提供添加、编辑、暂停/�
 契约变更运行 `rtk proxy python3 scripts/dev.py exec npm run contracts:plugins`，再执行 `scripts/dev.py check`、共享 Swift 与 macOS 测试。后端测试在 Apple Container 的 PostgreSQL、workerd/SQLite DO 上共用合约，模板生成/执行、当前 schema 初始化、跨账户和动作 fencing 均有负例。当前契约与模板运行见 [SDK 验收](../../.agents/validation/2026-10-17/plugin-sdk/README.md)；多订阅与路由建议见 [订阅集合验收](../../.agents/validation/2026-10-17/route-settings/README.md)；此前模块实现证据见 [插件设置验收](../../.agents/validation/2026-10-17/plugin-settings/README.md)。
 
 原生客户端每个插件只有一个添加入口，在同一订阅面板内选择建议来源或手动填写。名称和目标字段优先显示，其他 DSL 配置与公共采集设置放入共享折叠区；切换方式保留输入和勾选，部分成功后冻结该批次。订阅集合按插件分区独立折叠，统一使用 `MeltedDisclosure` 的箭头与动画。表格标题、文本与操作列使用相同边距，原生单元格 tooltip 提供完整文本。表格或列表仍由 `collection.layout` 确定，不提供用户视图切换。
+
+### 服务端预设目录
+
+`collection.primary_field` 可指定主输入字段，其他配置随采集设置收拢。`collection.preset_catalog` 为 `{field, maximum}`，与 `add_from_suggestions` 互斥；field 必须为 text，其余必填配置有默认值。普通 Feed 不声明任何来源选择入口，RSSHub 声明 preset_catalog；通用有限 suggestions 仍用于轮询间隔等字段。
+
+注册模块在 `BaseCollectorPlugin` 中实现 `presets(operator): PresetProvider`，host 检查该 provider 与 descriptor 一致。list 返回有界的 `PluginPresetPage`（id、label、group、summary、description、requirements、allowed、input）；resolve 接收标识与有限标量 input，返回 label/configuration，host 再执行完整插件配置校验。未知字段、未知类型和任意代码均不进入渲染器。服务端不接受客户端传来的路由模板，模板只从受信任实例取得。
+
+通用接口为 `GET /v1/plugins/{id}/presets?query=&limit=40&cursor=…` 与 `POST /v1/plugins/{id}/presets/{preset}/resolve`（body 为 `{input:{…}}`）。目录只读，解析不创建来源；结果通过现有 source API 保存。目录变更 cursor 返回 409，暂时不可用返回 503，客户端保留已选项并提供重新加载。共享 fixture 为 `plugin-presets.json`，schema/OpenAPI 由 `npm run contracts:plugins` 生成。
+
+macOS 的目录、来源、参数表单与建议列表使用共享 `MeltedScrollView`，复用 `ScrollEdgeFade` 仅对内容做视口边缘渐隐；滚动条、固定标题和 footer 不参与遮罩。到达边界恢复不透明，减少透明度或提高对比度时回退无遮罩。主资讯列表的 pinned header 继续使用同一低层 modifier 保持标题不透明。`加载更多` 使用统一控件高度、居中次要样式和禁重入的加载态。

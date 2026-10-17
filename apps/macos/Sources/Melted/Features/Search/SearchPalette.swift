@@ -70,7 +70,7 @@ struct SearchPalette: View {
             if !suggestions.isEmpty {
                 Rectangle().fill(palette.separator).frame(height: 1)
                 ScrollViewReader { proxy in
-                    ScrollView {
+                    MeltedScrollView {
                         VStack(alignment: .leading, spacing: 1) {
                             ForEach(Array(suggestions.enumerated()), id: \.element.id) { index, term in
                                 // A group heading names the kind once instead of repeating it on every row.

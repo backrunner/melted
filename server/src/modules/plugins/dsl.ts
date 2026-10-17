@@ -140,6 +140,11 @@ export const collectionSchema = z
     layout: z.enum(["list", "table"]),
     title: label,
     columns: z.array(collectionColumn).min(1).max(8),
+    primary_field: identifier.optional(),
+    preset_catalog: z
+      .object({ field: identifier, maximum: z.number().int().min(1).max(20) })
+      .strict()
+      .optional(),
     add_from_suggestions: z
       .object({ field: identifier, maximum: z.number().int().min(1).max(20) })
       .strict()
@@ -182,6 +187,16 @@ export const descriptorSchema = z
   )
   .superRefine((descriptor, ctx) => {
     const collection = descriptor.collection;
+    if (
+      collection.primary_field &&
+      !descriptor.form.fields.some(
+        (f) => f.id === collection.primary_field && f.type === "text",
+      )
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Unknown primary configuration field",
+      });
     const keys = collection.columns.map((c) => `${c.scope}.${c.field}`);
     if (new Set(keys).size !== keys.length)
       ctx.addIssue({ code: "custom", message: "Duplicate collection column" });
@@ -192,7 +207,12 @@ export const descriptorSchema = z
       )
         ctx.addIssue({ code: "custom", message: "Unknown collection field" });
     }
-    const batch = collection.add_from_suggestions;
+    if (collection.preset_catalog && collection.add_from_suggestions)
+      ctx.addIssue({
+        code: "custom",
+        message: "Only one subscription catalog may be declared",
+      });
+    const batch = collection.preset_catalog ?? collection.add_from_suggestions;
     if (
       batch &&
       (!descriptor.form.fields.some(

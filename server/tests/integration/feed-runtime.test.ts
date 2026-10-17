@@ -22,6 +22,8 @@ import type {
   SourceRepository,
 } from "../../src/modules/sources/types.js";
 
+import namespace from "../../../contracts/fixtures/rsshub-namespace.json" with { type: "json" };
+import type { PluginPreset } from "../../src/modules/plugins/presets.js";
 const rss = await readFile("../contracts/fixtures/feed-rss.xml", "utf8");
 const atom = await readFile("../contracts/fixtures/feed-atom.xml", "utf8");
 async function terminal(
@@ -50,6 +52,11 @@ for (const target of [
       partial = false,
       calls = 0;
     const server = createServer((req, res) => {
+      if (req.url?.startsWith("/api/namespace")) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(namespace));
+        return;
+      }
       calls++;
       const etag = `"${revision}${partial ? "partial" : ""}"`;
       if (req.headers["if-none-match"] === etag) {
@@ -91,7 +98,15 @@ for (const target of [
     const address = server.address();
     assert(address && typeof address !== "string");
     const origin = `http://127.0.0.1:${address.port}`;
-    const plugins = { feed: { private_origins: [origin] } };
+    const plugins = {
+      feed: { private_origins: [origin] },
+      rsshub: {
+        base_url: origin,
+        allow_private: true,
+        allowed_routes: ["/bbc", "/twitter/user"],
+        access_key: "catalog-secret",
+      },
+    };
     const config = configSchema.parse({
       serverID: "feed-test",
       operator: "test",
@@ -178,6 +193,84 @@ for (const target of [
       };
       assert(catalog.available);
       assert.equal(catalog.form.fields[0]!.format, "url");
+      assert.equal((await send("/v1/plugins/feed/presets")).status, 404);
+      const presetURL = "/v1/plugins/rsshub/presets";
+      assert.equal(
+        (await send(presetURL, "GET", undefined, "invalid")).status,
+        401,
+      );
+      assert.equal((await send(presetURL + "?limit=51")).status, 400);
+      const presetResponse = await send(presetURL + "?query=twitter&limit=1");
+      assert.equal(presetResponse.status, 200);
+      const page = (await presetResponse.json()) as {
+        presets: PluginPreset[];
+        total: number;
+        next_cursor: string;
+      };
+      assert.equal(page.total, 2);
+      assert(page.next_cursor);
+      assert(!JSON.stringify(page).includes("catalog-secret"));
+      assert.equal(
+        (
+          await send(
+            presetURL +
+              "?query=bbc&limit=1&cursor=" +
+              encodeURIComponent(page.next_cursor),
+          )
+        ).status,
+        409,
+      );
+      const next = (await (
+        await send(
+          presetURL +
+            "?query=twitter&limit=1&cursor=" +
+            encodeURIComponent(page.next_cursor),
+        )
+      ).json()) as { presets: PluginPreset[] };
+      const user = [...page.presets, ...next.presets].find((p) => p.allowed)!;
+      const resolved = await send(
+        presetURL + "/" + user.id + "/resolve",
+        "POST",
+        { input: { p2: "_RSSHub" } },
+      );
+      assert.equal(resolved.status, 200);
+      assert.equal(
+        ((await resolved.json()) as { configuration: { route: string } })
+          .configuration.route,
+        "/twitter/user/_RSSHub",
+      );
+      const denied = [...page.presets, ...next.presets].find(
+        (p) => !p.allowed,
+      )!;
+      assert.equal(
+        (
+          await send(presetURL + "/" + denied.id + "/resolve", "POST", {
+            input: {},
+          })
+        ).status,
+        403,
+      );
+      assert.equal(
+        (
+          await send(presetURL + "/" + user.id + "/resolve", "POST", {
+            input: { p2: "../home" },
+          })
+        ).status,
+        400,
+      );
+      // Catalog reads/resolution create no account data; creating a resolved source still uses the normal owner-scoped API.
+      const strangerPage = await send(
+        presetURL + "?query=twitter",
+        "GET",
+        undefined,
+        stranger.access_token,
+      );
+      assert.equal(strangerPage.status, 200);
+      assert.equal(
+        ((await (await send("/v1/sources")).json()) as { sources: unknown[] })
+          .sources.length,
+        0,
+      );
       const run = async (source: Source) => {
         const accepted = await send(
           `/v1/sources/${source.id}/actions/sync`,

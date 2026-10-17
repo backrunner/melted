@@ -21,24 +21,17 @@ export const rsshubConfigSchema = z
       })
       .transform((v) => new URL(v).origin),
     allowed_routes: z
-      .array(z.string().regex(/^\/[a-zA-Z0-9][a-zA-Z0-9/_-]*$/))
+      .array(
+        z
+          .string()
+          .max(2048)
+          .regex(/^\/[a-zA-Z0-9][a-zA-Z0-9/_.~-]*$/)
+          .refine(validRoute),
+      )
       .min(1)
       .max(100),
     allow_private: z.boolean().default(false),
     access_key: z.string().min(1).max(512).optional(),
-    route_suggestions: z
-      .array(
-        z
-          .object({
-            value: z.string().max(2048).refine(validRoute),
-            label: z.string().min(1).max(200),
-            group: z.string().min(1).max(100).optional(),
-            description: z.string().min(1).max(500).optional(),
-          })
-          .strict(),
-      )
-      .max(50)
-      .optional(),
   })
   .strict()
   .refine(

@@ -52,6 +52,7 @@ export const descriptor = descriptorSchema.parse({
   collection: {
     layout: "table",
     title: "订阅",
+    primary_field: "url",
     columns: [
       { scope: "source", field: "name", label: "名称" },
       { scope: "configuration", field: "url", label: "订阅地址" },

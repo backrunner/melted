@@ -23,6 +23,9 @@ public struct SettingSuggestion: Codable, Identifiable, Sendable {
     public let value: SettingValue
     public let label: String
     public let group, description: String?
+    public init(value: SettingValue, label: String, group: String? = nil, description: String? = nil) {
+        self.value = value; self.label = label; self.group = group; self.description = description
+    }
     public var id: SettingValue { value }
     public func matches(_ query: String) -> Bool {
         let words = query.split(whereSeparator: \.isWhitespace)
@@ -106,12 +109,16 @@ public struct PluginCollection: Codable, Sendable {
     public let layout, title: String
     public let columns: [Column]
     public let addFromSuggestions: Batch?
+    public let presetCatalog: Batch?
+    public let primaryField: String?
     public func supported(form: PluginForm) -> Bool {
         guard ["list", "table"].contains(layout), !title.isEmpty, (1...8).contains(columns.count), Set(columns.map(\.id)).count == columns.count else { return false }
         guard columns.allSatisfy({ column in
             !column.label.isEmpty && (column.scope == "source" ? ["name", "enabled", "interval_seconds", "last_success_at", "last_error"].contains(column.field) : column.scope == "configuration" && form.fields.contains { $0.id == column.field })
         }) else { return false }
-        guard let batch = addFromSuggestions else { return true }
+        if let primaryField, !form.fields.contains(where: { $0.id == primaryField && $0.type == "text" }) { return false }
+        if presetCatalog != nil && addFromSuggestions != nil { return false }
+        guard let batch = presetCatalog ?? addFromSuggestions else { return true }
         return (1...20).contains(batch.maximum) && form.fields.contains { $0.id == batch.field && $0.type == "text" } && !form.fields.contains { $0.id != batch.field && $0.required && $0.default == nil }
     }
 }

@@ -24,6 +24,12 @@ final class SourceSettingsModel: ObservableObject {
     private var generation = UUID()
     init(client: any PluginClient) { self.client = client }
 
+    func presets(_ plugin: PluginDescriptor, query: String, cursor: String?) async throws -> PluginPresetPage {
+        try await client.pluginPresets(plugin, query: query, cursor: cursor)
+    }
+    func resolvePreset(_ preset: PluginPreset, plugin: PluginDescriptor, input: PluginConfiguration) async throws -> PluginPresetResolution {
+        try await client.resolvePreset(preset, plugin: plugin, input: input)
+    }
     func load() async {
         guard !loading else { return }
         let current = generation

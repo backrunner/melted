@@ -9,7 +9,7 @@ import {
 import { rsshubConfigSchema, type RSSHubConfig } from "./config.js";
 import { authorizeRoute, validRoute } from "./routes.js";
 import { pollRSSHub } from "./collector.js";
-import { routeSuggestions } from "./catalog.js";
+import { RSSHubCatalog } from "./catalog.js";
 import { descriptor } from "./descriptor.js";
 const settingsSchema = z
   .object({ route: z.string().max(2048).refine(validRoute) })
@@ -19,7 +19,8 @@ export class RSSHubCollector extends BaseCollectorPlugin<
   RSSHubConfig,
   Settings
 > {
-  constructor() {
+  private readonly catalog: RSSHubCatalog;
+  constructor(transport: typeof fetch = fetch) {
     super({
       descriptor,
       operatorSchema: rsshubConfigSchema,
@@ -27,19 +28,10 @@ export class RSSHubCollector extends BaseCollectorPlugin<
       targets: ["node", "cloudflare"],
       capabilities: ["https"],
     });
+    this.catalog = new RSSHubCatalog(transport);
   }
-  protected override describe(operator: RSSHubConfig) {
-    return {
-      ...this.descriptor,
-      form: {
-        fields: [
-          {
-            ...this.descriptor.form.fields[0]!,
-            suggestions: routeSuggestions(operator),
-          },
-        ],
-      },
-    };
+  protected override presets(operator: RSSHubConfig) {
+    return this.catalog.provider(operator);
   }
   protected destinations(operator: RSSHubConfig): Destination[] {
     return [

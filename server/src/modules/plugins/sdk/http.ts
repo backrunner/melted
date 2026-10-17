@@ -38,7 +38,7 @@ export async function requestBytes(
     ? AbortSignal.any([options.signal, controller.signal])
     : controller.signal;
   const maxBytes = Math.min(
-    4 * 1024 * 1024,
+    8 * 1024 * 1024,
     Math.max(1, options.maxBytes ?? 4 * 1024 * 1024),
   );
   try {

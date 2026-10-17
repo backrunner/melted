@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import type { PresetProvider } from "./presets.js";
 import type { Manifest } from "./compatibility.js";
 import type { Configuration, PluginDescriptor } from "./dsl.js";
 import type { Source, PollResult, PollFailure } from "../sources/types.js";
@@ -24,6 +25,7 @@ export interface CollectorPlugin {
 }
 export interface ConfiguredCollector {
   descriptor: PluginDescriptor;
+  presets?: PresetProvider;
   destinations: Destination[];
   validate(configuration: Configuration): Configuration;
   poll(source: Source, signal?: AbortSignal): Promise<PollResult>;

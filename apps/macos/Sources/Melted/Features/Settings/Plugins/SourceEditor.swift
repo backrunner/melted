@@ -19,6 +19,7 @@ struct SourceEditor: View {
     @State private var suggestedName: String?
     @State private var settingsExpanded = false
     @State private var selected: Set<SettingValue> = []
+    @State private var resolvedChoices: [SettingSuggestion] = []
     @State private var drafts: [SettingValue: SourceBatchDraft] = [:]
     @State private var saved: Set<String> = []
     @State private var errors: [String: String] = [:]
@@ -29,13 +30,13 @@ struct SourceEditor: View {
         self.model = model; self.plugin = plugin; self.sourceForm = sourceForm; self.source = source
         _common = State(initialValue: source?.commonSettings ?? sourceForm.defaults)
         _configuration = State(initialValue: source?.configuration ?? plugin.form.defaults)
-        let batch = plugin.collection.addFromSuggestions
+        let batch = plugin.collection.presetCatalog ?? plugin.collection.addFromSuggestions
         let hasSuggestions = batch.map { batch in plugin.form.fields.contains { $0.id == batch.field && $0.suggestions?.isEmpty == false } } ?? false
-        _entry = State(initialValue: source == nil && hasSuggestions ? .suggestions : .manual)
+        _entry = State(initialValue: source == nil && (hasSuggestions || plugin.collection.presetCatalog != nil) ? .suggestions : .manual)
     }
     private var palette: MeltedPalette { MeltedPalette(scheme) }
-    private var batch: PluginCollection.Batch? { plugin.collection.addFromSuggestions }
-    private var choices: [SettingSuggestion] { plugin.form.fields.first { $0.id == batch?.field }?.suggestions ?? [] }
+    private var batch: PluginCollection.Batch? { plugin.collection.presetCatalog ?? plugin.collection.addFromSuggestions }
+    private var choices: [SettingSuggestion] { plugin.collection.presetCatalog != nil ? resolvedChoices : plugin.form.fields.first { $0.id == batch?.field }?.suggestions ?? [] }
     private var existingValues: Set<SettingValue> {
         guard let batch else { return [] }
         return Set(model.sources.filter { $0.plugin == plugin.id }.compactMap { $0.configuration[batch.field] })
@@ -44,8 +45,8 @@ struct SourceEditor: View {
     private var submitted: Bool { !drafts.isEmpty }
     private var collectionForm: PluginForm { sourceForm.excluding(["name"]) }
     private var primaryForm: PluginForm {
-        guard let batch else { return plugin.form }
-        return plugin.form.excluding(Set(plugin.form.fields.filter { $0.id != batch.field }.map(\.id)))
+        guard let field = plugin.collection.primaryField ?? batch?.field else { return plugin.form }
+        return plugin.form.excluding(Set(plugin.form.fields.filter { $0.id != field }.map(\.id)))
     }
     private var additionalForm: PluginForm {
         plugin.form.excluding(Set(primaryForm.fields.map(\.id)))
@@ -68,14 +69,14 @@ struct SourceEditor: View {
             if model.busy { ProgressView().controlSize(.small) }
         } content: {
             VStack(spacing: 0) {
-                if source == nil && !choices.isEmpty && batch != nil {
+                if source == nil && (!choices.isEmpty || plugin.collection.presetCatalog != nil) && batch != nil {
                     MeltedSegmentedPicker("添加方式", selection: $entry, options: [
                         .init(.suggestions, title: "选择来源"), .init(.manual, title: "手动填写")
                     ])
                     .disabled(submitted)
                     .padding(.horizontal, MeltedPanelMetrics.inset).padding(.top, MeltedReading.actionGap)
                 }
-                ScrollView {
+                MeltedScrollView {
                     editorContent
                 }
             }
@@ -103,9 +104,15 @@ struct SourceEditor: View {
     private var editorContent: some View {
         VStack(alignment: .leading, spacing: MeltedPanelMetrics.sectionGap) {
             if choosing, let batch {
-                SourceSuggestionSelection(choices: choices, maximum: batch.maximum,
-                    existing: existingValues,
-                    selected: $selected, drafts: drafts, saved: saved, errors: errors)
+                if plugin.collection.presetCatalog != nil {
+                    SourcePresetBrowser(model: model, plugin: plugin, maximum: batch.maximum,
+                        choices: $resolvedChoices, selected: $selected, existing: existingValues,
+                        drafts: drafts, saved: saved, errors: errors)
+                } else {
+                    SourceSuggestionSelection(choices: choices, maximum: batch.maximum,
+                        existing: existingValues,
+                        selected: $selected, drafts: drafts, saved: saved, errors: errors)
+                }
             } else {
                 PluginFields(form: sourceForm.excluding(Set(collectionForm.fields.map(\.id))), values: $common)
                 PluginFields(form: primaryForm, values: $configuration) { suggestion in
@@ -167,7 +174,7 @@ struct PluginActionPanel: View {
         MeltedPanel(action.label, subtitle: source.name) {
             if model.busy { ProgressView().controlSize(.small) }
         } content: {
-            ScrollView {
+            MeltedScrollView {
                 VStack(alignment: .leading, spacing: MeltedPanelMetrics.fieldGap) {
                     Text(action.description).fixedSize(horizontal: false, vertical: true)
                     PluginFields(form: action.input, values: $input)

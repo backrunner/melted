@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
+import {
+  presetPageSchema,
+  presetResolutionSchema,
+  type PresetProvider,
+} from "../presets.js";
 import { Problem } from "../../../shared/problem.js";
 import { manifestSchema, type Manifest } from "../compatibility.js";
 import {
@@ -59,6 +64,9 @@ export abstract class BaseCollectorPlugin<
   protected describe(_operator: Operator): PluginDescriptor {
     return this.descriptor;
   }
+  protected presets(_operator: Operator): PresetProvider | undefined {
+    return undefined;
+  }
   protected abstract destinations(operator: Operator): Destination[];
   protected validateConfiguration(
     _settings: Settings,
@@ -99,8 +107,30 @@ export abstract class BaseCollectorPlugin<
       validateSettings(descriptor.form, result.data);
       return result.data;
     };
+    const provider = this.presets(operator);
+    if (Boolean(provider) !== Boolean(descriptor.collection.preset_catalog))
+      throw new Error(
+        "Preset catalog implementation does not match descriptor",
+      );
     return {
       descriptor,
+      ...(provider
+        ? {
+            presets: {
+              list: async (query) =>
+                presetPageSchema.parse(await provider.list(query)),
+              resolve: async (id, input) => {
+                const result = presetResolutionSchema.parse(
+                  await provider.resolve(id, input),
+                );
+                return {
+                  ...result,
+                  configuration: validate(result.configuration),
+                };
+              },
+            } satisfies PresetProvider,
+          }
+        : {}),
       destinations: this.destinations(operator),
       validate,
       poll: async (source, signal) => {

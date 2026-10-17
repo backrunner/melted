@@ -1,0 +1,133 @@
+{
+  "presets": [
+    {
+      "id": "b40f2f510ade1be6cda98a6d270510ebf58d369a67ecf54a4b2802e84a932fcb",
+      "label": "News",
+      "group": "BBC",
+      "summary": "/bbc/:category?",
+      "requirements": [],
+      "allowed": true,
+      "input": {
+        "fields": [
+          {
+            "id": "p1",
+            "label": "category",
+            "help": "News category",
+            "required": false,
+            "type": "text",
+            "max_length": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": "f78ab9d83a2a806c03c6dccde6ff34afa61a0abf8de6d445f7ddf71a39cb8c78",
+      "label": "User timeline",
+      "group": "X (Twitter)",
+      "summary": "/twitter/user/:id/:routeParams?",
+      "requirements": [
+        "TWITTER_AUTH_TOKEN（实例配置）"
+      ],
+      "allowed": true,
+      "input": {
+        "fields": [
+          {
+            "id": "p2",
+            "label": "id",
+            "help": "Username",
+            "required": true,
+            "type": "text",
+            "max_length": 1000
+          },
+          {
+            "id": "p3",
+            "label": "routeParams",
+            "help": "Optional timeline filters",
+            "required": false,
+            "type": "text",
+            "max_length": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": "e144a6357dea966b3f5968a48ab14f4442675b2f6b88597d09818911b385b5b9",
+      "label": "Package",
+      "group": "npm",
+      "summary": "/npm/package/:name{(@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*}",
+      "requirements": [],
+      "allowed": false,
+      "input": {
+        "fields": [
+          {
+            "id": "p2",
+            "label": "name",
+            "required": true,
+            "type": "text",
+            "max_length": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": "353d134f6384c596b28bf7eeb622ea0f7c03750d3ccd5dbbbcd1b582849e8e8e",
+      "label": "Optional positions",
+      "group": "Patterns",
+      "summary": "/test/:first?/:second?",
+      "requirements": [],
+      "allowed": false,
+      "input": {
+        "fields": [
+          {
+            "id": "p1",
+            "label": "first",
+            "required": false,
+            "type": "text",
+            "max_length": 1000
+          },
+          {
+            "id": "p2",
+            "label": "second",
+            "required": false,
+            "type": "text",
+            "max_length": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": "fd0f7134bdf3de0a4860798f9ca961774afe0b6093f2371c800007d4b4b4b49a",
+      "label": "Complex pattern",
+      "group": "Patterns",
+      "summary": "/test/prefix-:value",
+      "requirements": [],
+      "allowed": false,
+      "input": {
+        "fields": [
+          {
+            "id": "route",
+            "label": "订阅路由",
+            "help": "按上方路由格式填写完整相对路径",
+            "required": true,
+            "type": "text",
+            "default": "/test/prefix-news",
+            "max_length": 2048
+          }
+        ]
+      }
+    },
+    {
+      "id": "fb1bb7177079cc58c470613d338f611926d104fc57ca9354f35fa4c3cd10475c",
+      "label": "Home timeline",
+      "group": "X (Twitter)",
+      "summary": "/twitter/home",
+      "requirements": [],
+      "allowed": false,
+      "input": {
+        "fields": []
+      }
+    }
+  ],
+  "total": 6,
+  "next_cursor": null
+}

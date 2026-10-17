@@ -54,7 +54,9 @@ struct SourceSuggestionSelection: View {
                     }
                     if let draft, let error = errors[draft.id] { Text(error).foregroundStyle(palette.warning) }
                 }.font(.system(size: MeltedType.metadata)).padding(.vertical, MeltedReading.actionGap)
-                Rectangle().fill(palette.separator).frame(height: MeltedPanelMetrics.ruleWidth)
+                if index < visible.count - 1 {
+                    Rectangle().fill(palette.separator).frame(height: MeltedPanelMetrics.ruleWidth)
+                }
             }
         }
     }
