@@ -114,12 +114,7 @@ export type PollFailure = {
 export interface SourceRepository {
   list(owner: string): Promise<Source[]>;
   get(owner: string, id: string): Promise<Source>;
-  create(
-    owner: string,
-    input: SourceInput,
-    key: string,
-    fingerprint?: string,
-  ): Promise<Source>;
+  create(owner: string, input: SourceInput, key: string): Promise<Source>;
   patch(owner: string, id: string, input: SourcePatch): Promise<Source>;
   remove(owner: string, id: string, version: number): Promise<void>;
   sync(

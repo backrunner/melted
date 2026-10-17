@@ -12,14 +12,10 @@ import {
   pluginRegistry,
 } from "../../src/plugins/index.js";
 
-test("generic plugin configuration retains the separate RSSHub secret and overrides legacy destinations", () => {
+test("plugin configuration keeps the RSSHub secret on the server", () => {
   const configured = configFromEnv({
     MELTED_SERVER_ID: "test",
     PUBLIC_ORIGIN: "https://melted.example.com",
-    RSSHUB_CONFIG: JSON.stringify({
-      base_url: "https://old.example.com",
-      allowed_routes: ["/bbc"],
-    }),
     PLUGIN_CONFIG: JSON.stringify({
       rsshub: { base_url: "https://new.example.com", allowed_routes: ["/bbc"] },
     }),

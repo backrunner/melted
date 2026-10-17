@@ -75,7 +75,7 @@ final class WorkspaceModel: ObservableObject {
             let (d, m) = try await candidate.discover()
             guard generation == connectionGeneration else { return }
             client = candidate; discovery = d; manifest = m
-            authenticationMethod = d.auth?.preferredMethod
+            authenticationMethod = d.auth.preferredMethod
         } catch {
             guard generation == connectionGeneration else { return }
             failure = classify(error, source: .discovery)
@@ -105,12 +105,12 @@ final class WorkspaceModel: ObservableObject {
         }
     }
     func selectAuthenticationMethod(_ method: AuthenticationMethod) {
-        guard !connecting, discovery?.auth?.supportedMethods.contains(method) == true, authenticationMethod != method else { return }
+        guard !connecting, discovery?.auth.supportedMethods.contains(method) == true, authenticationMethod != method else { return }
         authenticationMethod = method; failure = nil; localCredentialOption = false
     }
     func login(localOnly: Bool = false, credential: LoginCredential? = nil) async {
         guard !connecting, acceptedServer, let client, let discovery, let method = authenticationMethod,
-              discovery.auth?.supportedMethods.contains(method) == true else { return }
+              discovery.auth.supportedMethods.contains(method) == true else { return }
         if method == .password || method == .apiKey {
             guard credential?.method == method else { return }
         }
@@ -317,10 +317,10 @@ final class WorkspaceModel: ObservableObject {
         acceptedServer = false; localCredentialOption = false
         // Losing a session does not make the server's negotiated login methods unsupported.
         // Keep a valid selection so the connection form can actually offer sign-in again.
-        if let method = authenticationMethod, discovery?.auth?.supportedMethods.contains(method) == true {
+        if let method = authenticationMethod, discovery?.auth.supportedMethods.contains(method) == true {
             authenticationMethod = method
         } else {
-            authenticationMethod = discovery?.auth?.preferredMethod
+            authenticationMethod = discovery?.auth.preferredMethod
         }
         arrivalSequences = [:]; syncCursor = nil
         defaults.removeObject(forKey: "accountID")

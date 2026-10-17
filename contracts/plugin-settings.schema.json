@@ -1168,6 +1168,7 @@
           "config_version",
           "capabilities",
           "form",
+          "collection",
           "actions",
           "available",
           "unavailable_reason"

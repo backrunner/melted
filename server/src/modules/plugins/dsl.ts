@@ -155,7 +155,7 @@ export const descriptorSchema = z
     config_version: z.literal(1),
     capabilities: z.array(z.literal("collector.poll")).length(1),
     form: formSchema,
-    collection: collectionSchema.optional(),
+    collection: collectionSchema,
     actions: z
       .array(
         z
@@ -180,7 +180,6 @@ export const descriptorSchema = z
   )
   .superRefine((descriptor, ctx) => {
     const collection = descriptor.collection;
-    if (!collection) return;
     const keys = collection.columns.map((c) => `${c.scope}.${c.field}`);
     if (new Set(keys).size !== keys.length)
       ctx.addIssue({ code: "custom", message: "Duplicate collection column" });

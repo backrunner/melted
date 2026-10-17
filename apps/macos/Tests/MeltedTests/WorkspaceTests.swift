@@ -29,7 +29,7 @@ private actor WorkspaceStub: WorkspaceClient {
     func serveItems(_ values: [Briefing]) { items = values }
     let auth: String
     let item: Briefing
-    init(auth: String = #"{"methods":["key"],"key_algorithm":"P-256"}"#) throws {
+    init(auth: String = #"{"version":1,"methods":["key"],"key_algorithm":"P-256"}"#) throws {
         self.auth = auth
         var root = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
         while !FileManager.default.fileExists(atPath: root.appendingPathComponent("contracts/fixtures/briefing.json").path), root.path != "/" {
@@ -37,10 +37,17 @@ private actor WorkspaceStub: WorkspaceClient {
         }
         item = try Wire.decoder().decode(Briefing.self, from: Data(contentsOf: root.appendingPathComponent("contracts/fixtures/briefing.json")))
     }
+    func pluginCatalog() async throws -> PluginCatalog { throw APIError.incompatible }
+    func sources() async throws -> [PluginSource] { throw APIError.incompatible }
+    func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) async throws -> PluginSource { throw APIError.incompatible }
+    func removeSource(_ source: PluginSource) async throws { throw APIError.incompatible }
+    func setSourceEnabled(_ source: PluginSource, enabled: Bool) async throws -> PluginSource { throw APIError.incompatible }
+    func performAction(_ action: PluginAction, source: PluginSource, plugin: PluginDescriptor, input: PluginConfiguration, requestID: String) async throws -> PluginActionResult { throw APIError.incompatible }
+    func collectionReceipt(_ id: String) async throws -> CollectionReceipt { throw APIError.incompatible }
     func discover() async throws -> (Discovery, ProcessingManifest) {
         try await Task.sleep(for: .milliseconds(10))
         if let discoverFailure { throw Self.error(discoverFailure) }
-        let discovery = try Wire.decoder().decode(Discovery.self, from: Data(#"{"protocol":{"min":1,"max":1},"server_id":"test","api_base":"/v1","registration":"open","operator":{"name":"Test"},"processing_manifest_version":"1"}"#.utf8))
+        let discovery = try Wire.decoder().decode(Discovery.self, from: Data(#"{"protocol":{"min":1,"max":1},"server_id":"test","api_base":"/v1","registration":"open","operator":{"name":"Test"},"processing_manifest_version":"1","auth":{"version":1,"methods":["key"],"key_algorithm":"P-256"}}"#.utf8))
         var negotiated = discovery
         negotiated.auth = try Wire.decoder().decode(Discovery.Authentication.self, from: Data(auth.utf8))
         let manifest = try Wire.decoder().decode(ProcessingManifest.self, from: Data(#"{"version":"1","description":"Test"}"#.utf8))
@@ -398,7 +405,7 @@ private actor WorkspaceStub: WorkspaceClient {
     #expect(!model.connected)
     #expect(!model.acceptedServer)
     #expect(model.authenticationMethod == .apiKey)
-    #expect(model.discovery?.auth?.supportedMethods == [.password, .apiKey])
+    #expect(model.discovery?.auth.supportedMethods == [.password, .apiKey])
     #expect(model.failure?.kind == .sessionExpired)
     #expect(await stub.logins == 0)
 }

@@ -100,9 +100,9 @@ def rsshub():
                            '--env','CACHE_TYPE=memory','--env','DEBUG_INFO=false',
                            '--env','LOGGER_LEVEL=error','--env','ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=false',RSSHUB_IMAGE])
     ip = state('melted-rsshub')['status']['networks'][0]['ipv4Address'].split('/')[0]
-    envfile(LOCAL/'rsshub.env', {'MELTED_RSSHUB_IMAGE':RSSHUB_IMAGE, 'RSSHUB_CONFIG':json.dumps({'base_url':f'http://{ip}:1200',
+    envfile(LOCAL/'rsshub.env', {'MELTED_RSSHUB_IMAGE':RSSHUB_IMAGE, 'PLUGIN_CONFIG':json.dumps({'rsshub':{'base_url':f'http://{ip}:1200',
              'allowed_routes':['/bbc','/abc','/douban/book/latest','/douban/event/hot','/hackernews'],
-             'allow_private':True},separators=(',',':'))})
+             'allow_private':True}},separators=(',',':'))})
     print('RSSHub configured for container commands; run dev.py collector for background collection')
 
 
@@ -115,7 +115,7 @@ elif action=='worker':
     extra = []
     if (LOCAL/'rsshub.env').exists():
         values = dict(line.split('=',1) for line in (LOCAL/'rsshub.env').read_text().splitlines() if '=' in line)
-        extra = ['--var', 'RSSHUB_CONFIG:' + values['RSSHUB_CONFIG']]
+        extra = ['--var', 'PLUGIN_CONFIG:' + values['PLUGIN_CONFIG']]
     execute('npx','wrangler','dev','--env','local','--ip','0.0.0.0','--port','8787','--local','--persist-to','.wrangler/local',*extra)
 elif action=='check':
     execute('npm','run','check');execute('npm','run','format:check');execute('npm','test');execute('npm','run','worker:check')

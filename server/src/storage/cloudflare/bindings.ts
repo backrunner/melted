@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 export interface CloudBindings {
   COLLECTION_QUEUE?: Queue<{ owner: string; run_id: string }>;
-  RSSHUB_CONFIG?: string;
   PLUGIN_CONFIG?: string;
   RSSHUB_ACCESS_KEY?: string;
   ACCOUNTS: DurableObjectNamespace;

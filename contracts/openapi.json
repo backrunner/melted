@@ -1901,7 +1901,7 @@
               "version": {
                 "type": "integer",
                 "const": 1,
-                "description": "Absent on legacy v1 servers; unknown versions require a compatible client."
+                "description": "Authentication contract version; unknown versions must not submit credentials."
               },
               "preferred": {
                 "type": "string",
@@ -1909,6 +1909,7 @@
               }
             },
             "required": [
+              "version",
               "methods"
             ],
             "additionalProperties": true
@@ -1994,37 +1995,49 @@
         ]
       },
       "SourceInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200,
-            "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
-          },
-          "route": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 2048,
-            "description": "Compatibility alias for RSSHub. New clients use configuration.route.",
-            "deprecated": true
-          },
-          "interval_seconds": {
-            "type": "integer",
-            "minimum": 300,
-            "maximum": 86400,
-            "default": 900
-          },
-          "enabled": {
-            "type": "boolean",
-            "default": true
+            "maxLength": 200
           },
           "configuration": {
-            "$ref": "#/components/schemas/PluginConfiguration"
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,99}$"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
           },
           "config_version": {
             "type": "integer",
-            "minimum": 1
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "interval_seconds": {
+            "default": 900,
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 86400
+          },
+          "enabled": {
+            "default": true,
+            "type": "boolean"
           },
           "plugin": {
             "type": "string",
@@ -2032,70 +2045,60 @@
           }
         },
         "required": [
-          "name"
+          "name",
+          "configuration",
+          "config_version",
+          "plugin"
         ],
-        "additionalProperties": false,
-        "oneOf": [
-          {
-            "required": [
-              "plugin",
-              "config_version",
-              "configuration"
-            ],
-            "not": {
-              "required": [
-                "route"
-              ]
-            }
-          },
-          {
-            "required": [
-              "route"
-            ],
-            "not": {
-              "required": [
-                "plugin"
-              ]
-            }
-          }
-        ]
+        "additionalProperties": false
       },
       "SourcePatch": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200,
-            "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
+            "maxLength": 200
           },
-          "route": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 2048,
-            "description": "Compatibility alias for RSSHub. New clients use configuration.route.",
-            "deprecated": true
+          "configuration": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,99}$"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "config_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
           },
           "interval_seconds": {
             "type": "integer",
             "minimum": 300,
-            "maximum": 86400,
-            "default": 900
+            "maximum": 86400
           },
           "enabled": {
-            "type": "boolean",
-            "default": true
+            "type": "boolean"
           },
           "expected_version": {
             "type": "integer",
-            "minimum": 1
-          },
-          "configuration": {
-            "$ref": "#/components/schemas/PluginConfiguration"
-          },
-          "config_version": {
-            "type": "integer",
-            "minimum": 1
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -2118,13 +2121,6 @@
             "minLength": 1,
             "maxLength": 200,
             "description": "Trimmed Unicode text; NUL and lone surrogates are rejected."
-          },
-          "route": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 2048,
-            "description": "Compatibility alias for RSSHub. New clients use configuration.route.",
-            "deprecated": true
           },
           "interval_seconds": {
             "type": "integer",
@@ -3835,6 +3831,7 @@
                 "config_version",
                 "capabilities",
                 "form",
+                "collection",
                 "actions",
                 "available",
                 "unavailable_reason"
@@ -4693,6 +4690,7 @@
           "config_version",
           "capabilities",
           "form",
+          "collection",
           "actions",
           "available",
           "unavailable_reason"

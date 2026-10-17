@@ -56,14 +56,8 @@ development:
 #   methods: [key]
 #   preferred: key
 
-# Optional public RSSHub collector. Keys belong in RSSHUB_ACCESS_KEY, not source records.
-# rsshub:
-#   base_url: https://feeds.example.com
-#   allowed_routes: [/bbc, /douban/book/latest, /hackernews]
-#   allow_private: false
-
-# Generic operator settings for registered plugins (environment: PLUGIN_CONFIG).
-# Takes precedence over the legacy rsshub key above. No client credentials here.
+# Operator settings for registered plugins (environment: PLUGIN_CONFIG).
+# Keys stay in RSSHUB_ACCESS_KEY or server-side secret configuration.
 # plugins:
 #   rsshub:
 #     base_url: https://feeds.example.com

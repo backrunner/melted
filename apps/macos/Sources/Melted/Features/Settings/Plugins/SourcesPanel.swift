@@ -34,10 +34,10 @@ struct SourcesPanel: View {
                 ForEach(model.catalog?.plugins ?? []) { plugin in
                     Button("添加 \(plugin.title) 订阅") {
                         model.error = nil
-                        if let batch = plugin.collection?.addFromSuggestions, plugin.form.fields.first(where: { $0.id == batch.field })?.suggestions?.isEmpty == false { batchPlugin = plugin }
+                        if let batch = plugin.collection.addFromSuggestions, plugin.form.fields.first(where: { $0.id == batch.field })?.suggestions?.isEmpty == false { batchPlugin = plugin }
                         else { editor = .init(plugin: plugin, source: nil) }
                     }.disabled(!plugin.available || !plugin.supported)
-                    if plugin.collection?.addFromSuggestions != nil {
+                    if plugin.collection.addFromSuggestions != nil {
                         Button("自定义 \(plugin.title) 订阅") { model.error = nil; editor = .init(plugin: plugin, source: nil) }.disabled(!plugin.available || !plugin.supported)
                     }
                 }
@@ -52,8 +52,8 @@ struct SourcesPanel: View {
                     if let catalog = model.catalog {
                         ForEach(catalog.plugins) { plugin in
                             let sources = model.sources.filter { $0.plugin == plugin.id }
-                            if let collection = plugin.collection, plugin.supported {
-                                PluginSourceCollection(plugin: plugin, collection: collection, sources: sources, sourceForm: catalog.sourceForm) { source in
+                            if plugin.supported {
+                                PluginSourceCollection(plugin: plugin, collection: plugin.collection, sources: sources, sourceForm: catalog.sourceForm) { source in
                                     sourceActions(source, plugin: plugin)
                                 } detail: { source in sourceRunSummary(source) }.disabled(model.busy)
                             } else {
@@ -98,7 +98,7 @@ struct SourcesPanel: View {
             if let form = model.catalog?.sourceForm { SourceEditor(model: model, plugin: item.plugin, sourceForm: form, source: item.source) }
         }
         .sheet(item: $batchPlugin) { plugin in
-            if let form = model.catalog?.sourceForm, let batch = plugin.collection?.addFromSuggestions { SourceBatchEditor(model: model, plugin: plugin, sourceForm: form, batch: batch) }
+            if let form = model.catalog?.sourceForm, let batch = plugin.collection.addFromSuggestions { SourceBatchEditor(model: model, plugin: plugin, sourceForm: form, batch: batch) }
         }
         .sheet(item: $action) { item in PluginActionPanel(model: model, plugin: item.plugin, source: item.source, action: item.action) }
         .alert("删除来源？", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {

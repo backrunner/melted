@@ -12,17 +12,6 @@ import { publicRun, publicSource } from "../../modules/sources/lifecycle.js";
 import type { PluginRegistry } from "../../modules/plugins/registry.js";
 import { pluginConfiguration } from "../../plugins/index.js";
 import { PluginService } from "../../modules/plugins/service.js";
-import {
-  legacyCreate,
-  legacyPatch,
-  legacyProjection,
-} from "../../plugins/compatibility.js";
-import { hash } from "../../shared/crypto.js";
-import type { Source } from "../../modules/sources/types.js";
-const publicSettings = (source: Source) => ({
-  ...publicSource(source),
-  ...legacyProjection(source),
-});
 
 export function registerSourceRoutes(
   app: Hono<AppEnv>,
@@ -42,23 +31,21 @@ export function registerSourceRoutes(
     c.json({
       sources: (
         await c.env.repository.sources.list(c.get("principal").owner)
-      ).map(publicSettings),
+      ).map(publicSource),
     }),
   );
   app.post("/v1/sources", async (c) => {
-    const value = await c.req.json(),
-      legacy = legacyCreate(value);
+    const value = await c.req.json();
     const input = new PluginService(
       registry,
       pluginConfiguration(c.env.config),
-    ).create(legacy?.input ?? value);
+    ).create(value);
     const source = await c.env.repository.sources.create(
       c.get("principal").owner,
       input,
       idempotencyKey(c.req.header("Idempotency-Key")),
-      legacy ? await hash(JSON.stringify(legacy.fingerprintInput)) : undefined,
     );
-    return c.json(publicSettings(source), 201);
+    return c.json(publicSource(source), 201);
   });
   app.get("/v1/sources/:id", async (c) => {
     const source = await c.env.repository.sources.get(
@@ -66,7 +53,7 @@ export function registerSourceRoutes(
       sourceReference(c.req.param("id")),
     );
     c.header("ETag", `"${source.version}"`);
-    return c.json(publicSettings(source));
+    return c.json(publicSource(source));
   });
   app.patch("/v1/sources/:id", async (c) => {
     const old = await c.env.repository.sources.get(
@@ -76,9 +63,9 @@ export function registerSourceRoutes(
     const input = new PluginService(
       registry,
       pluginConfiguration(c.env.config),
-    ).patch(old, legacyPatch(await c.req.json(), old));
+    ).patch(old, await c.req.json());
     return c.json(
-      publicSettings(
+      publicSource(
         await c.env.repository.sources.patch(
           c.get("principal").owner,
           sourceReference(c.req.param("id")),

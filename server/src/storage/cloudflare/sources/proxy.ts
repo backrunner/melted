@@ -26,16 +26,11 @@ export class CloudSources implements SourceRepository {
   get(owner: string, id: string) {
     return this.invoke<Source>(owner, "get", { id });
   }
-  async create(
-    owner: string,
-    input: SourceInput,
-    key: string,
-    fingerprint?: string,
-  ) {
+  async create(owner: string, input: SourceInput, key: string) {
     return this.invoke<Source>(owner, "create", {
       input,
       key,
-      fingerprint: fingerprint ?? (await hash(JSON.stringify(input))),
+      fingerprint: await hash(JSON.stringify(input)),
     });
   }
   patch(owner: string, id: string, input: SourcePatch) {

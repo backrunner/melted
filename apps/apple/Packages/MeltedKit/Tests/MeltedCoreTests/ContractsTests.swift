@@ -71,18 +71,19 @@ private func fixture(_ name: String) throws -> Data {
     #expect(try APIClient.validatedURL("https://example.com/") == APIClient.validatedURL("https://example.com"))
 }
 
-@Test func authenticationNegotiationIsForwardCompatibleAndHonorsServerOrder() throws {
+@Test func authenticationRequiresVersionAndHonorsServerOrder() throws {
     func decode(_ json: String) throws -> Discovery.Authentication {
         try Wire.decoder().decode(Discovery.Authentication.self, from: Data(json.utf8))
     }
+    #expect(throws: DecodingError.self) { try decode(#"{"methods":["password"]}"#) }
     let password = try decode(#"{"version":1,"methods":["password"]}"#)
     #expect(password.preferredMethod == .password)
-    let multiple = try decode(#"{"methods":["future","api_key","password","api_key"],"preferred":"password"}"#)
+    let multiple = try decode(#"{"version":1,"methods":["future","api_key","password","api_key"],"preferred":"password"}"#)
     #expect(multiple.supportedMethods == [.apiKey, .password])
     #expect(multiple.preferredMethod == .password)
-    #expect(try decode(#"{"methods":["future"]}"#).preferredMethod == nil)
+    #expect(try decode(#"{"version":1,"methods":["future"]}"#).preferredMethod == nil)
     #expect(try decode(#"{"version":2,"methods":["password"]}"#).supportedMethods.isEmpty)
-    #expect(try decode(#"{"methods":["key"],"key_algorithm":"RSA"}"#).supportedMethods.isEmpty)
-    #expect(try decode(#"{"methods":["browser"],"browser_callback":"https://evil.example"}"#).supportedMethods.isEmpty)
-    #expect(try decode(#"{"methods":["key","browser"],"key_algorithm":"P-256","browser_callback":"melted://auth/callback"}"#).supportedMethods == [.key, .browser])
+    #expect(try decode(#"{"version":1,"methods":["key"],"key_algorithm":"RSA"}"#).supportedMethods.isEmpty)
+    #expect(try decode(#"{"version":1,"methods":["browser"],"browser_callback":"https://evil.example"}"#).supportedMethods.isEmpty)
+    #expect(try decode(#"{"version":1,"methods":["key","browser"],"key_algorithm":"P-256","browser_callback":"melted://auth/callback"}"#).supportedMethods == [.key, .browser])
 }

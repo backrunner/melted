@@ -14,13 +14,6 @@ export function initializeSources(db: AccountDatabase) {
       CREATE TABLE IF NOT EXISTS raw_item_revisions(item_id TEXT NOT NULL REFERENCES raw_items(id) ON DELETE CASCADE,revision INTEGER NOT NULL,document TEXT NOT NULL,PRIMARY KEY(item_id,revision));
       CREATE TABLE IF NOT EXISTS source_requests(operation TEXT NOT NULL,key TEXT NOT NULL,payload_hash TEXT NOT NULL,response TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(operation,key));
       CREATE TABLE IF NOT EXISTS source_outbox(run_id TEXT PRIMARY KEY REFERENCES source_runs(id),token TEXT NOT NULL,due INTEGER NOT NULL);`);
-    db.sql.exec(`UPDATE sources SET document = json_remove(json_set(document,
-      '$.config_version',1,'$.configuration',json_object('route',json_extract(document,'$.route'))),'$.route')
-      WHERE json_extract(document,'$.plugin')='rsshub' AND json_type(document,'$.configuration') IS NULL`);
-    db.sql
-      .exec(`UPDATE source_requests SET response = json_remove(json_set(response,
-      '$.config_version',1,'$.configuration',json_object('route',json_extract(response,'$.route'))),'$.route')
-      WHERE operation='create' AND json_extract(response,'$.plugin')='rsshub' AND json_type(response,'$.configuration') IS NULL`);
     db.setMeta("source_schema", "2");
   });
 }

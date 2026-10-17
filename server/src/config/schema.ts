@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { rsshubConfigSchema } from "../plugins/rsshub/config.js";
 import { z } from "zod";
 import { parse } from "../shared/validation.js";
 import { authPolicySchema } from "../modules/identity/auth-policy.js";
@@ -27,7 +26,6 @@ export const configSchema = z
       .transform((v) => new URL(v).origin),
     registration: z.enum(["key", "closed"]).default("key"),
     authentication: authPolicySchema.optional(),
-    rsshub: rsshubConfigSchema.optional(),
     plugins: z.record(z.string(), z.unknown()).optional(),
     oidc: z
       .object({
@@ -54,7 +52,7 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
         parseAuthJSON(env.PLUGIN_CONFIG, "PLUGIN_CONFIG"),
       )
     : undefined;
-  // Keep the existing secret binding when operators adopt the generic map.
+  // Secrets remain server-only and never enter account settings or descriptors.
   if (
     plugins?.rsshub &&
     env.RSSHUB_ACCESS_KEY &&
@@ -72,14 +70,6 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
       env.AUTH_CONFIG !== undefined
         ? parseAuthJSON(env.AUTH_CONFIG)
         : undefined,
-    rsshub: env.RSSHUB_CONFIG
-      ? {
-          ...(parseAuthJSON(env.RSSHUB_CONFIG, "RSSHUB_CONFIG") as object),
-          ...(env.RSSHUB_ACCESS_KEY
-            ? { access_key: env.RSSHUB_ACCESS_KEY }
-            : {}),
-        }
-      : undefined,
     oidc: oidcPresent
       ? {
           issuer: env.OIDC_ISSUER,

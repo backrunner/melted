@@ -19,9 +19,9 @@ private func pluginFixture(_ name: String) throws -> Data {
     let plugin = try #require(catalog.plugins.first)
     #expect(plugin.supported && plugin.available)
     #expect(plugin.form.fields.first?.id == "route")
-    #expect(plugin.collection?.layout == "table")
-    #expect(plugin.collection?.columns.map(\.id) == ["source.name", "configuration.route", "source.enabled", "source.interval_seconds"])
-    #expect(plugin.collection?.addFromSuggestions?.maximum == 20)
+    #expect(plugin.collection.layout == "table")
+    #expect(plugin.collection.columns.map(\.id) == ["source.name", "configuration.route", "source.enabled", "source.interval_seconds"])
+    #expect(plugin.collection.addFromSuggestions?.maximum == 20)
     #expect(plugin.actions.map(\.effect) == ["collect", "validate"])
     #expect(catalog.sourceForm.error(in: ["name": .string("新闻"), "enabled": .boolean(true), "interval_seconds": .number(900)]) == nil)
     #expect(plugin.form.error(in: ["route": .string("/bbc/world-asia")]) == nil)
@@ -76,18 +76,18 @@ private func pluginFixture(_ name: String) throws -> Data {
     #expect(field.accepts(.string("/bbc/science_and_environment")))
 }
 
-@Test func suggestionCompatibilityAndInvalidMetadata() throws {
+@Test func optionalSuggestionsAndInvalidMetadata() throws {
     func form(_ suggestions: String) throws -> PluginForm {
         try Wire.decoder().decode(PluginForm.self, from: Data("{\"fields\":[{\"id\":\"count\",\"type\":\"integer\",\"label\":\"数量\",\"required\":true,\"minimum\":1,\"maximum\":9,\"step\":2\(suggestions)}]}".utf8))
     }
-    #expect(try form("").supported) // Old v1 descriptors still render.
+    #expect(try form("").supported) // Suggestions are optional for fields without presets.
     #expect(try form(#","suggestions":[{"value":3,"label":"常用"}]"#).supported)
     for items in [#"[{"value":3,"label":"A"},{"value":3,"label":"B"}]"#, #"[{"value":"3","label":"Wrong type"}]"#, #"[{"value":2,"label":"Wrong step"}]"#, #"[{"value":11,"label":"Range"}]"#] {
         #expect(try !form(",\"suggestions\":\(items)").supported)
     }
 }
 
-@Test func collectionRenderingRejectsUnknownBindingsAndKeepsLegacyDescriptors() throws {
+@Test func collectionRenderingRequiresCurrentDescriptorAndRejectsUnknownBindings() throws {
     var document = try #require(JSONSerialization.jsonObject(with: pluginFixture("plugin-settings")) as? [String: Any])
     var plugins = try #require(document["plugins"] as? [[String: Any]])
     for collection in [
@@ -98,5 +98,5 @@ private func pluginFixture(_ name: String) throws -> Data {
         #expect(try !Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)).plugins[0].supported)
     }
     plugins[0].removeValue(forKey: "collection"); document["plugins"] = plugins
-    #expect(try Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)).plugins[0].supported)
+    #expect(throws: DecodingError.self) { try Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)) }
 }

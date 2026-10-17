@@ -47,10 +47,8 @@ export class PostgresSources
     owner: string,
     input: SourceInput,
     key: string,
-    requestFingerprint?: string,
   ): Promise<Source> {
-    const fingerprint =
-      requestFingerprint ?? (await hash(JSON.stringify(input)));
+    const fingerprint = await hash(JSON.stringify(input));
     return this.db.transaction(async (c) => {
       await lockOwner(c, owner);
       const now = Date.now();

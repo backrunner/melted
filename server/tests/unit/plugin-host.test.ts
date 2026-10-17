@@ -22,7 +22,6 @@ import type {
   SourceRepository,
 } from "../../src/modules/sources/types.js";
 import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
-import { legacyCreate, legacyPatch } from "../../src/plugins/rsshub/legacy.js";
 import { validateResult } from "../../src/modules/ingest/result.js";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
 
@@ -355,22 +354,6 @@ test("configured modules cannot change identity, disclose credential URLs or per
         configuration: { topic: "a" },
       }),
     /unknown_plugin_field/,
-  );
-});
-
-test("legacy RSSHub input keeps defaults only on create and never re-enables a patched source", () => {
-  const legacy = legacyCreate({ name: "Old", route: "/bbc" })!;
-  const source = newSource(
-    { ...legacy.input, enabled: false, interval_seconds: 3600 },
-    Date.now(),
-  );
-  assert.deepEqual(
-    legacyPatch({ expected_version: 1, route: "/bbc/world-asia" }, source),
-    {
-      expected_version: 1,
-      configuration: { route: "/bbc/world-asia" },
-      config_version: 1,
-    },
   );
 });
 

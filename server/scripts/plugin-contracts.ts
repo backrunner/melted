@@ -8,6 +8,10 @@ import {
   configurationSchema,
 } from "../src/modules/plugins/dsl.js";
 import { actionRequestSchema } from "../src/modules/plugins/service.js";
+import {
+  sourceInputSchema,
+  sourcePatchSchema,
+} from "../src/modules/sources/schemas.js";
 import { pluginRegistry } from "../src/plugins/index.js";
 const root = new URL("../../contracts/", import.meta.url);
 const save = (path: string, value: unknown) =>
@@ -69,46 +73,17 @@ schemas.PluginActionResult = {
     },
   ],
 };
-for (const name of ["Source", "SourceInput", "SourcePatch"]) {
-  const schema = schemas[name];
-  schema.properties.configuration = {
-    $ref: "#/components/schemas/PluginConfiguration",
-  };
-  schema.properties.config_version = { type: "integer", minimum: 1 };
-  if (name !== "SourcePatch")
-    schema.properties.plugin = {
-      type: "string",
-      pattern: "^[a-z][a-z0-9_.-]{0,99}$",
-    };
-  schema.properties.route.deprecated = true;
-  schema.properties.route.description =
-    "Compatibility alias for RSSHub. New clients use configuration.route.";
-  if (name === "Source")
-    schema.required = [
-      ...new Set([
-        ...schema.required.filter((v: string) => v !== "route"),
-        "plugin",
-        "config_version",
-        "configuration",
-      ]),
-    ];
-  if (name === "SourceInput") {
-    schema.required = ["name"];
-    schema.oneOf = [
-      {
-        required: ["plugin", "config_version", "configuration"],
-        not: { required: ["route"] },
-      },
-      { required: ["route"], not: { required: ["plugin"] } },
-    ];
-  }
-}
+schemas.SourceInput = z.toJSONSchema(sourceInputSchema, { io: "input" });
+schemas.SourcePatch = z.toJSONSchema(sourcePatchSchema, { io: "input" });
 schemas.Discovery.properties.capabilities.properties.plugin_settings = {
   type: "integer",
   const: 1,
   description:
     "Versioned native plugin settings catalog available after authentication.",
 };
+schemas.Discovery.properties.auth.required = ["version", "methods"];
+schemas.Discovery.properties.auth.properties.version.description =
+  "Authentication contract version; unknown versions must not submit credentials.";
 const error = {
   description: "Structured error",
   content: {
@@ -177,6 +152,5 @@ await save("openapi.json", openapi);
 const briefing = JSON.parse(
   await readFile(new URL("briefing.schema.json", root), "utf8"),
 );
-briefing.components.schemas.Discovery.properties.capabilities.properties.plugin_settings =
-  schemas.Discovery.properties.capabilities.properties.plugin_settings;
+briefing.components.schemas.Discovery = schemas.Discovery;
 await save("briefing.schema.json", briefing);

@@ -107,14 +107,14 @@ public struct Discovery: Codable, Sendable {
     public struct Operator: Codable, Sendable { public var name: String }
     public struct Authentication: Codable, Sendable {
         public var methods: [String]
-        public var version: Int?
+        public var version: Int
         public var preferred: String?
         public var keyAlgorithm: String?
         public var browserCallback: String?
     }
     /// Reserved so unknown capability keys from newer servers decode without failing.
     public struct Capabilities: Codable, Sendable {}
-    public var auth: Authentication?
+    public var auth: Authentication
     public var capabilities: Capabilities?
     public var `protocol`: ProtocolRange
     public var serverId: String

@@ -60,9 +60,6 @@ if (target === "cloudflare" && process.argv.includes("--deployment")) {
     failures.push(
       ...pluginRegistry.deploymentErrors(
         pluginConfiguration({
-          rsshub: worker.vars.RSSHUB_CONFIG
-            ? JSON.parse(worker.vars.RSSHUB_CONFIG)
-            : undefined,
           plugins: worker.vars.PLUGIN_CONFIG
             ? JSON.parse(worker.vars.PLUGIN_CONFIG)
             : undefined,

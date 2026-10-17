@@ -6,7 +6,6 @@ import { load } from "js-yaml";
 
 export interface ServerConfig {
   authentication?: unknown;
-  rsshub?: unknown;
   plugins?: unknown;
   server: {
     id: string;
@@ -148,7 +147,7 @@ function validateConfig(
 }
 
 /**
- * Convert YAML config to environment variables format (for backward compatibility)
+ * Normalize YAML and environment configuration through one validation path.
  */
 export function configToEnv(config: ServerConfig): Record<string, string> {
   return {
@@ -161,9 +160,6 @@ export function configToEnv(config: ServerConfig): Record<string, string> {
     DATABASE_URL: config.database.url,
     ...(config.plugins !== undefined
       ? { PLUGIN_CONFIG: JSON.stringify(config.plugins) }
-      : {}),
-    ...(config.rsshub !== undefined
-      ? { RSSHUB_CONFIG: JSON.stringify(config.rsshub) }
       : {}),
     ...(config.authentication !== undefined
       ? { AUTH_CONFIG: JSON.stringify(config.authentication) }

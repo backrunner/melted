@@ -393,7 +393,7 @@
               "version": {
                 "type": "integer",
                 "const": 1,
-                "description": "Absent on legacy v1 servers; unknown versions require a compatible client."
+                "description": "Authentication contract version; unknown versions must not submit credentials."
               },
               "preferred": {
                 "type": "string",
@@ -401,6 +401,7 @@
               }
             },
             "required": [
+              "version",
               "methods"
             ],
             "additionalProperties": true

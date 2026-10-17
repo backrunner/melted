@@ -35,7 +35,7 @@ const bindings = {
   MELTED_SERVER_ID: "collection-test",
   MELTED_OPERATOR: "test",
   PUBLIC_ORIGIN: "http://localhost",
-  RSSHUB_CONFIG: JSON.stringify(rsshub),
+  PLUGIN_CONFIG: JSON.stringify({ rsshub }),
 };
 const mf = new Miniflare(
   convertV4MiniflareOptions({
@@ -57,7 +57,7 @@ const config = configSchema.parse({
     serverID: bindings.MELTED_SERVER_ID,
     operator: "test",
     publicOrigin: "http://localhost",
-    rsshub,
+    plugins: { rsshub },
   }),
   app = createApp();
 const input: SourceInput = {
@@ -137,19 +137,32 @@ for (const target of ["PostgreSQL", "SQLite DO"] as const)
             .status,
           401,
         );
-        const legacy = await send(
+        assert.equal(
+          (
+            await send(
+              "/v1/sources",
+              "POST",
+              { name: "Invalid", route: "/bbc" },
+              "flat-route",
+            )
+          ).status,
+          400,
+        );
+        const createdResponse = await send(
           "/v1/sources",
           "POST",
           {
-            name: "Legacy",
-            route: "/bbc",
+            name: "Configured",
+            plugin: "rsshub",
+            config_version: 1,
+            configuration: { route: "/bbc" },
             enabled: false,
             interval_seconds: 3600,
           },
-          "legacy-create",
+          "configured-create",
         );
-        assert.equal(legacy.status, 201);
-        const old = (await legacy.json()) as {
+        assert.equal(createdResponse.status, 201);
+        const old = (await createdResponse.json()) as {
           id: string;
           configuration: unknown;
           version: number;
@@ -161,19 +174,32 @@ for (const target of ["PostgreSQL", "SQLite DO"] as const)
               "/v1/sources",
               "POST",
               {
-                name: "Legacy",
-                route: "/bbc",
+                name: "Configured",
+                plugin: "rsshub",
+                config_version: 1,
+                configuration: { route: "/bbc" },
                 enabled: false,
                 interval_seconds: 3600,
               },
-              "legacy-create",
+              "configured-create",
             )
           ).status,
           201,
         );
+        assert.equal("route" in old, false);
+        assert.equal(
+          (
+            await send(`/v1/sources/${old.id}`, "PATCH", {
+              expected_version: 1,
+              route: "/bbc/world-asia",
+            })
+          ).status,
+          400,
+        );
         const patchedResponse = await send(`/v1/sources/${old.id}`, "PATCH", {
           expected_version: 1,
-          route: "/bbc/world-asia",
+          config_version: 1,
+          configuration: { route: "/bbc/world-asia" },
         });
         const patched = (await patchedResponse.json()) as {
           version: number;

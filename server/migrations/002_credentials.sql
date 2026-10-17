@@ -1,6 +1,3 @@
--- Preserve existing accounts/content. Retired password fields stay nullable for migration only.
-ALTER TABLE accounts ALTER COLUMN email DROP NOT NULL;
-ALTER TABLE accounts ALTER COLUMN password_hash DROP NOT NULL;
 CREATE TABLE credentials (
     fingerprint text PRIMARY KEY,
     owner text NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,

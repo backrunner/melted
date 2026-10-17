@@ -1,7 +1,5 @@
 CREATE TABLE accounts (
     id text PRIMARY KEY,
-    email text NOT NULL UNIQUE,
-    password_hash text NOT NULL,
     generation bigint NOT NULL DEFAULT 1,
     change_sequence bigint NOT NULL DEFAULT 0,
     created_at timestamptz NOT NULL DEFAULT now()

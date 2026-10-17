@@ -9,7 +9,7 @@ struct ConnectionActions: View {
     let discovery: Discovery
     @Environment(\.colorScheme) private var scheme
     private var palette: MeltedPalette { MeltedPalette(scheme) }
-    private var methods: [AuthenticationMethod] { discovery.auth?.supportedMethods ?? [] }
+    private var methods: [AuthenticationMethod] { discovery.auth.supportedMethods }
 
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedReading.blockInset) {

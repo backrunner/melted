@@ -25,7 +25,7 @@ public enum LoginCredential: Sendable {
 
 extension Discovery.Authentication {
     public var supportedMethods: [AuthenticationMethod] {
-        guard version == nil || version == 1 else { return [] }
+        guard version == 1 else { return [] }
         var seen = Set<String>()
         return methods.compactMap { value in
             guard seen.insert(value).inserted, let method = AuthenticationMethod(rawValue: value) else { return nil }

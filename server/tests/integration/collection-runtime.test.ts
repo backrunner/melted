@@ -94,7 +94,7 @@ test("Cloudflare persisted outbox, real Alarms and Queue consumer survive restar
       bindings: {
         MELTED_SERVER_ID: "runtime",
         PUBLIC_ORIGIN: "http://localhost",
-        RSSHUB_CONFIG: JSON.stringify(feed.config),
+        PLUGIN_CONFIG: JSON.stringify({ rsshub: feed.config }),
       },
       ...(consume
         ? {
@@ -129,22 +129,6 @@ test("Cloudflare persisted outbox, real Alarms and Queue consumer survive restar
     );
     const run = await repo.sources.sync(owner, source.id, random());
     assert.equal((await repo.sources.receipt(owner, run.id)).state, "queued");
-    // Simulate the persisted v1 document before the first restart, including a
-    // queued job. The new constructor must migrate it without losing its fence.
-    const legacyStorage = await mf.unsafeGetDurableObjectStorage(
-      "collection-runtime",
-      "AccountStore",
-      { name: owner },
-    );
-    await legacyStorage.exec(
-      "UPDATE sources SET document=json_remove(json_set(document,'$.route',json_extract(document,'$.configuration.route')),'$.configuration','$.config_version')",
-    );
-    await legacyStorage.exec(
-      "UPDATE source_requests SET response=json_remove(json_set(response,'$.route',json_extract(response,'$.configuration.route')),'$.configuration','$.config_version') WHERE operation='create'",
-    );
-    await legacyStorage.exec(
-      "UPDATE meta SET value='1' WHERE key='source_schema'",
-    );
     await mf.dispose();
     mf = new Miniflare(options(true));
     repo = new CloudRepository(await mf.getBindings<CloudBindings>());
@@ -233,7 +217,7 @@ test("Node collector processes recover a crashed lease and schedule only one com
           DATABASE_URL: process.env.MELTED_TEST_DATABASE_URL,
           MELTED_SERVER_ID: "runtime",
           PUBLIC_ORIGIN: "http://localhost",
-          RSSHUB_CONFIG: JSON.stringify(feed.config),
+          PLUGIN_CONFIG: JSON.stringify({ rsshub: feed.config }),
         },
         stdio: ["ignore", "pipe", "pipe"],
       },

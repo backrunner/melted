@@ -21,14 +21,3 @@ protocol WorkspaceClient: PluginClient {
 }
 
 extension APIClient: WorkspaceClient {}
-
-// Existing test clients and older integrations explicitly lack plugin support.
-extension WorkspaceClient {
-    func pluginCatalog() async throws -> PluginCatalog { throw APIError.incompatible }
-    func sources() async throws -> [PluginSource] { throw APIError.incompatible }
-    func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) async throws -> PluginSource { throw APIError.incompatible }
-    func removeSource(_ source: PluginSource) async throws { throw APIError.incompatible }
-    func setSourceEnabled(_ source: PluginSource, enabled: Bool) async throws -> PluginSource { throw APIError.incompatible }
-    func performAction(_ action: PluginAction, source: PluginSource, plugin: PluginDescriptor, input: PluginConfiguration, requestID: String) async throws -> PluginActionResult { throw APIError.incompatible }
-    func collectionReceipt(_ id: String) async throws -> CollectionReceipt { throw APIError.incompatible }
-}

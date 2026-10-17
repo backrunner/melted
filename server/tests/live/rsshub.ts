@@ -20,7 +20,7 @@ import { hash, random } from "../../src/shared/crypto.js";
 
 const config = configFromEnv(process.env);
 if (
-  !config.rsshub ||
+  !config.plugins?.rsshub ||
   !process.env.MELTED_TEST_DATABASE_URL ||
   process.env.MELTED_TEST_DATABASE_URL === process.env.DATABASE_URL
 )
@@ -48,7 +48,7 @@ const mf = new Miniflare(
     bindings: {
       MELTED_SERVER_ID: "rsshub-live",
       PUBLIC_ORIGIN: "http://localhost",
-      RSSHUB_CONFIG: JSON.stringify(config.rsshub),
+      PLUGIN_CONFIG: JSON.stringify(config.plugins),
       RSSHUB_ACCESS_KEY: process.env.RSSHUB_ACCESS_KEY ?? "",
     },
   }),

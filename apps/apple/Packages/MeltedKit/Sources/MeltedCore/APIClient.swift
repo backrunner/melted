@@ -61,7 +61,7 @@ public actor APIClient {
         let manifest: ProcessingManifest = try await send("/.well-known/melted/processing")
         guard manifest.version == d.processingManifestVersion else { throw APIError.incompatible }
         discoveredID = d.serverId
-        authenticationMethods = d.auth?.supportedMethods.map(\.rawValue) ?? []
+        authenticationMethods = d.auth.supportedMethods.map(\.rawValue)
         serverID = d.serverId + "|" + baseURL.absoluteString
         return (d, manifest)
     }

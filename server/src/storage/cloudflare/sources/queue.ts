@@ -22,7 +22,6 @@ export async function consumeCollections(
       MELTED_SERVER_ID: env.MELTED_SERVER_ID,
       MELTED_OPERATOR: env.MELTED_OPERATOR,
       PUBLIC_ORIGIN: env.PUBLIC_ORIGIN,
-      RSSHUB_CONFIG: env.RSSHUB_CONFIG,
       PLUGIN_CONFIG: env.PLUGIN_CONFIG,
       RSSHUB_ACCESS_KEY: env.RSSHUB_ACCESS_KEY,
     });

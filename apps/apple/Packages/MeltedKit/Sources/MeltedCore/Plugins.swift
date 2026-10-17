@@ -112,11 +112,11 @@ public struct PluginDescriptor: Codable, Identifiable, Sendable {
     public let configVersion: Int
     public let capabilities: [String]
     public let form: PluginForm
-    public let collection: PluginCollection?
+    public let collection: PluginCollection
     public let actions: [PluginAction]
     public let available: Bool
     public let unavailableReason: String?
-    public var supported: Bool { dslVersion == 1 && PluginIdentifiers.valid(id) && configVersion == 1 && kind == "collector" && capabilities == ["collector.poll"] && form.supported && (collection?.supported(form: form) ?? true) && actions.count <= 10 && Set(actions.map(\.id)).count == actions.count && actions.allSatisfy(\.supported) }
+    public var supported: Bool { dslVersion == 1 && PluginIdentifiers.valid(id) && configVersion == 1 && kind == "collector" && capabilities == ["collector.poll"] && form.supported && collection.supported(form: form) && actions.count <= 10 && Set(actions.map(\.id)).count == actions.count && actions.allSatisfy(\.supported) }
 }
 public struct PluginCatalog: Codable, Sendable {
     public let dslVersion: Int

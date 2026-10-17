@@ -21,11 +21,7 @@ export function collectorEnabled(value: unknown = settings) {
   }
 }
 export function pluginConfiguration(config: {
-  rsshub?: unknown;
   plugins?: Record<string, unknown>;
 }): Record<string, unknown> {
-  return {
-    ...(config.rsshub ? { rsshub: config.rsshub } : {}),
-    ...config.plugins,
-  };
+  return config.plugins ?? {};
 }
