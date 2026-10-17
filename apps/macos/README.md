@@ -19,7 +19,7 @@ SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.1](.
 
 Features 通过状态和动作组合，不读取 Keychain、不创建 URLSession。阅读子组件接收文档、状态和回调；新页面优先复用这些组件。窗口只编排功能，不再内嵌整段列表、详情或登录表单。连接页统一使用 `ConnectionPage`；品牌放在连接表单标题上方，连接切步仅透明度变化；列表底栏左侧显示紧凑品牌，右侧保留条数/加载状态，工作台顶部不另加品牌条。底栏使用列表的 `canvas` 色，不叠系统灰色材质。组件与实际尺寸见 [设计资源索引](../../.agents/design/README.md)。
 
-当前搜索组件与菜单命令已存在，但 WorkspaceView 尚未挂载 SearchPalette；同步只是 changes 提示轮询，无正文磁盘缓存。已知差异以 [当前设计复核](../../.agents/13-design-review.md)为准，勿根据组件文件宣称链路已完成。
+WorkspaceView 已通过原生 sheet 挂载 SearchPalette，菜单/⌘F 和有效条件 chip 可打开，Esc/完成关闭；同步仍是 changes 提示轮询，无正文磁盘缓存。已知差异以 [当前设计复核](../../.agents/13-design-review.md)为准，勿根据组件文件宣称链路已完成。
 
 ## 固定开发签名
 

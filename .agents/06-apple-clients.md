@@ -23,13 +23,13 @@
 | 服务器确认 / 登录 | 地址、运营者与处理声明、信任选择、协商认证、切换与失败 | [ServerConfirmationView](../apps/macos/Sources/Melted/Features/Connection/ServerConfirmationView.swift)、[CredentialForm](../apps/macos/Sources/Melted/Features/Connection/CredentialForm.swift) |
 | 资讯工作台 | 无侧栏、无顶部品牌条；全部/未读/收藏、条件摘要和最右设置；宽窗双栏/窄窗返回 | [WorkspaceView](../apps/macos/Sources/Melted/App/WorkspaceView.swift)、[WorkspaceToolbar](../apps/macos/Sources/Melted/App/WorkspaceToolbar.swift) |
 | 内容列表 | 日期分组、标题/摘要/分类/时间、选择、真实分页、差异化空态；底栏左侧紧凑品牌、右侧数量 | [ContentListView](../apps/macos/Sources/Melted/Features/Library/ContentListView.swift) |
-| 搜索与筛选 | 组件已有原生字段、组合条件与键盘建议；菜单/⌘F 已有状态但面板尚未挂载 | [SearchPalette](../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) |
+| 搜索与筛选 | 原生 sheet、组合条件与键盘建议；菜单/⌘F 和有效条件 chip 可打开 | [SearchPalette](../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) |
 | 阅读详情 | 标题、时间/收藏、必要证据警告、Markdown、文末分类/标签/关注/依据字段 | [ReadingDocumentView](../apps/macos/Sources/Melted/Features/Reading/ReadingDocumentView.swift) |
 | 设置与法律文本 | 外观、账户、关于三个分组，GPL 与第三方声明可滚动 sheet | [SettingsView](../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift)、[AboutSettings](../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) |
 
 连接页最大表单宽 440 pt，品牌在这列标题上方；连接步骤只用 220 ms 淡化，切换认证方式关闭表单布局插值。工作台品牌位于列表底栏左侧，阅读背景不融化。当前列表仍有未读点/收藏图标，与去冗余方向的差异见 [UI 第 8 节](11-ui-design-system.md#8-当前实现差异与后续整理)。
 
-搜索设计无常驻 toolbar 入口；只有有效条件才出现可打开/清除的 chip。**当前 WorkspaceView 只更新 searchOpen，没有呈现 SearchPalette，需修复后才能记为可用。** 以下是组件行为与目标交互：整体清除 q/category/tag/subject 保留 view；输入框清除仅清 q。选择一个 taxonomy 建议会清空当前输入/q，再应用所选 ID。时间/排序/facet 和“立即获取”没有现成 UI。条件变化重启请求和分页，状态协调应防止迟到响应覆盖当前查询；模型字段以 [当前契约](../contracts/openapi.json)为准。
+搜索设计无常驻 toolbar 入口；只有有效条件才出现可打开/清除的 chip。WorkspaceView 以原生 sheet 呈现 SearchPalette，自动聚焦字段，Esc/完成关闭，会话结束时关闭。整体清除 q/category/tag/subject 保留 view；输入框清除仅清 q。选择一个 taxonomy 建议会清空当前输入/q，再应用所选 ID。时间/排序/facet 和“立即获取”没有现成 UI。条件变化重启请求和分页，状态协调应防止迟到响应覆盖当前查询；模型字段以 [当前契约](../contracts/openapi.json)为准。
 
 收藏是确定的状态操作，成功/冲突/失败需要真实 API 响应。详情的分类/标签是可选择文字，不能点选筛选；依据在文末同一字段组展开编号来源，风险状态在正文前保留。没有“有用/反馈”、独立已读按钮和大证据卡。
 
@@ -51,7 +51,7 @@ App 构建包含同一品牌矢量生成的正式 ICNS 图标；资源绑定和�
 
 ## 同步、离线与通知
 
-当前 WorkspaceModel 在连接期间每 12 秒轮询 changes 提示，按变化刷新当前查询；真实内容 upsert 可触发新到达高亮，单纯阅读/收藏变化不当作新内容。手动刷新走 ⌘R/菜单。已加载内容留内存，加载失败时保留可见正文并提供重新加载；会话过期/撤销回到登录。定时同步错误的用户可见状态仍需继续完善，不能把提示轮询称为完整复制协议。
+当前 WorkspaceModel 在连接期间每 12 秒轮询 changes 提示，按变化刷新当前查询；真实内容 upsert 可触发新到达高亮，单纯阅读/收藏变化不当作新内容。手动刷新走 ⌘R/菜单。已加载内容留内存，加载失败时保留可见正文并提供重新加载；会话过期/撤销回到登录。同步水位在初次加载前获取，刷新成功后推进；失败保留水位重试并显示提示。到达按服务器 upsert 序号判定，合并分页信号、支持同一条目的后续更新，不依赖本机时钟；不改变已打开正文和已加载尾页。远端 state/delete 的完整应用仍未实现，不能把提示轮询称为完整复制协议。
 
 尚无正文 SQLite 缓存、持久离线 mutation 队列、SSE、完整 snapshot 缓存重建、系统通知和 APNs。后续缓存按 origin/server/account 隔离，实体/tombstone/cursor 原子落盘，冲突明确处理，退出停止重放并清理；保护方案分别验证 macOS 文件权限/加密与 iOS Data Protection。Keychain 保存 token 不意味着正文缓存加密。
 
