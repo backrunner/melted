@@ -47,9 +47,14 @@ struct WorkspaceView: View {
         .background(GeometryReader { proxy in Color.clear.onAppear { width = proxy.size.width }.onChange(of: proxy.size.width) { _, value in width = value } })
         .toolbar { if model.connected { WorkspaceToolbar(model: model, width: width, searchOpen: $searchOpen) } }
         .toolbarRole(.editor)
+        .sheet(isPresented: $searchOpen) {
+            SearchPalette(model: model) { searchOpen = false }
+                .frame(width: min(560, max(320, width - 64)))
+        }
         .task(id: model.filter) { if model.connected { await model.reload() } }
         .task(id: model.selectedID) { await model.select() }
-        .onChange(of: model.searchRequest) { _, _ in searchOpen = true }
+        .onChange(of: model.searchRequest) { _, _ in if model.connected { searchOpen = true } }
+        .onChange(of: model.connected) { _, connected in if !connected { searchOpen = false } }
     }
 
 }

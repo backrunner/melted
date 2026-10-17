@@ -32,7 +32,7 @@ struct WorkspaceToolbar: ToolbarContent {
 
         // Search has no toolbar entry: it opens from the keyboard. When filters are active the
         // toolbar still has to explain the shorter list, so it shows state and a way to clear it.
-        if model.filter.isFiltered || !model.filter.q.isEmpty {
+        if !model.filter.q.isEmpty || !model.filter.categoryIds.isEmpty || !model.filter.tagIds.isEmpty || !model.filter.subjectIds.isEmpty {
             ToolbarItem(id: "reading-filter", placement: .primaryAction) {
                 MeltedFilterChip(filterTitle) {
                     searchOpen = true

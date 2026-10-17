@@ -29,8 +29,11 @@ struct ReadingEvidence: View {
                     Button {
                         withAnimation(reduceMotion ? nil : MeltedMotion.content) { evidenceOpen.toggle() }
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Text(evidenceOpen ? "收起来源" : "\(item.evidence.count) 个来源")
+                                // Export the text baseline through the button and enclosing stacks
+                                // so the metadata grid aligns this control with its field label.
+                                .alignmentGuide(.firstTextBaseline) { $0[.firstTextBaseline] }
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 9, weight: .semibold))
                                 .rotationEffect(.degrees(evidenceOpen ? 90 : 0))

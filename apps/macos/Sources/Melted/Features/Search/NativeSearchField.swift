@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import AppKit
 import SwiftUI
+import MeltedDesignSystem
 
 /// Preserve the search control's full layout instead of toolbar label adaptation.
 struct NativeToolbarContent<Content: View>: NSViewRepresentable {
@@ -17,6 +18,7 @@ struct NativeToolbarContent<Content: View>: NSViewRepresentable {
 
 /// Toolbar-hosted SwiftUI fields do not reliably receive programmatic focus.
 struct NativeSearchField: NSViewRepresentable {
+    @Environment(\.colorScheme) private var scheme
     @Binding var text: String
     let focusRequest: Int
     var focusOnAppear = false
@@ -42,6 +44,15 @@ struct NativeSearchField: NSViewRepresentable {
         return field
     }
     func updateNSView(_ field: NSSearchField, context: Context) {
+        // AppKit's default placeholder can retain the system appearance when the
+        // reader uses an explicit theme; match the rest of the search sheet.
+        field.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+        let palette = MeltedPalette(scheme)
+        field.textColor = NSColor(palette.text)
+        field.placeholderAttributedString = NSAttributedString(
+            string: prominent ? "搜索内容、分类、标签或关注主题" : "搜索资讯",
+            attributes: [.foregroundColor: NSColor(palette.secondary), .font: field.font ?? NSFont.systemFont(ofSize: 20)]
+        )
         context.coordinator.text = $text
         context.coordinator.onSubmit = onSubmit
         context.coordinator.onCancel = onCancel
