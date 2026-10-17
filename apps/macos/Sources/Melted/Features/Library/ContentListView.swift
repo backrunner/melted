@@ -90,11 +90,11 @@ struct ContentListView: View {
             EmptyState(icon: "line.3.horizontal.decrease", title: "没有匹配的内容", description: "换个关键词，或减少筛选条件",
                        action: { model.filter.q = ""; model.filter.categoryIds = []; model.filter.tagIds = []; model.filter.subjectIds = [] }, actionLabel: "清除搜索与筛选")
         case (false, "unread"):
-            EmptyState(icon: "checkmark", title: "全部读完了", description: "新的整理内容到达后会出现在这里")
+            EmptyState(icon: "checkmark", title: "没有未读内容", description: "切换到“全部”查看已读内容")
         case (false, "saved"):
-            EmptyState(icon: "bookmark", title: "还没有收藏", description: "在阅读时收藏，方便之后回来")
+            EmptyState(icon: "bookmark", title: "还没有收藏", description: "打开内容后点击“收藏”")
         default:
-            EmptyState(icon: "tray", title: "还没有资讯", description: "服务器整理好内容后会出现在这里")
+            EmptyState(icon: "tray", title: "还没有资讯", description: "按 ⌘R 刷新列表")
         }
     }
 

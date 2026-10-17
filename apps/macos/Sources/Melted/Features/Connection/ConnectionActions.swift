@@ -33,7 +33,7 @@ struct ConnectionActions: View {
                         .foregroundStyle(palette.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     if discovery.registration == "closed" {
-                        Text("当前服务器仅允许已有身份密钥登录")
+                        Text("仅限已有身份密钥登录")
                             .font(.system(size: MeltedType.metadata))
                             .foregroundStyle(palette.warning)
                     }
@@ -45,7 +45,7 @@ struct ConnectionActions: View {
                     }
                 }
             } else {
-                Text("当前版本暂不支持这台服务器的登录方式")
+                Text("不支持此服务器的登录方式")
                     .font(.system(size: MeltedType.control))
                     .foregroundStyle(palette.warning)
                     .fixedSize(horizontal: false, vertical: true)

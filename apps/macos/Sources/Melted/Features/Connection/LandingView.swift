@@ -12,7 +12,7 @@ struct LandingView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedConnection.sectionSpacing) {
-            Text("从这里开始阅读")
+            Text("连接服务器")
                 .font(.system(size: MeltedType.title, weight: .semibold))
                 .accessibilityAddTraits(.isHeader)
 

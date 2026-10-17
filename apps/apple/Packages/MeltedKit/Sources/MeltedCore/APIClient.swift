@@ -7,22 +7,22 @@ public enum APIError: Error, LocalizedError, Sendable {
     case invalidServer, incompatible, localCredentials, syncCredentialsUnavailable, response(Int, String), oversizedResponse
     public var errorDescription: String? {
         switch self {
-        case .invalidServer: "请输入有效的 HTTPS 服务器地址。本机开发可使用 http://127.0.0.1。"
-        case .incompatible: "服务器协议或处理服务声明不兼容。"
-        case .localCredentials: "无法访问系统钥匙串，请检查钥匙串状态。"
-        case .syncCredentialsUnavailable: "当前构建无法访问可同步钥匙串。你可以使用本机凭据继续，它不会同步到其他设备。"
-        case .oversizedResponse: "服务器返回的内容过大。"
-        case .response(_, "invalid_credentials"): "账号、密码或 API Key 不正确，请检查后重试。"
-        case .response(_, "auth_method_unavailable"): "服务器已停用此登录方式，请返回并重新连接。"
-        case .response(_, "registration_closed"): "此服务器只允许已有账户登录，请联系运营者。"
+        case .invalidServer: "请输入 HTTPS 地址；本机可用 http://127.0.0.1"
+        case .incompatible: "服务器协议或处理服务声明不兼容"
+        case .localCredentials: "无法访问系统钥匙串，请检查钥匙串"
+        case .syncCredentialsUnavailable: "此版本无法使用可同步钥匙串，可改用本机凭据（不跨设备同步）"
+        case .oversizedResponse: "服务器返回的内容过大"
+        case .response(_, "invalid_credentials"): "账号、密码或 API Key 不正确"
+        case .response(_, "auth_method_unavailable"): "此登录方式已停用，请重新连接"
+        case .response(_, "registration_closed"): "仅限已有账户登录，请联系运营者"
         case .response(let code, _):
             switch code {
-            case 401: "登录已失效，请重新连接服务器。"
-            case 409: "内容已在其他地方更新。请刷新后重试。"
-            case 410: "列表已过期，请刷新。"
-            case 429: "请求过于频繁，请稍后重试。"
-            case 422: "结果过多，请缩小搜索或筛选范围。"
-            default: "服务器暂时无法完成请求（\(code)）。"
+            case 401: "登录已失效，请重新连接"
+            case 409: "内容已更新，请刷新后重试"
+            case 410: "列表已过期，请刷新"
+            case 429: "请求过于频繁，请稍后重试"
+            case 422: "结果过多，请缩小搜索或筛选范围"
+            default: "请求失败（\(code)），请稍后重试"
             }
         }
     }

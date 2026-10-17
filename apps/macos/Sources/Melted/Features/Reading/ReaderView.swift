@@ -48,7 +48,7 @@ struct ReaderView: View {
             } else {
                 EmptyState(
                     icon: "book",
-                    title: "选择一条内容开始阅读",
+                    title: "选择一条内容",
                     description: "点击左侧内容，查看全文"
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

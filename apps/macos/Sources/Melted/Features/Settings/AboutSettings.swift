@@ -71,7 +71,7 @@ private struct LegalDocumentView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(24)
                 } else if failed {
-                    Text("当前应用包缺少许可文件，请重新构建应用。")
+                    Text("许可文件缺失，请重新安装 Melted")
                         .padding(24)
                 } else {
                     ProgressView().padding(24)

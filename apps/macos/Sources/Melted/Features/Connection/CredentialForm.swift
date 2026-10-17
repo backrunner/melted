@@ -44,7 +44,7 @@ struct CredentialForm: View {
                     if model.connecting {
                         ProgressView().controlSize(.small).tint(palette.accentText)
                     }
-                    Text(model.connecting ? "正在登录…" : method == .browser ? "在浏览器中继续" : "登录")
+                    Text(model.connecting ? "正在登录…" : method == .browser ? "浏览器登录" : "登录")
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: MeltedConnection.controlHeight)

@@ -50,27 +50,27 @@ struct WorkspaceFailure: Equatable {
     var guidance: String {
         switch kind {
         case .invalidAddress:
-            "地址需要是 https://，本机开发可用 http://127.0.0.1:8421。"
+            "使用 HTTPS 地址；本机可用 http://127.0.0.1:8421"
         case .cannotReach:
-            "确认地址、端口和证书都正确，并确认服务器正在运行。"
+            "检查地址、端口、证书和服务器运行状态"
         case .offline:
-            "恢复网络后重试。"
+            "联网后重试"
         case .hostNotFound:
-            "确认地址拼写，以及这台 Mac 能否解析该主机名。"
+            "检查地址拼写和 DNS 设置"
         case .incompatible:
-            "更新 Melted 或服务器后重试。"
+            "更新 Melted 或服务器后重试"
         case .sessionExpired:
-            "重新登录以继续阅读。"
+            "请重新登录"
         case .registrationClosed:
-            "请让服务器运营者为你创建账户。"
+            "联系运营者创建账户"
         case .authMethodUnavailable:
-            "重新获取登录方式，或选择其他方式。"
+            "重新获取或切换登录方式"
         case .busy:
-            "稍等片刻再试。"
+            "稍后重试"
         case .lessThan:
-            "检查系统钥匙串状态后重新登录。"
+            "检查钥匙串后重新登录"
         case .unexpected:
-            "稍后重试；如果一直失败，请把详情发给服务器运营者。"
+            "稍后重试，仍失败可向运营者提供错误详情"
         }
     }
 
