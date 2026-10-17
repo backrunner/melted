@@ -25,7 +25,6 @@ public struct MeltedNotice: View {
     private let actions: [Action]
     @State private var detailOpen = false
     @Environment(\.colorScheme) private var scheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         tone: Tone = .critical,
@@ -108,24 +107,10 @@ public struct MeltedNotice: View {
     @ViewBuilder
     private var detailButton: some View {
         if detail != nil {
-            Button {
-                withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.selection)) {
-                    detailOpen.toggle()
-                }
-            } label: {
-                HStack(spacing: MeltedNoticeMetrics.textSpacing) {
-                    Image(systemName: "chevron.right")
-                        .rotationEffect(.degrees(detailOpen ? 90 : 0))
-                    Text("技术详情")
-                }
-                .font(.system(size: MeltedType.metadata, weight: .medium))
-                .foregroundStyle(MeltedPalette(scheme).secondary)
-                .frame(minHeight: MeltedNoticeMetrics.disclosureHeight)
-                .fixedSize(horizontal: true, vertical: false)
-                .contentShape(Rectangle())
+            MeltedDisclosureToggle(isExpanded: $detailOpen) {
+                Text("技术详情").font(.system(size: MeltedType.metadata, weight: .medium))
             }
-            .buttonStyle(.plain)
-            .accessibilityValue(detailOpen ? "已展开" : "已收起")
+            .fixedSize(horizontal: true, vertical: false)
         }
     }
 

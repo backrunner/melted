@@ -93,3 +93,5 @@ collect 返回 202 与 `{"status":"accepted","receipt_id":"…"}`；只表示任
 macOS 设置的“内容 → 来源与插件”提供添加、编辑、暂停/启用、删除以及 descriptor 声明的动作。表单保存前本机校验，服务端再次校验。409 不丢弃输入；刷新目录/来源后重试。采集 receipt 区分等待、执行、完成、部分失败、失败、取消及新增/更新/重复/无效数量。共享 Swift 类型放在 MeltedCore；iOS 尚无该管理界面。
 
 契约变更运行 `rtk proxy python3 scripts/dev.py exec npm run contracts:plugins`，再执行 `scripts/dev.py check`、共享 Swift 与 macOS 测试。后端测试在 Apple Container 的 PostgreSQL、workerd/SQLite DO 上共用合约，模板生成/执行、当前 schema 初始化、跨账户和动作 fencing 均有负例。当前契约与模板运行见 [SDK 验收](../../.agents/validation/2026-10-17/plugin-sdk/README.md)；多订阅与路由建议见 [订阅集合验收](../../.agents/validation/2026-10-17/route-settings/README.md)；此前模块实现证据见 [插件设置验收](../../.agents/validation/2026-10-17/plugin-settings/README.md)。
+
+原生客户端每个插件只有一个添加入口，在同一订阅面板内选择建议来源或手动填写。名称和目标字段优先显示，其他 DSL 配置与公共采集设置放入共享折叠区；切换方式保留输入和勾选，部分成功后冻结该批次。订阅集合按插件分区独立折叠，统一使用 `MeltedDisclosure` 的箭头与动画。表格标题、文本与操作列使用相同边距，原生单元格 tooltip 提供完整文本。表格或列表仍由 `collection.layout` 确定，不提供用户视图切换。

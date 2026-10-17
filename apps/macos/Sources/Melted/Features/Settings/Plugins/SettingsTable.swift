@@ -89,12 +89,18 @@ struct SettingsTable<Actions: View>: NSViewRepresentable {
             guard parent.rows.indices.contains(row), let tableColumn else { return nil }
             let item = parent.rows[row], palette = MeltedPalette(parent.scheme)
             if tableColumn.identifier.rawValue == "__actions" {
-                return NSHostingView(rootView: parent.actions(item.id).disabled(!parent.enabled).font(.system(size: MeltedType.metadata)).foregroundStyle(palette.text).tint(palette.accent).environment(\.colorScheme, parent.scheme))
+                return NSHostingView(rootView: parent.actions(item.id).disabled(!parent.enabled)
+                    .font(.system(size: MeltedType.metadata)).foregroundStyle(palette.text).tint(palette.accent)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.horizontal, MeltedReading.actionGap)
+                    .environment(\.colorScheme, parent.scheme))
             }
             guard let index = parent.columns.firstIndex(where: { $0.id == tableColumn.identifier.rawValue }), item.cells.indices.contains(index) else { return nil }
             let value = item.cells[index], cell = NSTableCellView(), label = NSTextField(labelWithString: value.text)
             label.font = value.monospaced ? .monospacedSystemFont(ofSize: MeltedType.metadata, weight: .regular) : .systemFont(ofSize: MeltedType.metadata)
-            label.textColor = NSColor(palette.text); label.lineBreakMode = .byTruncatingTail; label.toolTip = value.text
+            label.textColor = NSColor(palette.text); label.lineBreakMode = .byTruncatingTail; label.maximumNumberOfLines = 1
+            cell.toolTip = value.text; label.toolTip = value.text
+            label.setAccessibilityHelp(value.text)
             label.translatesAutoresizingMaskIntoConstraints = false; cell.addSubview(label); cell.textField = label
             NSLayoutConstraint.activate([label.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: MeltedReading.actionGap), label.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -MeltedReading.actionGap), label.centerYAnchor.constraint(equalTo: cell.centerYAnchor)])
             return cell

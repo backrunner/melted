@@ -19,7 +19,8 @@ struct SourcesPanel: View {
     @StateObject private var model: SourceSettingsModel
     @State private var editor: SourceEditorSelection?
     @State private var action: ActionSelection?
-    @State private var batchPlugin: PluginDescriptor?
+    @State private var pluginsExpanded = false
+    @State private var collapsedPlugins: Set<String> = []
     @State private var deleting: PluginSource?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var scheme
@@ -34,12 +35,8 @@ struct SourcesPanel: View {
                 ForEach(model.catalog?.plugins ?? []) { plugin in
                     Button("添加 \(plugin.title) 订阅") {
                         model.error = nil
-                        if let batch = plugin.collection.addFromSuggestions, plugin.form.fields.first(where: { $0.id == batch.field })?.suggestions?.isEmpty == false { batchPlugin = plugin }
-                        else { editor = .init(plugin: plugin, source: nil) }
+                        editor = .init(plugin: plugin, source: nil)
                     }.disabled(!plugin.available || !plugin.supported)
-                    if plugin.collection.addFromSuggestions != nil {
-                        Button("自定义 \(plugin.title) 订阅") { model.error = nil; editor = .init(plugin: plugin, source: nil) }.disabled(!plugin.available || !plugin.supported)
-                    }
                 }
             } label: { Label("添加来源", systemImage: "plus") }
                 .menuStyle(.borderlessButton).modifier(MeltedMenuChrome()).fixedSize()
@@ -52,16 +49,26 @@ struct SourcesPanel: View {
                     if let catalog = model.catalog {
                         ForEach(catalog.plugins) { plugin in
                             let sources = model.sources.filter { $0.plugin == plugin.id }
-                            if plugin.supported {
-                                PluginSourceCollection(plugin: plugin, collection: plugin.collection, sources: sources, sourceForm: catalog.sourceForm) { source in
-                                    sourceActions(source, plugin: plugin)
-                                } detail: { source in sourceRunSummary(source) }.disabled(model.busy)
-                            } else {
-                                ForEach(sources) { source in sourceSection(source, catalog: catalog) }
+                            MeltedDisclosure(isExpanded: Binding(get: { !collapsedPlugins.contains(plugin.id) }, set: { expanded in
+                                if expanded { collapsedPlugins.remove(plugin.id) } else { collapsedPlugins.insert(plugin.id) }
+                            }), presentation: .card) {
+                                Text(plugin.title).font(.system(size: MeltedType.section, weight: .semibold)).foregroundStyle(palette.text)
+                                Text("\(sources.count) 个\(plugin.collection.title)").font(.system(size: MeltedType.metadata))
+                            } content: {
+                                if plugin.supported {
+                                    PluginSourceCollection(plugin: plugin, collection: plugin.collection, sources: sources, sourceForm: catalog.sourceForm) { source in
+                                        sourceActions(source, plugin: plugin)
+                                    } detail: { source in sourceRunSummary(source) }.disabled(model.busy)
+                                } else {
+                                    Text("需要更新客户端才能配置此插件").font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
+                                    ForEach(sources) { source in sourceSection(source, catalog: catalog) }
+                                }
                             }
                         }
                         ForEach(model.sources.filter { source in !catalog.plugins.contains { $0.id == source.plugin } }) { source in sourceSection(source, catalog: catalog) }
-                        DisclosureGroup("服务器插件（\(catalog.plugins.count)）") {
+                        MeltedDisclosure(isExpanded: $pluginsExpanded) {
+                            Text("服务器插件（\(catalog.plugins.count)）")
+                        } content: {
                             VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
                                 ForEach(catalog.plugins) { plugin in
                                     HStack(alignment: .top) {
@@ -70,17 +77,15 @@ struct SourcesPanel: View {
                                         Text(!plugin.supported ? "需要更新客户端" : plugin.available ? "可用" : "尚未启用或配置").foregroundStyle(palette.secondary)
                                     }
                                 }
-                            }.padding(.top, MeltedReading.actionGap)
+                            }
                         }.font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
                     }
                 }.padding(MeltedPanelMetrics.inset)
-            }
+            }.background(palette.canvas)
         } footer: {
             HStack(spacing: MeltedReading.actionGap) {
-                VStack(alignment: .leading, spacing: MeltedPanelMetrics.detailGap) {
-                    Text(model.notice ?? "\(model.sources.count) 个来源").lineLimit(2)
-                    Text("原始资料暂不自动生成资讯").foregroundStyle(palette.secondary)
-                }.font(.system(size: MeltedType.metadata))
+                Text(model.notice ?? "\(model.sources.count) 个来源")
+                    .lineLimit(2).font(.system(size: MeltedType.metadata))
                 Spacer(minLength: 0)
                 Button { dismiss() } label: { Text("完成").frame(height: MeltedPanelMetrics.controlHeight) }
                     .buttonStyle(MeltedSecondaryButtonStyle()).keyboardShortcut(.cancelAction)
@@ -96,9 +101,6 @@ struct SourcesPanel: View {
         }
         .sheet(item: $editor) { item in
             if let form = model.catalog?.sourceForm { SourceEditor(model: model, plugin: item.plugin, sourceForm: form, source: item.source) }
-        }
-        .sheet(item: $batchPlugin) { plugin in
-            if let form = model.catalog?.sourceForm, let batch = plugin.collection.addFromSuggestions { SourceBatchEditor(model: model, plugin: plugin, sourceForm: form, batch: batch) }
         }
         .sheet(item: $action) { item in PluginActionPanel(model: model, plugin: item.plugin, source: item.source, action: item.action) }
         .alert("删除来源？", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
@@ -168,7 +170,12 @@ struct SourcesPanel: View {
             if let run = source.lastRunId { Button("查看最近任务") { Task { await model.refreshReceipt(run, sourceID: source.id) } } }
             Divider()
             Button("删除来源", role: .destructive) { deleting = source }
-        } label: { Text("管理") }.menuStyle(.borderlessButton).fixedSize().accessibilityLabel("管理\(source.name)").disabled(model.busy)
+        } label: {
+            HStack(spacing: MeltedPanelMetrics.detailGap) {
+                Text("管理")
+                Image(systemName: "chevron.down").font(.system(size: MeltedType.metadata, weight: .medium)).accessibilityHidden(true)
+            }.foregroundStyle(palette.accent)
+        }.menuStyle(.button).buttonStyle(.plain).fixedSize().accessibilityLabel("管理\(source.name)").disabled(model.busy)
     }
     private func count(_ label: String, _ value: Int) -> some View {
         HStack { Text(label); Spacer(minLength: 8); Text(value, format: .number).monospacedDigit() }.frame(maxWidth: .infinity)

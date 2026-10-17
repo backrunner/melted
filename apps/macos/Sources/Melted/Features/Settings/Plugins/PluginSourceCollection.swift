@@ -20,11 +20,6 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
-            HStack {
-                Text(plugin.title).font(.system(size: MeltedType.section, weight: .semibold))
-                Text("\(sources.count) 个\(collection.title)").foregroundStyle(MeltedPalette(scheme).secondary)
-                Spacer()
-            }
             if sources.isEmpty {
                 Text(collection.addFromSuggestions == nil ? "尚未添加订阅，可添加多个独立来源" : "尚未添加订阅，可一次选择多个来源").foregroundStyle(MeltedPalette(scheme).secondary).padding(.vertical, MeltedReading.paragraphSpacing)
             } else if collection.layout == "table" {
@@ -40,7 +35,6 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
                 }
                 .frame(height: min(MeltedPanelMetrics.tableMaximum, max(MeltedPanelMetrics.tableMinimum, CGFloat(sources.count + 1) * MeltedPanelMetrics.tableRow)))
                 .accessibilityLabel(plugin.title + collection.title)
-                Text("选择一行查看采集状态；每个订阅可独立管理").font(.system(size: MeltedType.metadata)).foregroundStyle(MeltedPalette(scheme).secondary)
             } else {
                 ForEach(sources) { source in
                     VStack(alignment: .leading, spacing: MeltedReading.listSpacing) {
@@ -52,10 +46,12 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
                             }
                         }
                         HStack {
-                            Button("采集状态") { selected = selected == source.id ? nil : source.id }.buttonStyle(.plain).foregroundStyle(MeltedPalette(scheme).accent)
+                            MeltedDisclosureToggle(isExpanded: Binding(get: { selected == source.id }, set: { selected = $0 ? source.id : nil })) {
+                                Text("采集状态").font(.system(size: MeltedType.metadata))
+                            }
                             Spacer(); actions(source)
                         }
-                        if source.id == selected { detail(source).padding(.top, MeltedReading.actionGap) }
+                        if source.id == selected { detail(source).transition(.opacity) }
                     }.padding(.vertical, MeltedReading.actionGap)
                     Rectangle().fill(MeltedPalette(scheme).separator).frame(height: MeltedPanelMetrics.ruleWidth)
                 }

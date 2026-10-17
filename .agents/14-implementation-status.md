@@ -54,6 +54,8 @@ RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；
 
 多来源订阅、路由建议与原生列表/表格见 [2026-10-17 订阅集合验收](validation/2026-10-17/route-settings/README.md)。该记录包含当前构建的深浅色画面、批量添加三类来源的实际入库及独立行操作。
 
+订阅入口合并、原生表单、圆角独立折叠卡片与表格对齐见 [2026-10-17 面板验收](validation/2026-10-17/plugin-table-alignment/README.md)。共用折叠组件覆盖来源、服务器插件、采集设置、连接技术详情和阅读来源；tooltip 与辅助/动效验证边界在记录中单列。
+
 RSSHub 实施及双后端真实来源/恢复测试见 [2026-10-17 采集验收](validation/2026-10-17/rsshub/README.md)与 [提交前复审](validation/2026-10-17/rsshub/review.md)。
 
 运行见 [项目 README](../README.md)、[macOS](../apps/macos/README.md)及 [部署](15-typescript-transition.md)。完整本地检查命令为 sh scripts/check.sh，实际执行结果按日期记录。

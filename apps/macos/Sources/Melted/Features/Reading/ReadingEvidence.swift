@@ -11,9 +11,7 @@ struct ReadingEvidence: View {
     let item: Briefing
     @Binding var evidenceOpen: Bool
     let openSource: (URL) -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var scheme
-    @State private var toggleHovered = false
     private var palette: MeltedPalette { MeltedPalette(scheme) }
 
     var body: some View {
@@ -26,24 +24,11 @@ struct ReadingEvidence: View {
                         .foregroundStyle(palette.secondary)
                 }
                 if !item.evidence.isEmpty {
-                    Button {
-                        withAnimation(reduceMotion ? nil : MeltedMotion.content) { evidenceOpen.toggle() }
-                    } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text(evidenceOpen ? "收起来源" : "\(item.evidence.count) 个来源")
-                                // Export the text baseline through the button and enclosing stacks
-                                // so the metadata grid aligns this control with its field label.
-                                .alignmentGuide(.firstTextBaseline) { $0[.firstTextBaseline] }
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
-                                .rotationEffect(.degrees(evidenceOpen ? 90 : 0))
-                        }
-                        .font(.system(size: MeltedType.metadata, weight: .medium))
-                        .foregroundStyle(palette.accent.opacity(toggleHovered ? 1 : 0.85))
-                        .contentShape(Rectangle())
+                    MeltedDisclosureToggle(isExpanded: $evidenceOpen) {
+                        Text("\(item.evidence.count) 个来源")
+                            .font(.system(size: MeltedType.metadata, weight: .medium))
+                            .alignmentGuide(.firstTextBaseline) { $0[.firstTextBaseline] }
                     }
-                    .buttonStyle(.plain)
-                    .onHover { toggleHovered = $0 }
                     .accessibilityLabel(evidenceOpen ? "收起来源" : "展开 \(item.evidence.count) 个来源")
                 } else if item.requiresEvidenceNotice {
                     Text("暂无来源")
@@ -58,7 +43,7 @@ struct ReadingEvidence: View {
                         source(index + 1, evidence)
                     }
                 }
-                .transition(.opacity.combined(with: .offset(y: -4)))
+                .transition(.opacity)
             }
         }
     }

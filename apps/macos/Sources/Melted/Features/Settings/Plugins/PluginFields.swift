@@ -38,7 +38,7 @@ private struct PluginFieldControl: View {
     @ViewBuilder private var control: some View {
         switch field.type {
         case "text":
-            MeltedField(field.label, isFocused: focused, height: MeltedPanelMetrics.controlHeight) {
+            MeltedField(field.label, isFocused: focused, height: MeltedConnection.controlHeight) {
                 HStack(spacing: MeltedReading.actionGap) {
                     TextField(field.placeholder ?? "", text: Binding(get: { value?.text ?? "" }, set: { value = .string($0) }))
                         .font(.system(size: MeltedType.control, design: field.monospaced == true ? .monospaced : .default))
@@ -69,7 +69,7 @@ private struct PluginFieldControl: View {
                     }.menuStyle(.borderlessButton).modifier(MeltedMenuChrome()).accessibilityLabel(field.label)
                 }
                 if customNumber || !suggestions.contains(where: { $0.value == value }) {
-                    MeltedField(suggestions.isEmpty ? field.label : "自定义\(field.label)", isFocused: focused, height: MeltedPanelMetrics.controlHeight) {
+                    MeltedField(suggestions.isEmpty ? field.label : "自定义\(field.label)", isFocused: focused, height: MeltedConnection.controlHeight) {
                         HStack {
                             TextField("", text: Binding(get: { value?.text ?? "" }, set: { value = Double($0).map(SettingValue.number) ?? .string($0) })).focused($focused).accessibilityLabel(field.label)
                             if let unit = field.unit { Text(unit).foregroundStyle(palette.secondary) }
