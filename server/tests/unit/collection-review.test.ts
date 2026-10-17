@@ -12,7 +12,8 @@ import {
   newSource,
   publicRun,
 } from "../../src/modules/sources/lifecycle.js";
-import { pollRSSHub, retryAfter } from "../../src/plugins/rsshub/collector.js";
+import { pollRSSHub } from "../../src/plugins/rsshub/collector.js";
+import { retryAfter } from "../../src/modules/plugins/sdk/index.js";
 import { rsshubConfigSchema } from "../../src/plugins/rsshub/config.js";
 import {
   collectorEnabled,

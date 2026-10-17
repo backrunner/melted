@@ -8,11 +8,11 @@ import { validRoute, authorizeRoute } from "../../src/plugins/rsshub/routes.js";
 import { newSource } from "../../src/modules/sources/lifecycle.js";
 import {} from "../../src/modules/sources/schemas.js";
 import { rsshubConfigSchema } from "../../src/plugins/rsshub/config.js";
+import { pollRSSHub } from "../../src/plugins/rsshub/collector.js";
 import {
-  pollRSSHub,
   CollectorError,
   retryAfter,
-} from "../../src/plugins/rsshub/collector.js";
+} from "../../src/modules/plugins/sdk/index.js";
 import {
   collectorEnabled,
   pluginRegistry,
