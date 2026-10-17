@@ -36,7 +36,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>0.2.0</string>
-<key>CFBundleVersion</key><string>9</string>
+<key>CFBundleVersion</key><string>12</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>com.alkinum.melted.auth</string><key>CFBundleURLSchemes</key><array><string>melted</string></array></dict></array>
 <key>NSHighResolutionCapable</key><true/>

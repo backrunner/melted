@@ -1,6 +1,6 @@
 # 实施记录与当前设计状态
 
-更新：2026-10-17。当前开发版本 0.2.0（9），Bundle ID **com.alkinum.melted**；已交付基础鉴权/阅读链路，不代表完整 P0、M1 或可公证分发的 alpha 已完成。视觉规范以 [UI v1.1](11-ui-design-system.md)为准。
+更新：2026-10-17。当前开发版本 0.2.0（12），Bundle ID **com.alkinum.melted**；已交付基础鉴权/阅读链路，不代表完整 P0、M1 或可公证分发的 alpha 已完成。视觉规范以 [UI v1.1](11-ui-design-system.md)为准。
 
 ## 已有代码与能力
 
@@ -55,5 +55,6 @@
 - [系统应用图标，2026-10-17](validation/2026-10-17/app-icon-system.md)：正式资产与打包一致，Finder 和原生关于面板已显示正确图标。
 - [融化标识修订，2026-10-17](validation/2026-10-17/melting-mark.md)：m 改为微弯左笔画、普通短中段与右侧长滴坠，统一生成品牌与应用图标；当前尺寸及原生证据见记录。
 - [背景轮廓清晰度，2026-10-17](validation/2026-10-17/backdrop-clarity.md)：移除液体轮廓生成后的额外模糊；新构建的亮暗连接页及登录恢复已检查。
+- [线条重绘，2026-10-17](validation/2026-10-17/mark-refinement.md)：统一双拱和圆润线条，中间笔画收细并增加轻微弧度，同源更新品牌及图标。
 
 所有历史记录保留当时事实；最新源码状态与旧截图不同处以差异清单说明。没有 GitHub Actions 工作流，不把本地检查称为远端 CI；未验证 iCloud Keychain 实体设备同步、最低系统和完整 VoiceOver，不把 Apple Development 签名称为 Developer ID 公证发行。
