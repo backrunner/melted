@@ -24,8 +24,8 @@ final class WorkspaceModel: ObservableObject {
     @Published var failure: WorkspaceFailure?
     /// Failures that happen while already reading keep the loaded content and only raise a banner.
     @Published var banner: String?
-    /// IDs that arrived with the latest sync, so the list can draw attention to them.
-    @Published private(set) var arrivedIDs: Set<String> = []
+    /// Server change sequences retrigger feedback even when an existing row is updated.
+    @Published private(set) var arrivalSequences: [String: Int] = [:]
     @Published var filter = FilterSelection()
     @Published var terms: [Term] = []
     @Published var items: [Briefing] = []
@@ -44,6 +44,8 @@ final class WorkspaceModel: ObservableObject {
     private var syncTask: Task<Void, Never>?
     private var syncCursor: Int?
     private var arrivalTask: Task<Void, Never>?
+    private var syncGeneration = UUID()
+    private var syncing = false
 
     init(defaults: UserDefaults = .standard, makeClient: @escaping (URL) -> any WorkspaceClient = { APIClient(url: $0) }) {
         self.defaults = defaults
@@ -145,6 +147,10 @@ final class WorkspaceModel: ObservableObject {
     }
     func loadInitial() async {
         guard let client else { return }
+        // Establish the boundary before loading content, not twelve seconds later:
+        // deliveries between the first page and the first poll must not be skipped.
+        do { syncCursor = try await client.syncAnchor() }
+        catch { syncCursor = 0 }
         do { terms = try await client.taxonomy() } catch { report(error) }
         await reload()
     }
@@ -224,7 +230,7 @@ final class WorkspaceModel: ObservableObject {
             connected = false; items = []; terms = []; detail = nil; selectedID = nil; filter = .init()
             discovery = nil; manifest = nil; acceptedServer = false; failure = nil; banner = nil
             authenticationMethod = nil; localCredentialOption = false
-            arrivedIDs = []; syncCursor = nil
+            arrivalSequences = [:]; syncCursor = nil
             defaults.removeObject(forKey: "accountID")
             stopSync()
         } catch { report(error) }
@@ -315,7 +321,7 @@ final class WorkspaceModel: ObservableObject {
         } else {
             authenticationMethod = discovery?.auth?.preferredMethod
         }
-        arrivedIDs = []; syncCursor = nil
+        arrivalSequences = [:]; syncCursor = nil
         defaults.removeObject(forKey: "accountID")
     }
 
@@ -328,65 +334,80 @@ final class WorkspaceModel: ObservableObject {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(12))
                 guard let self, !Task.isCancelled, self.connected, self.client != nil else { return }
-                await self.pollSync(since: Date())
+                await self.pollSync()
             }
         }
         syncTask = task
     }
 
     /// One sync tick. Runs on a timer while reading, and can be driven directly in tests.
-    func pollSync(since: Date) async {
-        guard connected, let client else { return }
+    func pollSync() async {
+        guard connected, !syncing, !loading, let client else { return }
+        let generation = syncGeneration
+        syncing = true
+        defer { if generation == syncGeneration { syncing = false } }
         do {
-            if syncCursor == nil { syncCursor = try await client.syncAnchor() }
-            guard let cursor = syncCursor else { return }
-            let page = try await client.syncChanges(after: cursor)
-            syncCursor = page.nextCursor
-            // Only new content is worth an arrival pass; state-only changes are already local.
-            if page.changes.contains(where: { $0.kind == "upsert" }) { await applyArrivals(since: since) }
-            if page.hasMore { await pollSync(since: since) }
+            var cursor = syncCursor ?? 0
+            var arrivals: [String: Int] = [:]
+            // Bound each tick and combine pages so a second page cannot erase the
+            // first page's highlights. Commit the cursor only after content succeeds.
+            for _ in 0..<20 {
+                let page = try await client.syncChanges(after: cursor)
+                try Task.checkCancellation()
+                guard generation == syncGeneration, connected else { return }
+                for change in page.changes where change.kind == "upsert" {
+                    arrivals[change.entityId] = change.sequence
+                }
+                guard !page.hasMore || page.nextCursor > cursor else { throw APIError.incompatible }
+                cursor = page.nextCursor
+                if !page.hasMore { break }
+            }
+            if !arrivals.isEmpty {
+                guard try await applyArrivals(arrivals), generation == syncGeneration else { return }
+            }
+            syncCursor = cursor
         } catch is CancellationError {
             return
         } catch {
-            // A failed poll must not take over the reading surface; the next tick retries.
+            guard generation == syncGeneration, connected else { return }
+            report(error)
         }
     }
 
     private func stopSync() {
+        syncGeneration = UUID(); syncing = false
         syncTask?.cancel(); syncTask = nil
         arrivalTask?.cancel(); arrivalTask = nil
     }
 
-    /// Reloads the visible page and marks rows that appeared after `since` so the list can highlight them.
-    private func applyArrivals(since: Date) async {
-        guard connected, let client else { return }
+    /// Server sequences, rather than the device clock, identify actual deliveries.
+    /// Keep the loaded tail and the open article stable while refreshing the first page.
+    private func applyArrivals(_ changes: [String: Int]) async throws -> Bool {
+        guard connected, !loading, let client else { return false }
         let generation = queryGeneration; let selection = filter
-        do {
-            let page = try await client.list(selection, cursor: nil)
-            guard generation == queryGeneration, selection == filter else { return }
-            let known = Set(items.map(\.id))
-            let newcomerIDs = page.items.filter { !known.contains($0.id) && $0.updatedAt >= since.addingTimeInterval(-120) }.map(\.id)
-            // Merge rather than replace: pages the reader already loaded must not disappear.
-            let inPage = Set(page.items.map(\.id))
-            items = page.items + items.filter { !inPage.contains($0.id) }
-            nextCursor = nextCursor ?? page.nextCursor
-            total = page.total
-            guard !newcomerIDs.isEmpty else { return }
-            arrivedIDs = Set(newcomerIDs)
-            arrivalTask?.cancel()
-            arrivalTask = Task { [weak self] in
-                try? await Task.sleep(for: .seconds(9))
-                guard let self, !Task.isCancelled else { return }
-                self.arrivedIDs = []
-            }
-        } catch {
-            // Arrival refresh is best effort; the visible content stays as it is.
+        let page = try await client.list(selection, cursor: nil)
+        try Task.checkCancellation()
+        guard connected, !loading, generation == queryGeneration, selection == filter else { return false }
+        // Merge rather than replace: pages the reader already loaded must not disappear.
+        let inPage = Set(page.items.map(\.id))
+        if items.isEmpty { nextCursor = page.nextCursor }
+        items = page.items + items.filter { !inPage.contains($0.id) }
+        total = page.total
+        let visibleChanges = changes.filter { inPage.contains($0.key) }
+        guard !visibleChanges.isEmpty else { return true }
+        arrivalSequences.merge(visibleChanges) { _, latest in latest }
+        arrivalTask?.cancel()
+        arrivalTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(9))
+            guard let self, !Task.isCancelled else { return }
+            self.arrivalSequences = [:]
         }
+        return true
     }
 }
 
 extension WorkspaceModel {
-    func isArrived(_ id: String) -> Bool { arrivedIDs.contains(id) }
+    func isArrived(_ id: String) -> Bool { arrivalSequences[id] != nil }
 }
 
 private extension NSError {

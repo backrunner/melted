@@ -25,21 +25,30 @@ public extension AnyTransition {
 /// Draws the eye to content that just arrived, then settles back to normal.
 /// Reliable where a view transition is not: the row stays in place while its highlight fades.
 struct MeltedArrivalHighlight: ViewModifier {
-    let active: Bool
+    let sequence: Int?
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var strong = true
+    @State private var strong = false
+
+    private var trigger: Int? { reduceMotion ? nil : sequence }
 
     func body(content: Content) -> some View {
         let palette = MeltedPalette(scheme)
         content
             .background {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(palette.accent.opacity(active && strong ? 0.14 : 0))
+                    .fill(palette.accent)
+                    .opacity(strong && trigger != nil ? 0.14 : 0)
+                    .animation(.easeOut(duration: MeltedMotion.transition * 3), value: strong)
             }
-            .onAppear {
-                guard active, !reduceMotion else { strong = false; return }
-                withAnimation(MeltedMotion.content.delay(0.5)) { strong = false }
+            .task(id: trigger) {
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) { strong = trigger != nil }
+                guard trigger != nil else { return }
+                do { try await Task.sleep(for: .milliseconds(500)) }
+                catch { return }
+                strong = false
             }
     }
 }
@@ -65,6 +74,6 @@ struct MeltedEntrance: ViewModifier {
 public extension View {
     func meltedEntrance(_ order: Int = 0) -> some View { modifier(MeltedEntrance(order: order)) }
 
-    /// Highlight for a row that just arrived. `active` marks it until the news has settled.
-    func meltedArrivalHighlight(_ active: Bool) -> some View { modifier(MeltedArrivalHighlight(active: active)) }
+    /// A new server sequence restarts feedback; nil means there is no delivery to show.
+    func meltedArrivalHighlight(_ sequence: Int?) -> some View { modifier(MeltedArrivalHighlight(sequence: sequence)) }
 }

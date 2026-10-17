@@ -17,10 +17,15 @@ private actor WorkspaceStub: WorkspaceClient {
     var discoverFailure: StubFailure?
     var listFailure: StubFailure?
     var syncPage: SyncPage?
+    var syncPages: [Int: SyncPage] = [:]
+    var syncRequests: [Int] = []
+    var syncFailure: StubFailure?
     var items: [Briefing] = []
     func failDiscovery(_ failure: StubFailure?) { discoverFailure = failure }
     func failListing(_ failure: StubFailure?) { listFailure = failure }
     func serve(_ page: SyncPage) { syncPage = page }
+    func servePages(_ pages: [Int: SyncPage]) { syncPages = pages }
+    func failSync(_ failure: StubFailure?) { syncFailure = failure }
     func serveItems(_ values: [Briefing]) { items = values }
     let auth: String
     let item: Briefing
@@ -64,7 +69,11 @@ private actor WorkspaceStub: WorkspaceClient {
     }
     func syncAnchor() throws -> Int { syncPage?.nextCursor ?? 0 }
     func syncChanges(after: Int) throws -> SyncPage {
-        syncPage ?? SyncPage(changes: [], nextCursor: after, hasMore: false)
+        syncRequests.append(after)
+        if let syncFailure { throw Self.error(syncFailure) }
+        if let page = syncPages[after] { return page }
+        if let syncPage, syncPage.nextCursor > after { return syncPage }
+        return SyncPage(changes: [], nextCursor: after, hasMore: false)
     }
     private static func error(_ failure: StubFailure) -> Error {
         switch failure {
@@ -207,13 +216,13 @@ private actor WorkspaceStub: WorkspaceClient {
     var fresh = stub.item; fresh.id = "fresh"
     fresh.updatedAt = .now
     await stub.serveItems([known])
-    await model.pollSync(since: .now.addingTimeInterval(-300))
+    await model.pollSync()
     #expect(model.isArrived("fresh") == false)
 
     // An upsert whose entity shows up in the list is drawn attention to.
     await stub.serve(SyncPage(changes: [SyncChange(sequence: 9, entityId: "fresh", kind: "upsert")], nextCursor: 9, hasMore: false))
     await stub.serveItems([fresh, known])
-    await model.pollSync(since: .now.addingTimeInterval(-300))
+    await model.pollSync()
     #expect(model.isArrived("fresh"))
     #expect(model.isArrived("known") == false)
 
@@ -222,7 +231,7 @@ private actor WorkspaceStub: WorkspaceClient {
     var sneaky = stub.item; sneaky.id = "sneaky"; sneaky.updatedAt = .now
     await stub.serve(SyncPage(changes: [SyncChange(sequence: 10, entityId: "known", kind: "state")], nextCursor: 10, hasMore: false))
     await stub.serveItems([sneaky, fresh, known])
-    await model.pollSync(since: .now.addingTimeInterval(-300))
+    await model.pollSync()
     #expect(model.isArrived("sneaky") == false)
 }
 
@@ -245,6 +254,86 @@ private actor WorkspaceStub: WorkspaceClient {
         #expect(!failure.guidance.isEmpty)
         #expect(model.connecting == false)
     }
+}
+
+@Test @MainActor func delayedDeliveryUsesServerChangesAndPreservesReading() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    let opened = stub.item
+    model.selectedID = opened.id; model.detail = opened
+    var tail = opened; tail.id = "loaded-tail"
+    model.items.append(tail); model.nextCursor = "keep-pagination"
+    var delayed = opened; delayed.id = "delayed"
+    delayed.updatedAt = .now.addingTimeInterval(-86400)
+    var unrelated = opened; unrelated.id = "not-in-change-log"
+    await stub.serveItems([delayed, unrelated])
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 9, entityId: delayed.id, kind: "upsert")], nextCursor: 9, hasMore: false))
+    await model.pollSync()
+    #expect(model.isArrived(delayed.id))
+    #expect(!model.isArrived(unrelated.id))
+    #expect(model.items.contains { $0.id == tail.id })
+    #expect(model.nextCursor == "keep-pagination")
+    #expect(model.selectedID == opened.id && model.detail?.id == opened.id)
+}
+
+@Test @MainActor func failedArrivalRefreshRetriesTheSameCursor() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    var fresh = stub.item; fresh.id = "fresh"
+    await stub.serveItems([fresh])
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 9, entityId: fresh.id, kind: "upsert")], nextCursor: 9, hasMore: false))
+    await stub.failListing(.cannotConnect)
+    await model.pollSync()
+    #expect(!model.isArrived(fresh.id))
+    #expect(model.banner != nil && model.connected)
+    await stub.failListing(nil)
+    await model.pollSync()
+    #expect(model.isArrived(fresh.id))
+    #expect(await stub.syncRequests == [0, 0])
+    await model.pollSync()
+    #expect(await stub.syncRequests == [0, 0, 9])
+}
+
+@Test @MainActor func pagedArrivalsAccumulateAndExistingRowsRetrigger() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    let known = stub.item
+    var fresh = known; fresh.id = "fresh"
+    await stub.serveItems([fresh, known])
+    await stub.servePages([
+        0: SyncPage(changes: [SyncChange(sequence: 1, entityId: fresh.id, kind: "upsert")], nextCursor: 1, hasMore: true),
+        1: SyncPage(changes: [SyncChange(sequence: 2, entityId: known.id, kind: "upsert")], nextCursor: 2, hasMore: false)
+    ])
+    await model.pollSync()
+    #expect(model.arrivalSequences == [fresh.id: 1, known.id: 2])
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 3, entityId: known.id, kind: "upsert")], nextCursor: 3, hasMore: false))
+    await model.pollSync()
+    #expect(model.arrivalSequences == [fresh.id: 1, known.id: 3])
+}
+
+@Test @MainActor func expiredSessionDuringSyncReturnsToLogin() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub()
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    await stub.failSync(.sessionExpired)
+    await model.pollSync()
+    #expect(!model.connected)
+    #expect(model.failure?.kind == .sessionExpired)
 }
 
 @Test @MainActor func refreshFailureKeepsContentAndOnlyRaisesABanner() async throws {

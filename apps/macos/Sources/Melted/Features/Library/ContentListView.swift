@@ -8,6 +8,8 @@ struct ContentListView: View {
     @ObservedObject var model: WorkspaceModel
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var scrollContentFrame: CGRect = .zero
+    @State private var sectionHeaderHeight: CGFloat = 0
     private var palette: MeltedPalette { MeltedPalette(scheme) }
     var body: some View {
         VStack(spacing: 0) {
@@ -17,70 +19,83 @@ struct ContentListView: View {
                 emptyState
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 2, pinnedViews: [.sectionHeaders]) {
-                        ForEach(groupedItems, id: \.section) { group in
-                            Section {
-                                ForEach(group.items) { item in
-                                    Button {
-                                        guard model.selectedID != item.id else { return }
-                                        model.selectedID = item.id
-                                    } label: {
-                                        ContentRowView(
-                                            item: item,
-                                            category: model.termName(item.categoryId),
-                                            isSelected: model.selectedID == item.id
-                                        )
+                GeometryReader { viewport in
+                    ScrollView {
+                        LazyVStack(spacing: 2, pinnedViews: [.sectionHeaders]) {
+                            ForEach(groupedItems, id: \.section) { group in
+                                Section {
+                                    ForEach(group.items) { item in
+                                        Button {
+                                            guard model.selectedID != item.id else { return }
+                                            model.selectedID = item.id
+                                        } label: {
+                                            ContentRowView(
+                                                item: item,
+                                                category: model.termName(item.categoryId),
+                                                isSelected: model.selectedID == item.id
+                                            )
+                                        }
+                                        .buttonStyle(ContentRowButtonStyle())
+                                        .focusEffectDisabled()
+                                        // A row delivered by the latest sync is highlighted until it settles.
+                                        .meltedArrivalHighlight(model.arrivalSequences[item.id])
+                                        .contextMenu {
+                                            ContentRowActions(model: model, item: item)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .transition(reduceMotion ? .identity : .opacity)
+                                        .modifier(scrollFade(viewportHeight: viewport.size.height))
                                     }
-                                    .buttonStyle(ContentRowButtonStyle())
-                                    .focusEffectDisabled()
-                                    // A row delivered by the latest sync is highlighted until it settles.
-                                    .meltedArrivalHighlight(model.isArrived(item.id))
-                                    .contextMenu {
-                                        ContentRowActions(model: model, item: item)
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .transition(.meltedArrival)
+                                } header: {
+                                    sectionHeader(group.section)
                                 }
-                            } header: {
-                                sectionHeader(group.section)
                             }
-                        }
 
-                        if model.nextCursor != nil {
-                            Button {
-                                Task { await model.loadMore() }
-                            } label: {
-                                HStack(spacing: 8) {
-                                    if model.loading {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                            .tint(palette.accent)
+                            if model.nextCursor != nil {
+                                Button {
+                                    Task { await model.loadMore() }
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        if model.loading {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                                .tint(palette.accent)
+                                        }
+                                        Text("载入更多")
+                                            .font(.system(size: 13, weight: .medium))
                                     }
-                                    Text("载入更多")
-                                        .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(palette.accent)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
                                 }
-                                .foregroundStyle(palette.accent)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
+                                .buttonStyle(.plain)
+                                .disabled(model.loading)
+                                .padding(.top, 12)
+                                .modifier(scrollFade(viewportHeight: viewport.size.height))
                             }
-                            .buttonStyle(.plain)
-                            .disabled(model.loading)
-                            .padding(.top, 12)
                         }
+                        .padding(.bottom, 12)
+                        .onGeometryChange(for: CGRect.self) { content in
+                            content.frame(in: .named("libraryScroll"))
+                        } action: { scrollContentFrame = $0 }
+                        // Feedback belongs to delivered rows, never the entire list layout.
                     }
-                    .padding(.bottom, 12)
-                    // Rows arriving from a refresh slide in from the top instead of popping.
-                    .animation(reduceMotion ? nil : MeltedMotion.content, value: model.items.map(\.id))
+                    .coordinateSpace(name: "libraryScroll")
+                    .onPreferenceChange(LibraryHeaderHeightKey.self) { sectionHeaderHeight = $0 }
+                    // Keep rows from drawing under the transparent title bar; the pinned header is the top edge.
+                    .clipped()
                 }
-                // Keep rows from drawing under the transparent title bar; the pinned header is the top edge.
-                .clipped()
-
             }
 
             LibraryStatusBar(total: model.total, loading: model.loading)
         }
         .background(palette.canvas)
+    }
+
+    private func scrollFade(viewportHeight: CGFloat) -> ScrollEdgeFade {
+        ScrollEdgeFade(coordinateSpace: "libraryScroll", viewportHeight: viewportHeight,
+                       topInset: sectionHeaderHeight, hiddenAbove: -scrollContentFrame.minY,
+                       hiddenBelow: scrollContentFrame.maxY - viewportHeight)
     }
 
     @ViewBuilder
@@ -109,6 +124,11 @@ struct ContentListView: View {
             .padding(.top, 12)
             .padding(.bottom, 6)
             .background(palette.canvas)
+            .background {
+                GeometryReader { header in
+                    Color.clear.preference(key: LibraryHeaderHeightKey.self, value: header.size.height)
+                }
+            }
             .accessibilityAddTraits(.isHeader)
     }
 
@@ -150,4 +170,9 @@ struct ContentListView: View {
         }
     }
 
+}
+
+private struct LibraryHeaderHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
