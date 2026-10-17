@@ -47,7 +47,7 @@
 - [认证，2026-10-16](validation/2026-10-16/authentication.md)：服务器协商方式与特定原生登录操作。
 - [品牌与切页，2026-10-16](validation/2026-10-16/brand-position.md)：位置/无主界面品牌/短淡化及当时构建。
 - [仓库准备，2026-10-17](validation/2026-10-17/publication.md)：本地测试/最终构建、原生亮暗截图与长许可操作；该记录不覆盖全页面矩阵。
-- [App 图标与代码，2026-10-17](validation/2026-10-17/code-and-icon.md)：资产/高亮/构建测试与原生亮暗预验收，锁屏后未完成的场景单列。
+- [App 图标与代码，2026-10-17](validation/2026-10-17/code-and-icon.md)：资产/高亮/构建测试、原生亮暗预验收；解锁后补验最终启动、200% 与窄窗横滚，剩余范围单列。
 - [设计文档同步，2026-10-17](validation/2026-10-17/design-documentation.md)：文档/资产一致性与源码核对，不是新的运行验收。
 
 所有历史记录保留当时事实；最新源码状态与旧截图不同处以差异清单说明。没有 GitHub Actions 工作流，不把本地检查称为远端 CI；未验证 iCloud Keychain 实体设备同步、最低系统和完整 VoiceOver，不把 Apple Development 签名称为 Developer ID 公证发行。

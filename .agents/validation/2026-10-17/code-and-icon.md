@@ -29,3 +29,15 @@
 - 执行“紧凑阅读窗口”后 AX 切换为返回 + 阅读结构，仍存在局部横滚；随后 Mac 锁屏，未保存紧凑截图、未完成实际横滚与 200% 字号复验。已请求用户解锁；当前未把这些场景记为通过。
 
 本记录不证明最低 macOS、完整 VoiceOver/iOS、远端 CI、Developer ID 公证或 App Store 发行。最终构建是否已重新启动及尚缺场景，按后续实际操作追加记录。
+
+## 解锁后的最终构建补验
+
+2026-10-17，用户解锁后继续。退出 code-preview 预验收进程，实际启动 build/latest/Melted.app；运行路径核对为该最终 App，主程序 hash 仍为 c1d9006d672856ea07d732cc9e16d2155de971868526dded273e5b6f092f2b95，与上文最终构建一致。没有修改程序代码或重新构建。
+
+- 设置的原生阅读字号滑块通过 Increment 逐步升到 2，AX 明确显示 200%；不是根据截图猜测字号。
+- 紧凑模式下，浅色/深色正文与行内等宽代码正常重排；Swift/TypeScript 代码保留缩进和颜色。见 [深色 200%](code-and-icon/final-compact-200-dark.jpg)。紧凑截图为 1360×1116 像素，未把物理截图高度称为 520 pt 外层窗口。
+- 实际操作 TypeScript、JSON 的局部横向滚动条到 1（最右），截图可读行尾，语言/复制栏保持原位，整篇阅读页没有横向移动。见 [TypeScript 行尾](code-and-icon/final-compact-200-light-scroll.jpg)、[JSON 行尾及未知语言](code-and-icon/final-compact-200-json-end.jpg)。原生 scroll(right) 在此工具中滚动了外层页面，随后改用 AX 可设置横向滚动条完成验证，不将前者记为成功。
+- 最终构建的 TypeScript 复制按钮点击后显示“代码已复制”。未完成剪贴板内容的逐字节核对；浏览器本地 data: 辅助页被 URL 策略阻止，未尝试绕过，不将此项记为通过。
+- 已恢复深色、100% 阅读字号及标准双栏窗口，设置 AX 确认 100% 和深色选中，最终构建保持运行。见 [恢复后的标准窗口](code-and-icon/final-standard-dark.jpg)。
+
+此前锁屏中断的最终启动、200% 与窄窗实际横滚已完成补验。本轮未扩大为 VoiceOver、最低系统、iOS、Dock 缓存或全部页面验收。
