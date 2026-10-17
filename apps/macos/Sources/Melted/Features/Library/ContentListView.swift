@@ -6,6 +6,7 @@ import MeltedDesignSystem
 
 struct ContentListView: View {
     @ObservedObject var model: WorkspaceModel
+    @AppStorage("showLibraryStatusBar") private var showLibraryStatusBar = true
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrollContentFrame: CGRect = .zero
@@ -87,7 +88,9 @@ struct ContentListView: View {
                 }
             }
 
-            LibraryStatusBar(total: model.total, loading: model.loading)
+            if showLibraryStatusBar {
+                LibraryStatusBar(total: model.total, loading: model.loading)
+            }
         }
         .background(palette.canvas)
     }

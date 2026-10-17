@@ -17,7 +17,7 @@ struct ReadingDocumentView: View {
     @State private var evidenceOpen = false
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView {
+            MeltedScrollView {
                 VStack(alignment: .leading, spacing: MeltedReading.sectionSpacing) {
                     ReadingHeader(item: item, scale: scale, mutating: mutating, toggleSaved: toggleSaved).id("reading-top")
                     ReadingMarkdown(item.markdown, scale: scale)

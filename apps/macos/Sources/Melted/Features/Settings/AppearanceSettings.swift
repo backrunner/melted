@@ -7,6 +7,7 @@ import MeltedDesignSystem
 struct AppearanceSettings: View {
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("readingScale") private var scale = 1.0
+    @AppStorage("showLibraryStatusBar") private var showLibraryStatusBar = true
     @Environment(\.colorScheme) private var scheme
     private var palette: MeltedPalette { MeltedPalette(scheme) }
 
@@ -33,6 +34,8 @@ struct AppearanceSettings: View {
                         .accessibilityHidden(true)
                 }
             }
+            Toggle("显示列表底栏", isOn: $showLibraryStatusBar)
+                .help("在列表底部显示 Melted 标识、内容条数和载入状态")
         }
     }
 
