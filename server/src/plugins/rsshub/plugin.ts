@@ -9,6 +9,7 @@ import {
 } from "../../modules/plugins/dsl.js";
 import type { CollectorPlugin } from "../../modules/plugins/definition.js";
 import { manifestSchema } from "../../modules/plugins/compatibility.js";
+import { routeSuggestions } from "./catalog.js";
 
 export const rsshubPlugin: CollectorPlugin = {
   manifest: manifestSchema.parse({
@@ -28,6 +29,17 @@ export const rsshubPlugin: CollectorPlugin = {
     description:
       "订阅新闻、文化生活、社区等公开来源，保存当前订阅窗口中的原始内容",
     capabilities: ["collector.poll"],
+    collection: {
+      layout: "table",
+      title: "订阅",
+      columns: [
+        { scope: "source", field: "name", label: "名称" },
+        { scope: "configuration", field: "route", label: "订阅路由" },
+        { scope: "source", field: "enabled", label: "状态" },
+        { scope: "source", field: "interval_seconds", label: "采集间隔" },
+      ],
+      add_from_suggestions: { field: "route", maximum: 20 },
+    },
     form: {
       fields: [
         {
@@ -36,7 +48,8 @@ export const rsshubPlugin: CollectorPlugin = {
           label: "订阅路由",
           placeholder: "/bbc/world-asia",
           max_length: 2048,
-          help: "输入运营者允许的相对路由",
+          monospaced: true,
+          help: "选择订阅建议，或填写运营者允许的相对路由；无需实例地址",
         },
       ],
     },
@@ -72,7 +85,7 @@ export const rsshubPlugin: CollectorPlugin = {
         fields: [
           {
             ...this.descriptor.form.fields[0],
-            help: `允许的路由：${config.allowed_routes.join("、").slice(0, 900)}`,
+            suggestions: routeSuggestions(config),
           },
         ],
       },

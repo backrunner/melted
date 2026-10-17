@@ -18,6 +18,15 @@ export const configurationSchema = z
   .record(identifier, settingValue)
   .refine((v) => Object.keys(v).length <= 40);
 export type Configuration = z.infer<typeof configurationSchema>;
+export const suggestionSchema = z
+  .object({
+    value: settingValue,
+    label,
+    group: label.optional(),
+    description: label.optional(),
+  })
+  .strict();
+export type SettingSuggestion = z.infer<typeof suggestionSchema>;
 const base = {
   id: identifier,
   label,
@@ -32,6 +41,8 @@ export const fieldSchema = z.discriminatedUnion("type", [
       default: z.string().optional(),
       placeholder: label.optional(),
       max_length: z.number().int().min(1).max(4096),
+      monospaced: z.boolean().optional(),
+      suggestions: z.array(suggestionSchema).max(100).optional(),
     })
     .strict(),
   z
@@ -43,6 +54,7 @@ export const fieldSchema = z.discriminatedUnion("type", [
       maximum: z.number().int(),
       step: z.number().int().positive().default(1),
       unit: label.optional(),
+      suggestions: z.array(suggestionSchema).max(100).optional(),
     })
     .strict(),
   z
@@ -73,6 +85,26 @@ export const formSchema = z
       if (ids.has(field.id))
         ctx.addIssue({ code: "custom", message: "Duplicate field" });
       ids.add(field.id);
+      if ("suggestions" in field && field.suggestions) {
+        if (
+          new Set(field.suggestions.map((s) => JSON.stringify(s.value)))
+            .size !== field.suggestions.length
+        )
+          ctx.addIssue({ code: "custom", message: "Duplicate suggestion" });
+        for (const suggestion of field.suggestions) {
+          try {
+            validateSettings(
+              { fields: [field] },
+              { [field.id]: suggestion.value },
+            );
+          } catch {
+            ctx.addIssue({
+              code: "custom",
+              message: "Invalid suggestion value",
+            });
+          }
+        }
+      }
       if (field.type === "integer" && field.minimum > field.maximum)
         ctx.addIssue({ code: "custom", message: "Invalid range" });
       if (
@@ -83,6 +115,35 @@ export const formSchema = z
     }
   });
 export type SettingsForm = z.infer<typeof formSchema>;
+const collectionColumn = z.discriminatedUnion("scope", [
+  z
+    .object({
+      scope: z.literal("source"),
+      field: z.enum([
+        "name",
+        "enabled",
+        "interval_seconds",
+        "last_success_at",
+        "last_error",
+      ]),
+      label,
+    })
+    .strict(),
+  z
+    .object({ scope: z.literal("configuration"), field: identifier, label })
+    .strict(),
+]);
+export const collectionSchema = z
+  .object({
+    layout: z.enum(["list", "table"]),
+    title: label,
+    columns: z.array(collectionColumn).min(1).max(8),
+    add_from_suggestions: z
+      .object({ field: identifier, maximum: z.number().int().min(1).max(20) })
+      .strict()
+      .optional(),
+  })
+  .strict();
 export const descriptorSchema = z
   .object({
     dsl_version: z.literal(1),
@@ -94,6 +155,7 @@ export const descriptorSchema = z
     config_version: z.literal(1),
     capabilities: z.array(z.literal("collector.poll")).length(1),
     form: formSchema,
+    collection: collectionSchema.optional(),
     actions: z
       .array(
         z
@@ -115,7 +177,36 @@ export const descriptorSchema = z
   .refine(
     (d) => new Set(d.actions.map((a) => a.id)).size === d.actions.length,
     "Duplicate action",
-  );
+  )
+  .superRefine((descriptor, ctx) => {
+    const collection = descriptor.collection;
+    if (!collection) return;
+    const keys = collection.columns.map((c) => `${c.scope}.${c.field}`);
+    if (new Set(keys).size !== keys.length)
+      ctx.addIssue({ code: "custom", message: "Duplicate collection column" });
+    for (const column of collection.columns) {
+      if (
+        column.scope === "configuration" &&
+        !descriptor.form.fields.some((f) => f.id === column.field)
+      )
+        ctx.addIssue({ code: "custom", message: "Unknown collection field" });
+    }
+    const batch = collection.add_from_suggestions;
+    if (
+      batch &&
+      (!descriptor.form.fields.some(
+        (f) => f.id === batch.field && f.type === "text",
+      ) ||
+        descriptor.form.fields.some(
+          (f) => f.id !== batch.field && f.required && f.default === undefined,
+        ))
+    )
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Batch creation requires one suggested text field and defaults for other required fields",
+      });
+  });
 export type PluginDescriptor = z.infer<typeof descriptorSchema>;
 export const publicDescriptorSchema = descriptorSchema.safeExtend({
   available: z.boolean(),
@@ -192,6 +283,14 @@ export const sourceForm = formSchema.parse({
       step: 1,
       unit: "秒",
       default: 900,
+      suggestions: [
+        { value: 300, label: "每 5 分钟" },
+        { value: 900, label: "每 15 分钟" },
+        { value: 1800, label: "每 30 分钟" },
+        { value: 3600, label: "每小时" },
+        { value: 21600, label: "每 6 小时" },
+        { value: 86400, label: "每天" },
+      ],
     },
   ],
 });

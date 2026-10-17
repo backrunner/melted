@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
+import { validRoute } from "./routes.js";
 
 // This is operator configuration, never an account-supplied fetch destination.
 export const rsshubConfigSchema = z
@@ -25,6 +26,19 @@ export const rsshubConfigSchema = z
       .max(100),
     allow_private: z.boolean().default(false),
     access_key: z.string().min(1).max(512).optional(),
+    route_suggestions: z
+      .array(
+        z
+          .object({
+            value: z.string().max(2048).refine(validRoute),
+            label: z.string().min(1).max(200),
+            group: z.string().min(1).max(100).optional(),
+            description: z.string().min(1).max(500).optional(),
+          })
+          .strict(),
+      )
+      .max(50)
+      .optional(),
   })
   .strict()
   .refine(

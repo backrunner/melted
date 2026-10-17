@@ -41,6 +41,15 @@ const plugin: CollectorPlugin = {
     config_version: 1,
     kind: "collector",
     capabilities: ["collector.poll"],
+    collection: {
+      layout: "list",
+      title: "主题",
+      columns: [
+        { scope: "configuration", field: "topic", label: "文化主题" },
+        { scope: "source", field: "enabled", label: "启停" },
+      ],
+      add_from_suggestions: { field: "topic", maximum: 10 },
+    },
     title: "文化资料",
     description: "A separate collector with no RSSHub route",
     form: {
@@ -183,6 +192,41 @@ test("DSL rejects execution directives, duplicate fields, unsupported controls a
     () => new PluginRegistry([plugin, plugin], { plugins: [] }),
     /identity/,
   );
+});
+
+test("collection DSL validates row references and batch controls without executing expressions", () => {
+  assert.ok(descriptorSchema.safeParse(plugin.descriptor).success);
+  const column = { scope: "source", field: "name", label: "名称" };
+  for (const collection of [
+    { layout: "html", title: "Items", columns: [column] },
+    { layout: "table", title: "Items", columns: [column, column] },
+    {
+      layout: "table",
+      title: "Items",
+      columns: [{ scope: "configuration", field: "missing", label: "Missing" }],
+    },
+    {
+      layout: "table",
+      title: "Items",
+      columns: [{ ...column, endpoint: "https://evil.invalid" }],
+    },
+    {
+      layout: "table",
+      title: "Items",
+      columns: [column],
+      add_from_suggestions: { field: "count", maximum: 10 },
+    },
+    {
+      layout: "table",
+      title: "Items",
+      columns: [column],
+      add_from_suggestions: { field: "topic", maximum: 1000 },
+    },
+  ])
+    assert.equal(
+      descriptorSchema.safeParse({ ...plugin.descriptor, collection }).success,
+      false,
+    );
 });
 
 test("actions reject stale descriptors, unknown operations and configuration versions", async () => {
