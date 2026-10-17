@@ -1,0 +1,17 @@
+{
+  "tested_at": "2026-10-17T11:58:35.167Z",
+  "compiled_cli_replays": 2,
+  "upgraded_from": [
+    "001_initial.sql",
+    "002_credentials.sql",
+    "003_sources.sql"
+  ],
+  "versions": [
+    "001_initial.sql",
+    "002_credentials.sql",
+    "003_sources.sql",
+    "004_plugin_settings.sql"
+  ],
+  "existing_content_preserved": true,
+  "compose_yaml": "parsed; collector healthcheck and RSSHub isolation checked"
+}

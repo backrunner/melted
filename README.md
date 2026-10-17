@@ -108,7 +108,7 @@ python3 scripts/dev.py exec npm run cli -- import-demo ACCOUNT_ID /workspace/con
 
 **Cloudflare**：填写 Wrangler 顶层配置，在开发容器中运行 `python3 scripts/dev.py exec npm run worker:check`。配置自己的 Cloudflare 账号后再执行 `worker:deploy`；占位配置会被拒绝。这个部署方式不依赖外部数据库、Redis 或 VPS。
 
-RSSHub 可连接运营者的 HTTPS 实例，或使用可选 Compose profile；来源 API、独立 worker 与本机运行见 [RSSHub 采集指南](server/docs/rsshub.md)。
+RSSHub 可连接运营者的 HTTPS 实例，或使用可选 Compose profile；macOS“设置 → 内容 → 来源与插件”按服务器 DSL 管理来源并执行插件动作；新增采集器见 [插件机制](server/docs/plugins.md)，独立 worker 与本机运行见 [RSSHub 采集指南](server/docs/rsshub.md)。
 
 部署步骤、认证与迁移说明见 [部署指南](deploy/README.md)、[认证配置](server/docs/authentication.md) 和 [服务端工程说明](server/README.md)。
 

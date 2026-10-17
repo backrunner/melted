@@ -1,6 +1,6 @@
 # 插件标准草案 v1
 
-更新：2026-10-17。已实现内置 RSSHub `collector.poll`、持久任务与原始入库；第三方插件执行与模板属于后续能力，原生正文呈现边界与 [UI v1.0](11-ui-design-system.md)一致。
+更新：2026-10-17。已实现受信任模块注册、设置 DSL v1、原生来源管理，以及独立 RSSHub `collector.poll`、持久任务与原始入库；远程第三方插件执行与模板属于后续能力，原生正文呈现边界与 [UI v1.1](11-ui-design-system.md)一致。
 
 ## 运行形态
 
@@ -20,11 +20,15 @@
 
 ## 部署兼容性预检（已实现）
 
-`server/plugins.json` 保存启用清单；`server/src/modules/plugins/compatibility.ts` 校验 targets、runtime、capabilities、required_bindings 与 HTTPS endpoint。未知能力、缺失 binding、Cloudflare 的本地进程/文件系统/原生扩展/raw TCP/常驻进程均拒绝。`npm run worker:check` 还实际打包 Worker；`worker:deploy` 先拒绝占位服务器配置。内置注册表目前只接受 `rsshub@1.0.0`、runtime=builtin 和 `collector.poll`，与实际执行一致；Cloudflare 还要求 COLLECTION_QUEUE。其他 enabled 插件仍明确阻止部署，不会静默忽略。部署预检通过不表示插件代码已沙箱化。
+`server/plugins.json` 保存启用清单；`server/src/modules/plugins/compatibility.ts` 校验 targets、runtime、capabilities、required_bindings 与 HTTPS endpoint。未知能力、缺失 binding、Cloudflare 的本地进程/文件系统/原生扩展/raw TCP/常驻进程均拒绝。`npm run worker:check` 还实际打包 Worker；`worker:deploy` 先拒绝占位服务器配置。注册表按已编译模块核对身份与 manifest；目前随包提供 `rsshub@1.0.0`、runtime=builtin 和 `collector.poll`，与实际执行一致；Cloudflare 还要求 COLLECTION_QUEUE。其他 enabled 插件仍明确阻止部署，不会静默忽略。部署预检通过不表示插件代码已沙箱化。
 
 部署 descriptor 与下方业务协议 manifest 分开；前者描述能否运行，后者描述能做什么。内置实现见 [RSSHub 指南](../server/docs/rsshub.md)；以下远程请求/返回、外部来源权限、样例插件仍属目标契约。
 
-## Manifest
+## 原生设置 DSL（已实现）
+
+模块接口与注册方法见 [插件开发说明](../server/docs/plugins.md)。`GET /v1/plugins` 返回 DSL v1：text/integer/boolean/select 字段、校验约束与动作描述；来源保存 plugin/config_version/configuration。原生客户端根据有限语法渲染设置，不执行服务端代码、HTML 或任意 URL。动作 ID 由插件定义，v1 效果仅限 host 的 collect/validate，额外动作参数未开放。运营者秘密与账户设置分开。模块升级改变语法或配置版本时拒绝静默回退。
+
+## Manifest（远程协议目标）
 
 `GET /melted-plugin/v1/manifest` 有大小上限，管理员核对再授权。示例使用 Melted 定义的字符串：
 

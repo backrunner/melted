@@ -9,13 +9,14 @@
 | 服务端 | TypeScript/Hono；Node 24/PostgreSQL、Workers/SQLite DO；发现、协商认证、会话轮换与账户隔离 | 上传与真实 AI 管线未接入 |
 | 身份 | 服务器 methods/preferred；预置密码/API Key、P-256、配置后 OIDC；客户端原生表单与 Keychain | 密钥不证明 Apple 身份；账户恢复、设备/多服务器管理 UI 后续 |
 | 内容 API | 词表、q/view/category/tag/subject 查询、中文子串、固定快照分页、详情、幂等状态与提交有序 changes | 不是 FTS/语义搜索；完整 v1 未冻结，无 facets/time UI |
-| RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报，客户端来源管理后续 |
+| RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报；客户端管理通过插件 DSL 提供 |
+| 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作，来源通用 configuration，兼容迁移 | 不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
 | 搜索 | SearchPalette 原生 sheet、NativeSearchField、菜单/⌘F、词表条件、组合查询、Esc 关闭及条件 chip 重开 | 时间/排序/facet 等扩展尚未实现 |
 | 阅读 | 原生 Markdown、行内等宽代码、离线语法高亮/复制/长行横滚、必要证据警告、文末元信息与来源；100–200% 阅读缩放 | 不渲染 raw HTML、不加载远程图片；无语义反馈 UI |
 | 连接设计 | 品牌放在表单标题上方；共享背景；220 ms 透明度切换，方法切换无布局插值 | 工作台品牌限于列表底栏左侧；不把局部空态动效扩到连接按钮 |
-| 设置 | 外观、账户、关于；完整 GPL 和第三方声明 sheet | 来源/偏好/关注/通知/反馈/导出删除页面后续 |
+| 设置 | 外观、内容/来源与插件、账户、关于；完整 GPL 和第三方声明 sheet；来源设置/动作/receipt | 偏好/关注/通知/反馈/导出删除页面后续 |
 | 同步 | 12 秒轮询 changes 提示，upsert 刷新/到达高亮，手动刷新，内存保留已加载内容 | 无正文磁盘缓存、SSE、持久离线 mutation、完整 snapshot 重放及远端 state/delete 应用；轮询失败已提示并保留水位重试 |
 | App 图标 | 正式品牌矢量生成 SVG/1024 PNG/多尺寸 ICNS，构建绑定 CFBundleIconFile | macOS 标准外观，非 iOS 图标或动态深色图标 |
 | 开源材料 | [公开仓库](https://github.com/backrunner/melted)、GPL-3.0-or-later、贡献/安全/第三方声明、原生截图 README | 无 App Store 例外、无已发布公证二进制或生产服务 |
@@ -38,9 +39,11 @@
 
 优先处理 [设计复核中的实现缺口](13-design-review.md)：列表去冗余、分散 token、远端状态/删除的完整应用与辅助设置矩阵。搜索面板挂载和同步失败提示已修复。每项修复按当前构建做对应原生检查，不能把旧浏览器参考当通过。
 
-RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。随后扩展偏好/来源/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
+RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。来源设置已按插件 DSL 接入，随后扩展偏好/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
 
 ## 验证与运行入口
+
+插件模块化、设置 DSL 与原生管理见 [2026-10-17 插件验收](validation/2026-10-17/plugin-settings/README.md)。
 
 RSSHub 实施及双后端真实来源/恢复测试见 [2026-10-17 采集验收](validation/2026-10-17/rsshub/README.md)与 [提交前复审](validation/2026-10-17/rsshub/review.md)。
 

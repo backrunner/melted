@@ -11,7 +11,7 @@
 | MeltedCore | DTO、服务器发现/协商认证、API、FilterSelection、Keychain | 正文磁盘缓存、持久 mutation、完整 snapshot 重放 |
 | MeltedDesignSystem | 成对 palette、阅读/布局 token、品牌、表单、列表、空态与 notice | 收敛组件内固定数值、iOS 容器及辅助设置适配 |
 | MeltedRendering | swift-markdown AST 与原生 Markdown 组件 | 附件、完整语法覆盖、受控静态 HTML |
-| macOS shell | 窗口/菜单、WorkspaceModel、连接/列表/阅读/搜索/设置功能模块 | 偏好、来源、主题、反馈等真实业务页面 |
+| macOS shell | 窗口/菜单、WorkspaceModel、连接/列表/阅读/搜索/设置功能模块 | 偏好、主题、反馈等后续业务页面 |
 
 设计系统维护同一亮暗语言，客户端持有导航、操作、权限、外观和证据状态。服务端只提供内容与允许的语义数据，不能远程定义可执行表单、覆盖 App 外壳或改变字号偏好。
 
@@ -25,7 +25,7 @@
 | 内容列表 | 日期分组、标题/摘要/分类/时间、选择、真实分页、差异化空态；底栏左侧紧凑品牌、右侧数量 | [ContentListView](../apps/macos/Sources/Melted/Features/Library/ContentListView.swift) |
 | 搜索与筛选 | 原生 sheet、组合条件与键盘建议；菜单/⌘F 和有效条件 chip 可打开 | [SearchPalette](../apps/macos/Sources/Melted/Features/Search/SearchPalette.swift) |
 | 阅读详情 | 标题、时间/收藏、必要证据警告、Markdown、文末分类/标签/关注/依据字段 | [ReadingDocumentView](../apps/macos/Sources/Melted/Features/Reading/ReadingDocumentView.swift) |
-| 设置与法律文本 | 外观、账户、关于三个分组，GPL 与第三方声明可滚动 sheet | [SettingsView](../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift)、[AboutSettings](../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) |
+| 设置与法律文本 | 外观、内容/来源与插件、账户、关于四个分组，GPL 与第三方声明可滚动 sheet | [SettingsView](../apps/macos/Sources/Melted/Features/Settings/SettingsView.swift)、[AboutSettings](../apps/macos/Sources/Melted/Features/Settings/AboutSettings.swift) |
 
 连接页最大表单宽 440 pt，品牌在这列标题上方；连接步骤只用 220 ms 淡化，切换认证方式关闭表单布局插值。工作台品牌位于列表底栏左侧，阅读背景不融化。当前列表仍有未读点/收藏图标，与去冗余方向的差异见 [UI 第 8 节](11-ui-design-system.md#8-当前实现差异与后续整理)。
 
@@ -65,7 +65,7 @@ App 构建包含同一品牌矢量生成的正式 ICNS 图标；资源绑定和�
 | --- | --- | --- |
 | 偏好与学习 | 自然语言描述 → 可读 diff → 应用；保留当前版本 | 冲突、编译失败、待应用、撤销、暂停学习 |
 | 关注主题 | 目标、范围、计划与预算；“立即获取”跟随实际目标 | 排队、运行、覆盖缺口、取消、预算不足 |
-| 来源与整理 | 授权源、最近更新、失败和处理目的地 | 授权过期、频限、不支持、关闭 |
+| 来源与整理扩展 | 私人来源授权、AI 整理和处理目的地；公开来源 DSL 管理已实现 | 授权过期、频限、不支持、关闭 |
 | 导入 | 文本/链接/支持附件的受控提交 sheet | 类型/大小限制、上传/接收、整理失败 |
 | 反馈记录 | 内容版本、原因、处理状态与撤销 | 待发送、已接收、待学习、已应用/失败/已撤销 |
 | 通知、渠道与账户数据 | 设置内部能力页，删除说明对象/后果 | 权限拒绝、投递失败、导出/删除进度 |
