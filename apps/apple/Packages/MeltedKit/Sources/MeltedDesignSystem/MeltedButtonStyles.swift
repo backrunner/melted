@@ -37,18 +37,27 @@ private struct MeltedButtonBody: View {
             .padding(.horizontal, 20)
             .background {
                 if prominent {
-                    shape.fill(palette.accent).brightness(active ? (scheme == .dark ? 0.05 : -0.05) : 0)
+                    shape.fill(palette.accent)
+                        .animation(reduceMotion ? nil : MeltedMotion.hover) { background in
+                            background.brightness(active ? (scheme == .dark ? 0.05 : -0.05) : 0)
+                        }
                 } else {
-                    shape.fill(active ? palette.selection : palette.surface)
+                    shape.fill(palette.surface)
+                    shape.fill(palette.selection)
+                        .animation(reduceMotion ? nil : MeltedMotion.hover) { highlight in
+                            highlight.opacity(active ? 1 : 0)
+                        }
                     shape.strokeBorder(palette.separator, lineWidth: 1)
                 }
             }
             .contentShape(shape)
-            .scaleEffect(configuration.isPressed && isEnabled && !reduceMotion ? 0.98 : 1)
-            .opacity(isEnabled ? (configuration.isPressed ? 0.9 : 1) : 0.45)
+            // Animate only visual feedback. A value-based animation on the whole button
+            // also interpolates label/layout changes when an async action disables it.
+            .animation(reduceMotion ? nil : MeltedMotion.hover) { button in
+                button
+                    .scaleEffect(configuration.isPressed && isEnabled && !reduceMotion ? 0.98 : 1)
+                    .opacity(isEnabled ? (configuration.isPressed ? 0.9 : 1) : 0.45)
+            }
             .onHover { isHovered = $0 }
-            .animation(reduceMotion ? nil : MeltedMotion.hover, value: configuration.isPressed)
-            .animation(reduceMotion ? nil : MeltedMotion.hover, value: isHovered)
-            .animation(reduceMotion ? nil : MeltedMotion.hover, value: isEnabled)
     }
 }

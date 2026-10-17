@@ -42,10 +42,13 @@ struct CredentialForm: View {
             Button(action: submit) {
                 HStack(spacing: 8) {
                     if model.connecting {
-                        ProgressView().controlSize(.small).tint(palette.accentText)
+                        ProgressView().progressViewStyle(.circular)
+                            .controlSize(.small).tint(palette.accentText)
+                            .fixedSize()
                     }
                     Text(model.connecting ? "正在登录…" : method == .browser ? "浏览器登录" : "登录")
                 }
+                .fixedSize()
                 .frame(maxWidth: .infinity)
                 .frame(height: MeltedConnection.controlHeight)
             }

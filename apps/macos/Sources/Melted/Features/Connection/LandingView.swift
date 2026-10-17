@@ -27,11 +27,13 @@ struct LandingView: View {
                 Button(action: connect) {
                     HStack(spacing: 8) {
                         if model.connecting {
-                            ProgressView().controlSize(.small).tint(palette.accentText)
-                                .transition(.scale.combined(with: .opacity))
+                            ProgressView().progressViewStyle(.circular)
+                                .controlSize(.small).tint(palette.accentText)
+                                .fixedSize()
                         }
                         Text(model.connecting ? "正在连接…" : "连接")
                     }
+                    .fixedSize()
                     .frame(maxWidth: .infinity)
                     .frame(height: MeltedConnection.controlHeight)
                 }
@@ -41,7 +43,7 @@ struct LandingView: View {
 
                 if let failure = model.failure {
                     FailureNotice(failure: failure, model: model)
-                        .transition(.opacity.combined(with: .offset(y: -6)))
+                        .transition(.opacity)
                 }
             }
         }
@@ -64,20 +66,19 @@ struct FailureNotice: View {
 
     var body: some View {
         var actions: [MeltedNotice.Action] = []
-        if failure.offersRetry {
-            actions.append(.init("重试", prominent: true) { Task { await model.discover() } })
-        }
-        if failure.offersReverify, model.discovery != nil {
+        // The visible connection/login form already owns the primary action.
+        // Only add rediscovery when the form cannot recover with its current method.
+        if model.discovery != nil,
+           failure.offersReverify || (failure.offersRetry && model.authenticationMethod == nil) {
             actions.append(.init("重新获取登录方式") { Task { await model.discover() } })
         }
-        if failure.offersRetry, model.connected {
-            actions.append(.init("重新加载内容") { Task { await model.reload() } })
-        }
         return MeltedNotice(
+            tone: failure.kind == .sessionExpired ? .attention : .critical,
             title: failure.message,
             guidance: failure.guidance,
             detail: failure.technical,
             actions: actions
         )
+        .disabled(model.connecting)
     }
 }

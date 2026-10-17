@@ -28,31 +28,27 @@ struct ConnectionActions: View {
                         .transition(.opacity)
                 }
                 if method == .key {
-                    Text("身份密钥保存在系统钥匙串，不代表 Apple 账号")
-                        .font(.system(size: MeltedType.metadata))
-                        .foregroundStyle(palette.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                     if discovery.registration == "closed" {
                         Text("仅限已有身份密钥登录")
                             .font(.system(size: MeltedType.metadata))
                             .foregroundStyle(palette.warning)
                     }
                     if model.localCredentialOption {
-                        Button("使用本机凭据继续") { Task { await model.login(localOnly: true) } }
-                            .buttonStyle(MeltedSecondaryButtonStyle())
-                            .frame(height: 32)
-                            .disabled(!model.acceptedServer || model.connecting)
+                        Button { Task { await model.login(localOnly: true) } } label: {
+                            Text("使用本机凭据继续").frame(minHeight: MeltedNoticeMetrics.actionHeight)
+                        }
+                        .buttonStyle(MeltedSecondaryButtonStyle())
+                        .disabled(!model.acceptedServer || model.connecting)
                     }
                 }
-            } else {
-                Text("不支持此服务器的登录方式")
-                    .font(.system(size: MeltedType.control))
-                    .foregroundStyle(palette.warning)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button("重新获取登录方式") { Task { await model.discover() } }
-                    .buttonStyle(MeltedSecondaryButtonStyle())
-                    .frame(height: 32)
-                    .disabled(model.connecting)
+            } else if model.failure == nil {
+                MeltedNotice(
+                    tone: .attention,
+                    title: "暂时无法登录",
+                    guidance: "服务器没有提供此版本支持的登录方式",
+                    actions: [.init("重新获取登录方式") { Task { await model.discover() } }]
+                )
+                .disabled(model.connecting)
             }
         }
         .transaction { $0.animation = nil }

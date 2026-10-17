@@ -282,4 +282,34 @@ private actor WorkspaceStub: WorkspaceClient {
     #expect(model.failure?.kind == .sessionExpired)
     #expect(model.items.isEmpty)
     #expect(defaults.string(forKey: "accountID") == nil)
+    #expect(model.authenticationMethod == .key)
+    #expect(model.acceptedServer == false)
+
+    // Reauthentication stays available without mistaking session expiry for unsupported auth.
+    await stub.failListing(nil)
+    model.acceptedServer = true
+    await model.login()
+    #expect(model.connected)
+    #expect(model.failure == nil)
+    #expect(await stub.logins == 2)
+}
+
+@Test @MainActor func expiredSessionPreservesTheSelectedSupportedLoginMethod() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub(auth: #"{"version":1,"methods":["password","api_key"],"preferred":"password"}"#)
+    let model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover()
+    model.selectAuthenticationMethod(.apiKey)
+    model.acceptedServer = true
+    await model.login(credential: .apiKey("test-key"))
+    await stub.failListing(.sessionExpired)
+    await model.reload()
+    #expect(!model.connected)
+    #expect(!model.acceptedServer)
+    #expect(model.authenticationMethod == .apiKey)
+    #expect(model.discovery?.auth?.supportedMethods == [.password, .apiKey])
+    #expect(model.failure?.kind == .sessionExpired)
+    #expect(await stub.logins == 0)
 }

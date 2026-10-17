@@ -44,72 +44,115 @@ public struct MeltedNotice: View {
     public var body: some View {
         let palette = MeltedPalette(scheme)
         let tint = tone == .critical ? palette.danger : palette.warning
-        let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Image(systemName: tone == .critical ? "exclamationmark.triangle.fill" : "info.circle.fill")
-                    .font(.system(size: MeltedType.metadata, weight: .semibold))
-                    .foregroundStyle(tint)
-                    .accessibilityHidden(true)
-                Text(title)
-                    .font(.system(size: MeltedType.control, weight: .medium))
-                    .foregroundStyle(palette.text)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        let shape = RoundedRectangle(cornerRadius: MeltedNoticeMetrics.cornerRadius, style: .continuous)
+        HStack(alignment: .top, spacing: MeltedNoticeMetrics.iconGap) {
+            Image(systemName: tone == .critical ? "exclamationmark.triangle" : "info.circle")
+                .font(.system(size: MeltedType.control, weight: .medium))
+                .foregroundStyle(tint)
+                .frame(width: MeltedNoticeMetrics.iconWidth, height: MeltedNoticeMetrics.iconWidth)
+                .accessibilityHidden(true)
 
-            if let guidance {
-                Text(guidance)
-                    .font(.system(size: MeltedType.metadata))
-                    .foregroundStyle(palette.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            if let detail {
-                // Raw server text stays behind a disclosure so the guidance reads first.
-                Text(detail)
-                    .font(.system(size: MeltedType.metadata, design: .monospaced))
-                    .foregroundStyle(palette.secondary)
-                    .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.leading, 8)
-                    .overlay(alignment: .leading) {
-                        Rectangle().fill(palette.separator).frame(width: 2)
+            VStack(alignment: .leading, spacing: MeltedNoticeMetrics.detailSpacing) {
+                VStack(alignment: .leading, spacing: MeltedNoticeMetrics.footerSpacing) {
+                    VStack(alignment: .leading, spacing: MeltedNoticeMetrics.textSpacing) {
+                        Text(title)
+                            .font(.system(size: MeltedType.control, weight: .semibold))
+                            .foregroundStyle(palette.text)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let guidance, !guidance.isEmpty {
+                            Text(guidance)
+                                .font(.system(size: MeltedType.metadata))
+                                .foregroundStyle(palette.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
-                    .opacity(detailOpen ? 1 : 0)
-                    .frame(height: detailOpen ? nil : 0, alignment: .top)
-                    .clipped()
 
-                Button(detailOpen ? "隐藏详情" : "查看详情") {
-                    withAnimation(reduceMotion ? nil : MeltedMotion.content) { detailOpen.toggle() }
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: MeltedType.metadata, weight: .medium))
-                .foregroundStyle(palette.accent)
-            }
-
-            if !actions.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(actions) { action in
-                        if action.prominent {
-                            Button(action.title, action: action.perform)
-                                .buttonStyle(MeltedPrimaryButtonStyle())
-                                .frame(height: 26)
-                        } else {
-                            Button(action.title, action: action.perform)
-                                .buttonStyle(MeltedSecondaryButtonStyle())
-                                .frame(height: 26)
+                    if detail != nil || !actions.isEmpty {
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: MeltedNoticeMetrics.sectionSpacing) {
+                                detailButton
+                                Spacer(minLength: 0)
+                                actionButtons
+                            }
+                            VStack(alignment: .leading, spacing: MeltedNoticeMetrics.textSpacing) {
+                                detailButton
+                                actionButtons.frame(maxWidth: .infinity, alignment: .trailing)
+                            }
                         }
                     }
                 }
-                .padding(.top, 2)
+
+                if detailOpen, let detail {
+                    Text(detail)
+                        .font(.system(size: MeltedType.metadata, design: .monospaced))
+                        .foregroundStyle(palette.secondary)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(MeltedNoticeMetrics.sectionSpacing)
+                        .background(palette.canvas, in: RoundedRectangle(cornerRadius: MeltedReading.cornerRadius))
+                        .transition(.opacity)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(MeltedNoticeMetrics.inset)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(palette.surface, in: shape)
+        .overlay { shape.strokeBorder(palette.separator, lineWidth: MeltedReading.ruleWidth) }
+        .accessibilityElement(children: .contain)
+        .onChange(of: title) { _, _ in detailOpen = false }
+        .onChange(of: detail) { _, _ in detailOpen = false }
+    }
+
+    @ViewBuilder
+    private var detailButton: some View {
+        if detail != nil {
+            Button {
+                withAnimation(reduceMotion ? nil : .easeOut(duration: MeltedMotion.selection)) {
+                    detailOpen.toggle()
+                }
+            } label: {
+                HStack(spacing: MeltedNoticeMetrics.textSpacing) {
+                    Image(systemName: "chevron.right")
+                        .rotationEffect(.degrees(detailOpen ? 90 : 0))
+                    Text("技术详情")
+                }
+                .font(.system(size: MeltedType.metadata, weight: .medium))
+                .foregroundStyle(MeltedPalette(scheme).secondary)
+                .frame(minHeight: MeltedNoticeMetrics.disclosureHeight)
+                .fixedSize(horizontal: true, vertical: false)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(detailOpen ? "已展开" : "已收起")
+        }
+    }
+
+    private var actionButtons: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: MeltedNoticeMetrics.iconGap) {
+                ForEach(actions) { action in actionButton(action) }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+            VStack(alignment: .trailing, spacing: MeltedNoticeMetrics.iconGap) {
+                ForEach(actions) { action in actionButton(action) }
             }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(scheme == .dark ? 0.14 : 0.08), in: shape)
-        .overlay { shape.strokeBorder(tint.opacity(0.3), lineWidth: 1) }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(title)
-        .accessibilityAddTraits(tone == .critical ? .isModal : [])
+    }
+
+    @ViewBuilder
+    private func actionButton(_ action: Action) -> some View {
+        if action.prominent {
+            Button(action: action.perform) {
+                Text(action.title).fixedSize().frame(minHeight: MeltedNoticeMetrics.actionHeight)
+            }
+            .buttonStyle(MeltedPrimaryButtonStyle())
+        } else {
+            Button(action: action.perform) {
+                Text(action.title).fixedSize().frame(minHeight: MeltedNoticeMetrics.actionHeight)
+            }
+            .buttonStyle(MeltedSecondaryButtonStyle())
+        }
     }
 }

@@ -307,7 +307,14 @@ final class WorkspaceModel: ObservableObject {
         queryGeneration = UUID(); detailGeneration = UUID()
         stopSync()
         connected = false; items = []; terms = []; detail = nil; selectedID = nil
-        acceptedServer = false; authenticationMethod = nil; localCredentialOption = false
+        acceptedServer = false; localCredentialOption = false
+        // Losing a session does not make the server's negotiated login methods unsupported.
+        // Keep a valid selection so the connection form can actually offer sign-in again.
+        if let method = authenticationMethod, discovery?.auth?.supportedMethods.contains(method) == true {
+            authenticationMethod = method
+        } else {
+            authenticationMethod = discovery?.auth?.preferredMethod
+        }
         arrivedIDs = []; syncCursor = nil
         defaults.removeObject(forKey: "accountID")
     }

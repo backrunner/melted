@@ -4,8 +4,8 @@ import SwiftUI
 import MeltedCore
 import MeltedDesignSystem
 
-/// Branding is shared by both steps. Only opacity changes during a page swap;
-/// form height and button positions must not inherit a spring animation.
+/// Branding is shared by both steps. Fade in the new form after removing the old
+/// one, without letting the transition animate form layout or button positions.
 struct ConnectionView: View {
     @ObservedObject var model: WorkspaceModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -16,10 +16,12 @@ struct ConnectionView: View {
             ZStack(alignment: .topLeading) {
                 if confirming {
                     ServerConfirmationView(model: model)
-                        .transition(.opacity.animation(pageAnimation))
+                        .transaction { $0.animation = nil }
+                        .transition(pageTransition)
                 } else {
                     LandingView(model: model)
-                        .transition(.opacity.animation(pageAnimation))
+                        .transaction { $0.animation = nil }
+                        .transition(pageTransition)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -28,5 +30,9 @@ struct ConnectionView: View {
 
     private var pageAnimation: Animation? {
         reduceMotion ? nil : .easeOut(duration: MeltedMotion.transition)
+    }
+
+    private var pageTransition: AnyTransition {
+        .asymmetric(insertion: .opacity.animation(pageAnimation), removal: .identity)
     }
 }

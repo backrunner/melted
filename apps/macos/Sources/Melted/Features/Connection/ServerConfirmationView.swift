@@ -12,7 +12,7 @@ struct ServerConfirmationView: View {
         VStack(alignment: .leading, spacing: MeltedConnection.sectionSpacing) {
             VStack(alignment: .leading, spacing: MeltedReading.headingBodySpacing) {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text("确认服务器")
+                    Text(model.failure?.kind == .sessionExpired ? "重新登录" : "确认服务器")
                         .font(.system(size: MeltedType.title, weight: .semibold))
                         .accessibilityAddTraits(.isHeader)
                     Spacer(minLength: 8)
@@ -47,24 +47,25 @@ struct ServerConfirmationView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Toggle(isOn: $model.acceptedServer) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("我信任这台服务器")
-                            .font(.system(size: MeltedType.control, weight: .medium))
-                        Text("账户信息将由此服务器处理")
-                            .font(.system(size: MeltedType.metadata))
-                            .foregroundStyle(palette.secondary)
-                    }
+                if let failure = model.failure {
+                    FailureNotice(failure: failure, model: model)
                 }
-                .toggleStyle(MeltedCheckboxStyle())
-                .disabled(model.connecting)
+
+                if model.authenticationMethod != nil {
+                    Toggle(isOn: $model.acceptedServer) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("我信任这台服务器")
+                                .font(.system(size: MeltedType.control, weight: .medium))
+                            Text("账户信息将由此服务器处理")
+                                .font(.system(size: MeltedType.metadata))
+                                .foregroundStyle(palette.secondary)
+                        }
+                    }
+                    .toggleStyle(MeltedCheckboxStyle())
+                    .disabled(model.connecting)
+                }
 
                 ConnectionActions(model: model, discovery: discovery)
-            }
-
-            if let failure = model.failure {
-                FailureNotice(failure: failure, model: model)
-                    .transition(.opacity.combined(with: .offset(y: -6)))
             }
         }
     }
