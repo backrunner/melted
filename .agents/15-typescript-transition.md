@@ -27,8 +27,8 @@ SQLite DO 单行受平台上限约束，快照按独立文档行保存而不是�
 | 账户事务存储 | PostgreSQL | SQLite AccountStore | 已实现 |
 | 限流 / 浏览器流程 | PostgreSQL 表 | ControlStore + Alarms | 已实现 |
 | 附件 | 持久卷 / S3 接口 | R2 | 后续接入，当前无上传接口 |
-| 后台任务 / 死信 | PG 任务 + outbox | Queues + DO 状态/outbox | 后续接入 |
-| 定时 / 长流程 | 调度进程 | Cron Triggers / Alarms / Workflows | 后续接入；本轮 Alarms 仅清理过期记录 |
+| 后台采集任务 / 死信 | 独立 worker + PG 持久任务 | Queues + DO 状态/outbox | RSSHub 已接入；通用 AI 管线后续 |
+| 定时 / 长流程 | worker 内调度循环 | AccountStore Alarms | RSSHub 定时/恢复已接入，并整合过期清理；长流程后续 |
 | 可选向量 / 模型 | pgvector / provider | Vectorize / Workers AI 或授权 provider | 后续评估 |
 
 Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库、Redis、S3 或 VPS。外部来源、可选 OIDC/AI provider 属业务连接，密码、API Key、密钥登录与阅读不依赖它们；方法由服务器声明，详见 [认证配置](../server/docs/authentication.md)。
@@ -37,7 +37,7 @@ Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库
 
 浏览器登录由 [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) 发起；固定回调、state、nonce、PKCE、一次性短期授权码和 issuer/audience 验证缺一不可。身份关联使用 issuer + subject，不根据相同邮箱自动合并账户。未配置提供方时不显示可用的浏览器登录。
 
-插件兼容性检查是部署能力检查，不是任意代码安全证明。Node 的本地进程、文件系统、原生扩展与常驻任务不能直接进入 Workers；需要远程 HTTPS 插件或明确的 Workers 实现。部署命令先检查 manifest 和实际 Worker bundle，未知能力默认拒绝。当前尚未实现插件执行引擎，不能把预检描述成插件已可运行。
+插件兼容性检查是部署能力检查，不是任意代码安全证明。Node 的本地进程、文件系统、原生扩展与常驻任务不能直接进入 Workers；需要远程 HTTPS 插件或明确的 Workers 实现。部署命令先检查 manifest 和实际 Worker bundle，未知能力默认拒绝。当前仅执行内置 RSSHub `collector.poll`；第三方任意插件引擎尚未开放。配置与验证见 [采集指南](../server/docs/rsshub.md)。
 
 
 ## 部署
@@ -54,9 +54,9 @@ Cloudflare 是完整独立部署目标；不会要求用户额外购买数据库
 
 ### Docker / PostgreSQL
 
-复制根目录 `.env.example` 为 `.env`，生成 URL-safe 随机数据库密码，设置稳定 server ID、PUBLIC_ORIGIN。执行 `docker compose up --build -d`；migrate 服务成功后才启动 API。数据库不发布端口，API 默认映射主机 loopback 8421；公网通过 HTTPS 反向代理。镜像以 node 用户运行；不在镜像里保存密码。现有安装升级先 pg_dump，迁移使用同一事务与 advisory lock，重复执行安全；失败回滚，不自动降级 schema。
+复制根目录 `.env.example` 为 `.env`，生成 URL-safe 随机数据库密码，设置稳定 server ID、PUBLIC_ORIGIN。执行 `docker compose up --build -d`；migrate 服务成功后才启动 API 和独立 collector。数据库不发布端口，API 默认映射主机 loopback 8421；公网通过 HTTPS 反向代理。镜像以 node 用户运行；不在镜像里保存密码。现有安装升级先 pg_dump，迁移使用同一事务与 advisory lock，重复执行安全；失败回滚，不自动降级 schema。
 
-旧 Go 数据库的 001 schema 保留，002 使邮箱/密码可空并增加密钥/OIDC 表。已有账户和内容保留；旧会话在未过期/撤销时继续有效。管理员可通过 `node dist/server/src/entrypoints/cli.js bind-key ACCOUNT_ID PUBLIC_KEY` 将已经核对的公钥绑定旧账户，避免创建新身份后误以为旧内容丢失。禁止按邮箱自动合并。旧 SQL dump 和源码归档只放 `.local`，不进入镜像。
+旧 Go 数据库的 001 schema 保留，002 使邮箱/密码可空并增加密钥/OIDC 表。003 新增 sources、任务、原始条目、revision 和幂等表；DO 在账户首次访问时事务增量建表。已有账户和内容保留；旧会话在未过期/撤销时继续有效。管理员可通过 `node dist/server/src/entrypoints/cli.js bind-key ACCOUNT_ID PUBLIC_KEY` 将已经核对的公钥绑定旧账户，避免创建新身份后误以为旧内容丢失。禁止按邮箱自动合并。旧 SQL dump 和源码归档只放 `.local`，不进入镜像。
 
 ### 本机调试
 

@@ -29,7 +29,7 @@
 
 Melted 是一个通用个人信息工作台。资料、消息、观点和兴趣内容，都可以放进同一个阅读界面，按自己的节奏浏览、搜索和收藏。服务端负责存储和提供内容，原生客户端负责呈现；你可以选择自己信任的服务器，也可以自行部署。
 
-**目前处于 0.2 开发阶段，尚无正式安装包。** 已实现认证、内容存储与原生阅读基础；自动采集、AI 整理和偏好学习仍在建设中。上图是实际 SwiftUI 应用，内容由本机服务器导入，属于开发样例，不代表 AI 处理效果。App 不内置内容，也不提供加载样例的入口。
+**目前处于 0.2 开发阶段，尚无正式安装包。** 已实现认证、RSSHub 公开来源采集与原始入库、内容存储与原生阅读基础；AI 整理和偏好学习仍在建设中。采集数据暂不自动生成简报。上图是实际 SwiftUI 应用，内容由本机服务器导入，属于开发样例，不代表 AI 处理效果。App 不内置内容，也不提供加载样例的入口。
 
 ## 阅读，保持简单
 
@@ -108,13 +108,15 @@ python3 scripts/dev.py exec npm run cli -- import-demo ACCOUNT_ID /workspace/con
 
 **Cloudflare**：填写 Wrangler 顶层配置，在开发容器中运行 `python3 scripts/dev.py exec npm run worker:check`。配置自己的 Cloudflare 账号后再执行 `worker:deploy`；占位配置会被拒绝。这个部署方式不依赖外部数据库、Redis 或 VPS。
 
+RSSHub 可连接运营者的 HTTPS 实例，或使用可选 Compose profile；来源 API、独立 worker 与本机运行见 [RSSHub 采集指南](server/docs/rsshub.md)。
+
 部署步骤、认证与迁移说明见 [部署指南](deploy/README.md)、[认证配置](server/docs/authentication.md) 和 [服务端工程说明](server/README.md)。
 
 ## 项目进度
 
 | 已有基础 | 后续计划 |
 | --- | --- |
-| 双部署、认证协商、多用户隔离 | 来源采集、持久任务与插件执行 |
+| 双部署、认证协商、多用户隔离；RSSHub 采集与持久任务 | 上传/推送摄取、第三方插件执行 |
 | 查询 API、阅读与收藏状态 | 原生搜索入口修复；AI 整理、核验、偏好与记忆 |
 | macOS 原生阅读器 | 正文磁盘缓存与完整离线同步 |
 | Swift 共享基础包 | iOS、可选 APNs 中继与发行准备 |

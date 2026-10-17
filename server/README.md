@@ -12,12 +12,16 @@ server/
 │   │   ├── app.ts           # 路由组装，保留中间件与鉴权注册顺序
 │   │   ├── context.ts       # Hono bindings 与请求变量类型
 │   │   ├── middleware.ts    # 请求 ID、响应头、体积限制及错误映射
-│   │   └── routes/          # discovery、auth、content、sync
+│   │   └── routes/          # discovery、auth、content、sync、sources
 │   ├── modules/
 │   │   ├── identity/        # 身份/会话契约、浏览器登录与 OIDC 适配
 │   │   ├── content/         # 内容 schema、筛选、fixture 校验与存储接口
 │   │   ├── sync/            # 变化日志契约
-│   │   └── plugins/         # 插件 manifest 与平台兼容性检查
+│   │   ├── sources/         # 来源、任务、原始条目与代际规则
+│   │   ├── collectors/      # RSSHub HTTP 采集、配置及目的地声明
+│   │   ├── ingest/          # JSON Feed 校验与归一化
+│   │   ├── jobs/            # 共享采集执行规则
+│   │   └── plugins/         # 内置注册表、manifest 与平台兼容性检查
 │   ├── storage/
 │   │   ├── repository.ts    # 组合领域接口及基础运维接口
 │   │   ├── postgres/        # 连接/事务、迁移、认证、内容、查询、登录流程
@@ -27,6 +31,7 @@ server/
 ├── tests/
 │   ├── unit/               # 内容契约、fixture 与插件兼容性
 │   ├── integration/        # 两后端一致性、DO 持久性与 OIDC
+│   ├── live/               # 显式执行的真实 RSSHub 验收
 │   └── benchmarks/         # 开发环境阅读链路基线
 ├── migrations/             # PostgreSQL 增量 SQL；发行时复制进 dist/server/
 ├── scripts/                # 部署/开发辅助脚本
@@ -74,11 +79,12 @@ python3 scripts/dev.py exec npm run build
 | `npm run cli -- bind-key ACCOUNT_ID PUBLIC_KEY` | 绑定已核对的公钥 |
 | `npm run cli -- import-demo ACCOUNT_ID FILE` | 开发用途：向指定账户导入 fixture 内容 |
 | `npm run worker:check` | 插件预检及 Worker dry-run |
+| `npm run worker` / `npm run worker:start` | 独立 Node 采集进程，源码 / 编译入口 |
 
 编译后的入口为 `dist/server/src/entrypoints/node.js`、`dist/server/src/entrypoints/cli.js`；迁移目录为 `dist/server/migrations/`。Worker 的 Durable Object 导出名称保持 `AccountStore` / `ControlStore`，移动源码不创建新的 DO namespace。
 
 Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.local.yaml`、`config.yaml` 读取；显式 `CONFIG_PATH` 不存在时直接报错，未指定时本机文件优先。显式环境变量覆盖 YAML 默认值，使 Compose 与 Apple Container 不依赖本机配置。配置包含凭据，应保存在本机且不提交。管理 CLI 使用环境变量连接数据库；Workers 使用 bindings。配置加载和部署操作详见 [迁移与部署](../.agents/15-typescript-transition.md) 和 [部署入口](../deploy/README.md)。
 
-插件预检只检查兼容性；当前尚未实现插件执行引擎。
+已实现内置 `rsshub` 的 `collector.poll`、来源与原始条目接口、PG 持久任务及 DO Alarms/outbox/Queues。注册表与部署预检限制为同一已知版本；第三方任意插件执行仍未开放。配置、限制与真实验收见 [RSSHub 采集](docs/rsshub.md)。
 
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。

@@ -4,7 +4,7 @@
 
 ## 总体结构
 
-服务端采用 TypeScript + Hono 共享 HTTP 契约与领域规则，Node.js 24 LTS 和 Cloudflare Workers 分别提供入口。自托管用 PostgreSQL；Cloudflare 完全使用 Workers + SQLite-backed Durable Objects，不连接外部 PostgreSQL 或 Hyperdrive。每账户一个 AccountStore，限流和短期浏览器登录流程用 ControlStore。首期已实现阅读与鉴权；采集、worker、scheduler、AI 管线仍是后续模块，不提供占位运行模式。
+服务端采用 TypeScript + Hono 共享 HTTP 契约与领域规则，Node.js 24 LTS 和 Cloudflare Workers 分别提供入口。自托管用 PostgreSQL；Cloudflare 完全使用 Workers + SQLite-backed Durable Objects，不连接外部 PostgreSQL 或 Hyperdrive。每账户一个 AccountStore，限流和短期浏览器登录流程用 ControlStore。已实现阅读、鉴权和 RSSHub 公开来源的采集入库：Node 独立进程及 PG 持久任务，Cloudflare AccountStore Alarms/outbox/Queues；AI 管线仍是后续能力。
 
 Cloudflare 后续附件使用 R2，任务分发使用 Queues，长流程按需要使用 Workflows，周期触发使用 Cron Triggers / DO Alarms，模型缓存与向量能力按需要选 Workers AI / Vectorize。所有基础设施留在 Cloudflare；配置外部信息源、可选模型/OIDC 是业务集成，不把第三方数据库、Redis、对象存储作为部署依赖。详细映射、事务差异与部署步骤见 [TypeScript 迁移](15-typescript-transition.md)。
 
@@ -58,7 +58,7 @@ flowchart LR
 
 业务模块通过领域接口通信，不直接读取别的模块私有表。数据库变化和领域事件一起提交；网络/模型调用在事务外完成。
 
-当前服务端按职责组织：`server/src/entrypoints/` 为 Node、Workers 与 CLI 入口；`http/` 负责 Hono 中间件和路由；`modules/` 保存 identity、content、sync、plugins 的领域契约及运行时无关规则；`storage/postgres/`、`storage/cloudflare/` 分别实现数据访问；`config/` 与 `shared/` 保存配置和小型通用工具。目录与依赖规则见 [服务端工程说明](../server/README.md)。SQL 迁移保留在 `server/migrations/`，协议源头放根目录 `contracts/`，TypeScript 与 Swift 共用 schema/fixture，避免两端各自解释接口。后续领域按上表扩展 `modules/`，不预建空模块；客户端、插件示例、部署和评测分别位于 `apps/`、`plugins/examples/`、`deploy/`、`evals/`。
+当前服务端按职责组织：`server/src/entrypoints/` 为 Node、Workers 与 CLI 入口；`http/` 负责 Hono 中间件和路由；`modules/` 保存 identity、content、sync、sources、collectors、ingest、jobs、plugins 的领域契约及运行时无关规则；`storage/postgres/`、`storage/cloudflare/` 分别实现数据访问；`config/` 与 `shared/` 保存配置和小型通用工具。目录与依赖规则见 [服务端工程说明](../server/README.md)。SQL 迁移保留在 `server/migrations/`，协议源头放根目录 `contracts/`，TypeScript 与 Swift 共用 schema/fixture，避免两端各自解释接口。后续领域按上表扩展 `modules/`，不预建空模块；客户端、插件示例、部署和评测分别位于 `apps/`、`plugins/examples/`、`deploy/`、`evals/`。
 
 ## 数据与部署
 
@@ -78,7 +78,7 @@ flowchart LR
 
 任务表字段包含 `stage`、`input_ref`、`input_hash`、`policy_version`、`pipeline_version`、`provider_version`、`status`、`attempt`、`available_at`、`lease_until`、`lease_owner`、`fencing_token`、`cancel_requested`。
 
-以下为未实现的任务管线设计。自托管 worker 用短事务领取任务，基于 `FOR UPDATE SKIP LOCKED` 避免互等。该机制适合队列式访问，不提供一般一致查询视图，见 [PostgreSQL SELECT 文档](https://www.postgresql.org/docs/current/sql-select.html)。模型调用期间不持有行锁；租约续期，过期可重领，迟到 worker 以 fencing token 防止覆盖新结果。
+当前采集任务已实现短事务领取、账户并发限制、租约/fencing、事务入库与崩溃恢复，PG 按账户锁串行化写入，CF 以 DO 事务和 outbox 协调；见 [RSSHub](../server/docs/rsshub.md)。以下为后续通用处理管线设计。自托管 worker 用短事务领取任务，基于 `FOR UPDATE SKIP LOCKED` 避免互等。该机制适合队列式访问，不提供一般一致查询视图，见 [PostgreSQL SELECT 文档](https://www.postgresql.org/docs/current/sql-select.html)。模型调用期间不持有行锁；租约续期，过期可重领，迟到 worker 以 fencing token 防止覆盖新结果。
 
 Cloudflare Queues 同样采用至少一次投递；账户 DO 事务内保存任务代际、状态、幂等键和 outbox，再发队列消息；消费前后校验 generation/fencing，重试不重复发布。不能把队列 ack 视为数据库提交。
 

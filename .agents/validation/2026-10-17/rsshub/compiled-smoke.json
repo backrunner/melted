@@ -1,0 +1,9 @@
+{
+  "tested_at": "2026-10-17T11:18:43.075Z",
+  "entrypoint": "dist/server/src/entrypoints/node.js",
+  "health": 200,
+  "collector": "rsshub",
+  "unauthenticated_sources": 401,
+  "sigterm_exit": 0,
+  "errors": 0
+}

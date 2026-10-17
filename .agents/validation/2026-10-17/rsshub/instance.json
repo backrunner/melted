@@ -1,0 +1,22 @@
+{
+  "verified_at": "2026-10-17T10:54:34.398661+00:00",
+  "image": {
+    "descriptor": {
+      "digest": "sha256:1db5e6b65a2cbabc95def7e495801ccd50ce5c77ade6408d454867333c28b1a4",
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "size": 1609
+    },
+    "reference": "ghcr.io/diygod/rsshub@sha256:1db5e6b65a2cbabc95def7e495801ccd50ce5c77ade6408d454867333c28b1a4"
+  },
+  "platform": {
+    "architecture": "arm64",
+    "os": "linux"
+  },
+  "read_only": true,
+  "published_ports": [],
+  "runtime": {
+    "node": "v24.22.0",
+    "rsshub": "1.0.0",
+    "license": "AGPL-3.0"
+  }
+}

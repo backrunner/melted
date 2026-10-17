@@ -1,6 +1,6 @@
 # API 与数据契约草案 v1
 
-本文描述完整 v1 目标；目前仅实现发现、登录/刷新/退出、词表、内容查询/详情/状态与 changes 提示。已实现子集见 [OpenAPI](../contracts/openapi.json)，TypeScript/Swift 共享 fixture 位于 contracts；其余接口仍未提供，完整 v1 尚未冻结。阶段差异见 [实施记录](14-implementation-status.md)；插件协议与公开 API 分开。
+本文描述完整 v1 目标；目前已实现发现、登录/刷新/退出、词表、内容查询/详情/状态、changes 提示，以及 RSSHub 来源 CRUD/同步 receipt、原始条目列表/详情与 revision。已实现子集见 [OpenAPI](../contracts/openapi.json)，TypeScript/Swift 共享 fixture 位于 contracts；其余接口仍未提供，完整 v1 尚未冻结。阶段差异见 [实施记录](14-implementation-status.md)；插件协议与公开 API 分开。
 
 协议不绑定信息主题。media kind 表达输入格式，content kind 表达消息/资料/陈述等性质，topic/tag 来自可配置标签体系；主题不是硬编码技术枚举。即使没有 Subject，输入也可以按全局偏好整理和交付。
 
@@ -41,7 +41,13 @@ App 先展示运营者及 AI/mem 数据去向，用户同意后才发账号、�
 
 凭据恢复、撤销所有设备与账户关联 UI 仍需后续实现。丢失唯一私钥且没有配置其他恢复途径时，无法仅凭 Apple 账号恢复服务端身份。已有 PostgreSQL 账户可由管理员 `bind-key ACCOUNT_ID PUBLIC_KEY` 关联公钥；此管理操作不开放公共 HTTP 接口。
 
-## 摄取、附件、幂等
+## RSSHub 已实现子集
+
+`/v1/sources` 管理账户来源，`/v1/sources/{id}/sync` 幂等返回 202 receipt，`/v1/receipts/{id}` 返回状态/错误/条数。`/v1/sources/{id}/items` 只返回元信息，`/v1/raw-items/{id}?revision=N` 独立鉴权读取原始正文。修改用 expected_version，删除用 If-Match；暂停和删除取消旧 generation，禁止迟到写入。完整字段及限制见 [OpenAPI](../contracts/openapi.json)和 [采集指南](../server/docs/rsshub.md)。
+
+发现接口的 collectors 仅在已配置 RSSHub 时声明；processing 返回实例 origin、公开路由请求用途及其版本 hash，不含实例密钥。仅请求用户启用的公开来源，不向实例发送账户凭据、已存正文或附件；通用第三方处理 consent API 仍是后续目标。
+
+## 摄取、附件、幂等（后续目标）
 
 `POST /v1/uploads` 创建限时上传会话，上传到其受控端点，`POST /v1/uploads/{id}/complete` 核验大小、哈希、真实类型和所有权后得到 attachment_id。直传 URL 只限本次对象，不转发客户端 bearer；回收未完成上传。
 

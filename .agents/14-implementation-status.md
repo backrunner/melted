@@ -6,10 +6,11 @@
 
 | 范围 | 当前实现 | 边界 |
 | --- | --- | --- |
-| 服务端 | TypeScript/Hono；Node 24/PostgreSQL、Workers/SQLite DO；发现、协商认证、会话轮换与账户隔离 | 采集、上传、持久任务和真实 AI 管线未接入 |
+| 服务端 | TypeScript/Hono；Node 24/PostgreSQL、Workers/SQLite DO；发现、协商认证、会话轮换与账户隔离 | 上传与真实 AI 管线未接入 |
 | 身份 | 服务器 methods/preferred；预置密码/API Key、P-256、配置后 OIDC；客户端原生表单与 Keychain | 密钥不证明 Apple 身份；账户恢复、设备/多服务器管理 UI 后续 |
 | 内容 API | 词表、q/view/category/tag/subject 查询、中文子串、固定快照分页、详情、幂等状态与提交有序 changes | 不是 FTS/语义搜索；完整 v1 未冻结，无 facets/time UI |
-| 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、迁移、CLI、Docker/Compose、Worker 配置与插件预检 | 插件执行引擎尚未实现；预检不证明沙箱 |
+| RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报，客户端来源管理后续 |
+| 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
 | 搜索 | SearchPalette 原生 sheet、NativeSearchField、菜单/⌘F、词表条件、组合查询、Esc 关闭及条件 chip 重开 | 时间/排序/facet 等扩展尚未实现 |
 | 阅读 | 原生 Markdown、行内等宽代码、离线语法高亮/复制/长行横滚、必要证据警告、文末元信息与来源；100–200% 阅读缩放 | 不渲染 raw HTML、不加载远程图片；无语义反馈 UI |
@@ -26,8 +27,8 @@
 | 里程碑 | 当前状态 | 仍需完成 |
 | --- | --- | --- |
 | M0 | 部分完成；GPL/贡献已确定，公开仓库已建立 | 完整协议冻结、来源授权/质量语料、完整威胁模型 |
-| M1 | 基础身份/读取/状态/迁移已运行 | 邀请/恢复、摄取/上传、持久队列/租约/fencing/outbox、预算/同意、完整备份恢复/导出 |
-| M2 | 未实现真实处理闭环 | RSS/URL/push、插件运行、真实模型与多模态、核验/聚类、渠道 |
+| M1 | 基础身份/读取/状态/迁移，以及来源 receipt/持久队列/租约/fencing/outbox 已运行 | 邀请/恢复、通用摄取/上传、预算/同意、完整备份恢复/导出 |
+| M2 | RSSHub 真实公开来源采集入库已运行，两后端各验证三类来源 | URL/push、第三方插件、真实模型与多模态、核验/聚类、渠道 |
 | M3 | 原生阅读链路、搜索呈现与到达反馈已运行 | 状态/删除同步、持久缓存/重放、业务设置页、反馈、附件/静态 HTML、完整原生验收 |
 | M4 | 未开始 | QueryPlan、主动获取/调度、学习、memory、回滚 |
 | M5 | 开源材料与本地构建已有 | conformance、真实质量/安全/负载/持续使用、签名公证与 alpha 发布 |
@@ -37,9 +38,11 @@
 
 优先处理 [设计复核中的实现缺口](13-design-review.md)：列表去冗余、分散 token、远端状态/删除的完整应用与辅助设置矩阵。搜索面板挂载和同步失败提示已修复。每项修复按当前构建做对应原生检查，不能把旧浏览器参考当通过。
 
-业务上先补齐 M1 的有权限摄取、receipt、任务恢复、取消/删除代际、outbox、预算和处理目的地同意；再用授权 RSS/push 和可替换 provider 完成真实整理链路。随后扩展偏好/来源/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
+RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。随后扩展偏好/来源/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
 
 ## 验证与运行入口
+
+RSSHub 实施及双后端真实来源/恢复测试见 [2026-10-17 采集验收](validation/2026-10-17/rsshub/README.md)与 [提交前复审](validation/2026-10-17/rsshub/review.md)。
 
 运行见 [项目 README](../README.md)、[macOS](../apps/macos/README.md)及 [部署](15-typescript-transition.md)。完整本地检查命令为 sh scripts/check.sh，实际执行结果按日期记录。
 
