@@ -8,6 +8,7 @@ build/
 .env.*
 !.env.example
 .claude/
+.commandcode/
 .mcp.json
 server/config.yaml
 server/config.local.yaml
