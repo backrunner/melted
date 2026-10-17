@@ -24,7 +24,6 @@ export function newSource(input: SourceInput, now: number): Source {
   return {
     ...input,
     id: id("src"),
-    plugin: "rsshub",
     version: 1,
     generation: 1,
     checkpoint: {},
@@ -47,7 +46,17 @@ export function patchSource(
     throw new Problem(409, "version_conflict");
   const { expected_version: _, ...changes } = patch;
   const targetChanged =
-    changes.route !== undefined && changes.route !== source.route;
+    (changes.configuration !== undefined &&
+      JSON.stringify(
+        changes.configuration,
+        Object.keys(changes.configuration).sort(),
+      ) !==
+        JSON.stringify(
+          source.configuration,
+          Object.keys(source.configuration).sort(),
+        )) ||
+    (changes.config_version !== undefined &&
+      changes.config_version !== source.config_version);
   return {
     ...source,
     ...changes,

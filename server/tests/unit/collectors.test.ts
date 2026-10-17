@@ -3,22 +3,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
-import { normalizeFeed } from "../../src/modules/ingest/json-feed.js";
+import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { validRoute, authorizeRoute } from "../../src/plugins/rsshub/routes.js";
 import { newSource } from "../../src/modules/sources/lifecycle.js";
-import {
-  validRoute,
-  authorizeRoute,
-} from "../../src/modules/sources/schemas.js";
-import { rsshubConfigSchema } from "../../src/modules/collectors/config.js";
+import {} from "../../src/modules/sources/schemas.js";
+import { rsshubConfigSchema } from "../../src/plugins/rsshub/config.js";
 import {
   pollRSSHub,
   CollectorError,
   retryAfter,
-} from "../../src/modules/collectors/rsshub.js";
+} from "../../src/plugins/rsshub/collector.js";
 import {
   collectorEnabled,
+  pluginRegistry,
   executableBuiltin,
-} from "../../src/modules/plugins/registry.js";
+} from "../../src/plugins/index.js";
 import { manifestSchema } from "../../src/modules/plugins/compatibility.js";
 import { collectionDisclosure } from "../../src/modules/collectors/disclosure.js";
 
@@ -27,7 +26,14 @@ const config = rsshubConfigSchema.parse({
   allowed_routes: ["/bbc", "/douban/book/latest"],
 });
 const source = newSource(
-  { name: "News", route: "/bbc", interval_seconds: 900, enabled: true },
+  {
+    name: "News",
+    plugin: "rsshub",
+    config_version: 1,
+    configuration: { route: "/bbc" },
+    interval_seconds: 900,
+    enabled: true,
+  },
   Date.now(),
 );
 const transport = (
@@ -36,21 +42,27 @@ const transport = (
   ((url: unknown, init: RequestInit) =>
     fn(new URL(String(url)), init)) as typeof fetch;
 test("collection disclosure tracks destinations without exposing instance secrets", async () => {
-  assert.deepEqual((await collectionDisclosure(undefined)).destinations, []);
-  const manifest = await collectionDisclosure({
-    ...config,
-    access_key: "sensitive-key",
-  });
+  assert.deepEqual(
+    (await collectionDisclosure({}, pluginRegistry)).destinations,
+    [],
+  );
+  const manifest = await collectionDisclosure(
+    { rsshub: { ...config, access_key: "sensitive-key" } },
+    pluginRegistry,
+  );
   assert.equal(manifest.destinations[0]!.origin, config.base_url);
   assert.equal(JSON.stringify(manifest).includes("sensitive-key"), false);
-  assert.equal(manifest.version, (await collectionDisclosure(config)).version);
+  assert.equal(
+    manifest.version,
+    (await collectionDisclosure({ rsshub: config }, pluginRegistry)).version,
+  );
   assert.notEqual(
     manifest.version,
     (
-      await collectionDisclosure({
-        ...config,
-        base_url: "https://other.example.org",
-      })
+      await collectionDisclosure(
+        { rsshub: { ...config, base_url: "https://other.example.org" } },
+        pluginRegistry,
+      )
     ).version,
   );
 });

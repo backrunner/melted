@@ -7,6 +7,7 @@ import { load } from "js-yaml";
 export interface ServerConfig {
   authentication?: unknown;
   rsshub?: unknown;
+  plugins?: unknown;
   server: {
     id: string;
     operator: string;
@@ -158,6 +159,9 @@ export function configToEnv(config: ServerConfig): Record<string, string> {
     PORT: config.server.port.toString(),
     REGISTRATION_MODE: config.registration.mode,
     DATABASE_URL: config.database.url,
+    ...(config.plugins !== undefined
+      ? { PLUGIN_CONFIG: JSON.stringify(config.plugins) }
+      : {}),
     ...(config.rsshub !== undefined
       ? { RSSHUB_CONFIG: JSON.stringify(config.rsshub) }
       : {}),

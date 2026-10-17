@@ -47,8 +47,10 @@ export class PostgresSources
     owner: string,
     input: SourceInput,
     key: string,
+    requestFingerprint?: string,
   ): Promise<Source> {
-    const fingerprint = await hash(JSON.stringify(input));
+    const fingerprint =
+      requestFingerprint ?? (await hash(JSON.stringify(input)));
     return this.db.transaction(async (c) => {
       await lockOwner(c, owner);
       const now = Date.now();
@@ -107,14 +109,26 @@ export class PostgresSources
       ]);
     });
   }
-  async sync(owner: string, id: string, key: string): Promise<Run> {
-    const fingerprint = await hash(id);
+  async sync(
+    owner: string,
+    id: string,
+    key: string,
+    expectedVersion?: number,
+    action?: string,
+  ): Promise<Run> {
+    const fingerprint = await hash(
+      expectedVersion === undefined
+        ? id
+        : JSON.stringify({ id, expectedVersion, action }),
+    );
     return this.db.transaction(async (c) => {
       await lockOwner(c, owner);
       const now = Date.now();
       const old = await replay<Run>(c, owner, "sync", key, fingerprint, now);
       if (old) return old;
       const source = await getSource(c, owner, id);
+      if (expectedVersion !== undefined && source.version !== expectedVersion)
+        throw new Problem(409, "version_conflict");
       if (!source.enabled) throw new Problem(409, "source_disabled");
       const run = await enqueue(
         c,

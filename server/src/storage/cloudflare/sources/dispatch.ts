@@ -32,7 +32,12 @@ export function dispatchSources(
     case "sources.remove":
       return s.remove(p.id as string, p.version as number);
     case "sources.sync":
-      return s.sync(p.id as string, p.key as string, p.fingerprint as string);
+      return s.sync(
+        p.id as string,
+        p.key as string,
+        p.fingerprint as string,
+        p.expectedVersion as number | undefined,
+      );
     case "sources.receipt":
       return s.run(p.id as string);
     case "sources.items":

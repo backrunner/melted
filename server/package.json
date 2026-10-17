@@ -18,14 +18,15 @@
     "plugins:check": "tsx src/entrypoints/plugins-check.ts",
     "worker:check": "tsx src/entrypoints/plugins-check.ts cloudflare && wrangler deploy --dry-run --env=\"\"",
     "worker:deploy": "tsx src/entrypoints/plugins-check.ts cloudflare --deployment && wrangler deploy --env=\"\"",
-    "format": "prettier --write src tests",
-    "format:check": "prettier --check src tests",
+    "format": "prettier --write src tests scripts",
+    "format:check": "prettier --check src tests scripts",
     "test:unit": "node --import tsx --test --test-concurrency=1 tests/unit/*.test.ts",
     "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts",
     "credentials": "tsx src/entrypoints/credentials.ts",
     "worker": "tsx src/entrypoints/collector-worker.ts",
     "worker:start": "node dist/server/src/entrypoints/collector-worker.js",
-    "test:live:rsshub": "node --import tsx tests/live/rsshub.ts"
+    "test:live:rsshub": "node --import tsx tests/live/rsshub.ts",
+    "contracts:plugins": "tsx scripts/plugin-contracts.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

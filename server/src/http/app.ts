@@ -8,11 +8,13 @@ import { registerDiscoveryRoutes } from "./routes/discovery.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerContentRoutes } from "./routes/content.js";
 import { registerSyncRoutes } from "./routes/sync.js";
+import { pluginRegistry } from "../plugins/index.js";
+import type { PluginRegistry } from "../modules/plugins/registry.js";
 
-export function createApp() {
+export function createApp(registry: PluginRegistry = pluginRegistry) {
   const app = new Hono<AppEnv>();
   installMiddleware(app);
-  registerDiscoveryRoutes(app);
+  registerDiscoveryRoutes(app, registry);
   registerAuthRoutes(app);
   app.use("/v1/*", async (c, next) => {
     c.set(
@@ -21,7 +23,7 @@ export function createApp() {
     );
     await next();
   });
-  registerSourceRoutes(app);
+  registerSourceRoutes(app, registry);
   registerContentRoutes(app);
   registerSyncRoutes(app);
   return app;

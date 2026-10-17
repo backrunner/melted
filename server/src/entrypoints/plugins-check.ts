@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { executableBuiltin } from "../modules/plugins/registry.js";
-import { rsshubConfigSchema } from "../modules/collectors/config.js";
+import {
+  executableBuiltin,
+  pluginRegistry,
+  pluginConfiguration,
+} from "../plugins/index.js";
+
 import { readFile } from "node:fs/promises";
 import {
   checkCompatibility,
@@ -30,7 +34,7 @@ if (
     (p: { binding: string }) => p.binding === "COLLECTION_QUEUE",
   )
 )
-  failures.push("rsshub: missing_binding:COLLECTION_QUEUE");
+  failures.push("collectors: missing_binding:COLLECTION_QUEUE");
 for (const p of config.plugins) {
   if (!p.enabled) continue;
   failures.push(
@@ -52,18 +56,22 @@ if (target === "cloudflare" && process.argv.includes("--deployment")) {
     );
   if (!worker.vars.PUBLIC_ORIGIN.startsWith("https://"))
     failures.push("Production PUBLIC_ORIGIN requires HTTPS");
-  if (worker.vars.RSSHUB_CONFIG) {
-    try {
-      const rsshub = rsshubConfigSchema.parse(
-        JSON.parse(worker.vars.RSSHUB_CONFIG),
-      );
-      if (rsshub.allow_private || !rsshub.base_url.startsWith("https://"))
-        failures.push(
-          "Production Cloudflare RSSHub requires a public HTTPS instance",
-        );
-    } catch {
-      failures.push("Invalid RSSHUB_CONFIG in production Worker vars");
-    }
+  try {
+    failures.push(
+      ...pluginRegistry.deploymentErrors(
+        pluginConfiguration({
+          rsshub: worker.vars.RSSHUB_CONFIG
+            ? JSON.parse(worker.vars.RSSHUB_CONFIG)
+            : undefined,
+          plugins: worker.vars.PLUGIN_CONFIG
+            ? JSON.parse(worker.vars.PLUGIN_CONFIG)
+            : undefined,
+        }),
+        "cloudflare",
+      ),
+    );
+  } catch {
+    failures.push("Invalid plugin operator configuration");
   }
 }
 if (failures.length) {

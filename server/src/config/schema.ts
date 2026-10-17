@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { rsshubConfigSchema } from "../modules/collectors/config.js";
+import { rsshubConfigSchema } from "../plugins/rsshub/config.js";
 import { z } from "zod";
 import { parse } from "../shared/validation.js";
 import { authPolicySchema } from "../modules/identity/auth-policy.js";
@@ -28,6 +28,7 @@ export const configSchema = z
     registration: z.enum(["key", "closed"]).default("key"),
     authentication: authPolicySchema.optional(),
     rsshub: rsshubConfigSchema.optional(),
+    plugins: z.record(z.string(), z.unknown()).optional(),
     oidc: z
       .object({
         issuer: z.url().startsWith("https://"),
@@ -47,11 +48,26 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
     env.OIDC_CLIENT_ID,
     env.OIDC_CLIENT_SECRET,
   ].some(Boolean);
+  const plugins = env.PLUGIN_CONFIG
+    ? parse(
+        z.record(z.string(), z.unknown()),
+        parseAuthJSON(env.PLUGIN_CONFIG, "PLUGIN_CONFIG"),
+      )
+    : undefined;
+  // Keep the existing secret binding when operators adopt the generic map.
+  if (
+    plugins?.rsshub &&
+    env.RSSHUB_ACCESS_KEY &&
+    typeof plugins.rsshub === "object" &&
+    !Array.isArray(plugins.rsshub)
+  )
+    plugins.rsshub = { ...plugins.rsshub, access_key: env.RSSHUB_ACCESS_KEY };
   return parse(configSchema, {
     serverID: env.MELTED_SERVER_ID,
     operator: env.MELTED_OPERATOR ?? "Melted",
     publicOrigin: env.PUBLIC_ORIGIN,
     registration: env.REGISTRATION_MODE ?? "key",
+    plugins,
     authentication:
       env.AUTH_CONFIG !== undefined
         ? parseAuthJSON(env.AUTH_CONFIG)

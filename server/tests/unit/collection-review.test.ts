@@ -2,24 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import test from "node:test";
 import assert from "node:assert/strict";
+import { validRoute } from "../../src/plugins/rsshub/routes.js";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
-import { normalizeFeed } from "../../src/modules/ingest/json-feed.js";
-import {
-  sourceInputSchema,
-  validRoute,
-} from "../../src/modules/sources/schemas.js";
+import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { sourceInputSchema } from "../../src/modules/sources/schemas.js";
 import {
   failed,
   newRun,
   newSource,
   publicRun,
 } from "../../src/modules/sources/lifecycle.js";
-import { pollRSSHub, retryAfter } from "../../src/modules/collectors/rsshub.js";
-import { rsshubConfigSchema } from "../../src/modules/collectors/config.js";
+import { pollRSSHub, retryAfter } from "../../src/plugins/rsshub/collector.js";
+import { rsshubConfigSchema } from "../../src/plugins/rsshub/config.js";
 import {
   collectorEnabled,
   executableBuiltin,
-} from "../../src/modules/plugins/registry.js";
+} from "../../src/plugins/index.js";
 import { manifestSchema } from "../../src/modules/plugins/compatibility.js";
 
 test("conflicting IDs are partial instead of repeatedly changing revisions", async () => {
@@ -62,7 +60,12 @@ test("nonportable Unicode is rejected per item and at source configuration", asy
   assert.equal(result.warnings.length, 3);
   for (const name of ["x\u0000", "\ud800"])
     assert.equal(
-      sourceInputSchema.safeParse({ name, route: "/bbc" }).success,
+      sourceInputSchema.safeParse({
+        name,
+        plugin: "rsshub",
+        config_version: 1,
+        configuration: { route: "/bbc" },
+      }).success,
       false,
     );
   for (const route of ["/bbc/%00", "/bbc/\u0000", "/bbc/\ud800", "/bbc/%7f"])
@@ -97,7 +100,14 @@ test("impossible calendar dates and lossy numeric identifiers remain invalid", a
 
 test("switching instance or credentials does not reuse validators from another target", async () => {
   const source = newSource(
-    { name: "News", route: "/bbc", enabled: true, interval_seconds: 900 },
+    {
+      name: "News",
+      plugin: "rsshub",
+      config_version: 1,
+      configuration: { route: "/bbc" },
+      enabled: true,
+      interval_seconds: 900,
+    },
     Date.now(),
   );
   const config = rsshubConfigSchema.parse({
@@ -184,7 +194,14 @@ test("inherited feed metadata cannot expand the normalized batch without a bound
 test("extreme Retry-After stays representable after the response is committed", () => {
   const requestedAt = Date.parse("2026-10-17T12:00:00Z");
   const source = newSource(
-    { name: "News", route: "/bbc", enabled: true, interval_seconds: 900 },
+    {
+      name: "News",
+      plugin: "rsshub",
+      config_version: 1,
+      configuration: { route: "/bbc" },
+      enabled: true,
+      interval_seconds: 900,
+    },
     requestedAt,
   );
   const run = {

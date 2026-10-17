@@ -61,3 +61,10 @@ development:
 #   base_url: https://feeds.example.com
 #   allowed_routes: [/bbc, /douban/book/latest, /hackernews]
 #   allow_private: false
+
+# Generic operator settings for registered plugins (environment: PLUGIN_CONFIG).
+# Takes precedence over the legacy rsshub key above. No client credentials here.
+# plugins:
+#   rsshub:
+#     base_url: https://feeds.example.com
+#     allowed_routes: [/bbc, /douban/book/latest, /hackernews]

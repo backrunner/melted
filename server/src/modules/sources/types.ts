@@ -1,15 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-export type Checkpoint = {
-  target?: string;
-  etag?: string;
-  last_modified?: string;
-};
+import type { Configuration } from "../plugins/dsl.js";
+export type Checkpoint = Record<string, string>;
 export type Source = {
   id: string;
-  plugin: "rsshub";
+  plugin: string;
+  config_version: number;
+  configuration: Configuration;
   name: string;
-  route: string;
   interval_seconds: number;
   enabled: boolean;
   version: number;
@@ -26,9 +24,16 @@ export type Source = {
 };
 export type SourceInput = Pick<
   Source,
-  "name" | "route" | "interval_seconds" | "enabled"
+  | "plugin"
+  | "config_version"
+  | "configuration"
+  | "name"
+  | "interval_seconds"
+  | "enabled"
 >;
-export type SourcePatch = Partial<SourceInput> & { expected_version: number };
+export type SourcePatch = Partial<Omit<SourceInput, "plugin">> & {
+  expected_version: number;
+};
 export type Counts = {
   received: number;
   inserted: number;
@@ -109,10 +114,21 @@ export type PollFailure = {
 export interface SourceRepository {
   list(owner: string): Promise<Source[]>;
   get(owner: string, id: string): Promise<Source>;
-  create(owner: string, input: SourceInput, key: string): Promise<Source>;
+  create(
+    owner: string,
+    input: SourceInput,
+    key: string,
+    fingerprint?: string,
+  ): Promise<Source>;
   patch(owner: string, id: string, input: SourcePatch): Promise<Source>;
   remove(owner: string, id: string, version: number): Promise<void>;
-  sync(owner: string, id: string, key: string): Promise<Run>;
+  sync(
+    owner: string,
+    id: string,
+    key: string,
+    expectedVersion?: number,
+    action?: string,
+  ): Promise<Run>;
   receipt(owner: string, id: string): Promise<Run>;
   items(
     owner: string,

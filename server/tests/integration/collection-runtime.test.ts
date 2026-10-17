@@ -119,7 +119,9 @@ test("Cloudflare persisted outbox, real Alarms and Queue consumer survive restar
       owner,
       {
         name: "Restart source",
-        route: "/bbc",
+        plugin: "rsshub",
+        config_version: 1,
+        configuration: { route: "/bbc" },
         enabled: true,
         interval_seconds: 300,
       },
@@ -127,9 +129,28 @@ test("Cloudflare persisted outbox, real Alarms and Queue consumer survive restar
     );
     const run = await repo.sources.sync(owner, source.id, random());
     assert.equal((await repo.sources.receipt(owner, run.id)).state, "queued");
+    // Simulate the persisted v1 document before the first restart, including a
+    // queued job. The new constructor must migrate it without losing its fence.
+    const legacyStorage = await mf.unsafeGetDurableObjectStorage(
+      "collection-runtime",
+      "AccountStore",
+      { name: owner },
+    );
+    await legacyStorage.exec(
+      "UPDATE sources SET document=json_remove(json_set(document,'$.route',json_extract(document,'$.configuration.route')),'$.configuration','$.config_version')",
+    );
+    await legacyStorage.exec(
+      "UPDATE source_requests SET response=json_remove(json_set(response,'$.route',json_extract(response,'$.configuration.route')),'$.configuration','$.config_version') WHERE operation='create'",
+    );
+    await legacyStorage.exec(
+      "UPDATE meta SET value='1' WHERE key='source_schema'",
+    );
     await mf.dispose();
     mf = new Miniflare(options(true));
     repo = new CloudRepository(await mf.getBindings<CloudBindings>());
+    assert.deepEqual((await repo.sources.get(owner, source.id)).configuration, {
+      route: "/bbc",
+    });
     const completed = await until(
       () => repo.sources.receipt(owner, run.id),
       (r) => r.state === "complete",
@@ -231,7 +252,9 @@ test("Node collector processes recover a crashed lease and schedule only one com
       owner,
       {
         name: "Crash recovery",
-        route: "/bbc",
+        plugin: "rsshub",
+        config_version: 1,
+        configuration: { route: "/bbc" },
         enabled: true,
         interval_seconds: 300,
       },

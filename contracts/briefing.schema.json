@@ -352,6 +352,11 @@
                   "type": "string"
                 },
                 "description": "Configured collection plugins; does not imply public ingest or AI processing."
+              },
+              "plugin_settings": {
+                "type": "integer",
+                "const": 1,
+                "description": "Versioned native plugin settings catalog available after authentication."
               }
             },
             "required": [

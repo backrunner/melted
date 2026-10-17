@@ -7,6 +7,40 @@ import { join } from "node:path";
 import test from "node:test";
 import { nodeEnvironment } from "../../src/config/node-loader.js";
 import { configFromEnv } from "../../src/config/schema.js";
+import {
+  pluginConfiguration,
+  pluginRegistry,
+} from "../../src/plugins/index.js";
+
+test("generic plugin configuration retains the separate RSSHub secret and overrides legacy destinations", () => {
+  const configured = configFromEnv({
+    MELTED_SERVER_ID: "test",
+    PUBLIC_ORIGIN: "https://melted.example.com",
+    RSSHUB_CONFIG: JSON.stringify({
+      base_url: "https://old.example.com",
+      allowed_routes: ["/bbc"],
+    }),
+    PLUGIN_CONFIG: JSON.stringify({
+      rsshub: { base_url: "https://new.example.com", allowed_routes: ["/bbc"] },
+    }),
+    RSSHUB_ACCESS_KEY: "server-only-secret",
+  });
+  const operator = pluginConfiguration(configured);
+  assert.equal(
+    (operator.rsshub as { access_key: string }).access_key,
+    "server-only-secret",
+  );
+  assert.equal(
+    pluginRegistry.resolve("rsshub", operator).destination.origin,
+    "https://new.example.com",
+  );
+  assert.equal(
+    JSON.stringify(pluginRegistry.catalog(operator)).includes(
+      "server-only-secret",
+    ),
+    false,
+  );
+});
 
 test("clean deployments run from environment without an untracked YAML file", () => {
   const cwd = mkdtempSync(join(tmpdir(), "melted-env-"));

@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { pluginRegistry, pluginConfiguration } from "../plugins/index.js";
 import { setTimeout as delay } from "node:timers/promises";
 import { configFromEnv } from "../config/schema.js";
 import { nodeEnvironment } from "../config/node-loader.js";
@@ -29,7 +30,8 @@ try {
           const task = executeClaim(
             sources,
             claim,
-            config.rsshub,
+            pluginRegistry,
+            pluginConfiguration(config),
             controller.signal,
           )
             .catch(() => console.error("Collector storage unavailable"))

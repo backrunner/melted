@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { hash } from "../../shared/crypto.js";
 import { hasPortableText } from "../../shared/text.js";
-import type { PollResult, RawContent } from "../sources/types.js";
+import type { PollResult, RawContent } from "../../modules/sources/types.js";
 
 const url = z
   .url()

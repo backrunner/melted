@@ -75,12 +75,19 @@ export class AccountSources extends AccountSourceJobs {
       this.db.sql.exec("DELETE FROM raw_items WHERE source_id=?", id);
     });
   }
-  sync(id: string, key: string, fingerprint: string): Run {
+  sync(
+    id: string,
+    key: string,
+    fingerprint: string,
+    expectedVersion?: number,
+  ): Run {
     return this.db.transaction(() => {
       const now = Date.now(),
         old = this.replay<Run>("sync", key, fingerprint, now);
       if (old) return old;
       const source = this.source(id);
+      if (expectedVersion !== undefined && source.version !== expectedVersion)
+        throw new Problem(409, "version_conflict");
       if (!source.enabled) throw new Problem(409, "source_disabled");
       const run = this.enqueue(source, "manual", `manual:${key}:${now}`, now);
       this.remember("sync", key, fingerprint, run, now);

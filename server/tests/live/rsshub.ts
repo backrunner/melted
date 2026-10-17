@@ -83,7 +83,14 @@ async function verify(name: string, repo: Repository) {
   ]) {
     const source = await repo.sources.create(
       owner,
-      { name: category!, route: route!, interval_seconds: 900, enabled: true },
+      {
+        name: category!,
+        plugin: "rsshub",
+        config_version: 1,
+        configuration: { route: route! },
+        interval_seconds: 900,
+        enabled: true,
+      },
       random(),
     );
     const first = await terminal(

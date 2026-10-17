@@ -1,26 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { authorizeRoute } from "../sources/schemas.js";
+import { authorizeRoute } from "./routes.js";
 import { hash } from "../../shared/crypto.js";
-import { normalizeFeed } from "../ingest/json-feed.js";
+import { normalizeFeed } from "./json-feed.js";
 import type { RSSHubConfig } from "./config.js";
-import type { Source, PollResult, PollFailure } from "../sources/types.js";
+import type { Source, PollResult } from "../../modules/sources/types.js";
 
-export class CollectorError extends Error {
-  constructor(readonly failure: PollFailure) {
-    super(failure.code);
-  }
-}
-export type Collector = {
-  id: string;
-  version: string;
-  capabilities: readonly ["collector.poll"];
-  poll(
-    source: Source,
-    config: RSSHubConfig,
-    signal?: AbortSignal,
-  ): Promise<PollResult>;
-};
+import { CollectorError } from "../../modules/plugins/definition.js";
+export { CollectorError } from "../../modules/plugins/definition.js";
 export function retryAfter(value: string | null, now = Date.now()) {
   if (!value) return undefined;
   const delay = /^\d+$/.test(value)
@@ -38,7 +25,7 @@ export async function pollRSSHub(
   timeout = 30_000,
 ): Promise<PollResult> {
   try {
-    authorizeRoute(config, source.route);
+    authorizeRoute(config, String(source.configuration.route));
   } catch {
     throw new CollectorError({
       code: "route_not_allowed",
@@ -46,7 +33,7 @@ export async function pollRSSHub(
       blocked: true,
     });
   }
-  const target = new URL(source.route, config.base_url);
+  const target = new URL(String(source.configuration.route), config.base_url);
   if (target.origin !== config.base_url)
     throw new CollectorError({
       code: "invalid_destination",
@@ -157,9 +144,3 @@ export async function pollRSSHub(
     clearTimeout(timer);
   }
 }
-export const rsshubCollector: Collector = {
-  id: "rsshub",
-  version: "1.0.0",
-  capabilities: ["collector.poll"],
-  poll: pollRSSHub,
-};

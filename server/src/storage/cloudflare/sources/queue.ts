@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { pluginRegistry, pluginConfiguration } from "../../../plugins/index.js";
 import { z } from "zod";
 import type { CloudBindings } from "../bindings.js";
 import { CloudSources } from "./proxy.js";
@@ -22,6 +23,7 @@ export async function consumeCollections(
       MELTED_OPERATOR: env.MELTED_OPERATOR,
       PUBLIC_ORIGIN: env.PUBLIC_ORIGIN,
       RSSHUB_CONFIG: env.RSSHUB_CONFIG,
+      PLUGIN_CONFIG: env.PLUGIN_CONFIG,
       RSSHUB_ACCESS_KEY: env.RSSHUB_ACCESS_KEY,
     });
   for (const message of batch.messages) {
@@ -32,7 +34,13 @@ export async function consumeCollections(
     }
     try {
       const claim = await sources.claim(parsed.data.owner, parsed.data.run_id);
-      if (claim) await executeClaim(sources, claim, config.rsshub);
+      if (claim)
+        await executeClaim(
+          sources,
+          claim,
+          pluginRegistry,
+          pluginConfiguration(config),
+        );
       message.ack();
     } catch {
       message.retry({ delaySeconds: 30 });

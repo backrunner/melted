@@ -1,0 +1,81 @@
+{
+  "dsl_version": 1,
+  "source_form": {
+    "fields": [
+      {
+        "id": "name",
+        "label": "名称",
+        "required": true,
+        "type": "text",
+        "max_length": 200
+      },
+      {
+        "id": "enabled",
+        "label": "自动采集",
+        "required": true,
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "id": "interval_seconds",
+        "label": "采集间隔",
+        "required": true,
+        "type": "integer",
+        "default": 900,
+        "minimum": 300,
+        "maximum": 86400,
+        "step": 1,
+        "unit": "秒"
+      }
+    ]
+  },
+  "plugins": [
+    {
+      "dsl_version": 1,
+      "id": "rsshub",
+      "version": "1.0.0",
+      "title": "RSSHub",
+      "description": "订阅新闻、文化生活、社区等公开来源，保存当前订阅窗口中的原始内容",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "route",
+            "label": "订阅路由",
+            "help": "允许的路由：/bbc、/douban/book/latest",
+            "required": true,
+            "type": "text",
+            "placeholder": "/bbc/world-asia",
+            "max_length": 2048
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "创建后台采集任务，可查看实际入库结果",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          }
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查路由格式与运营者授权范围，不发起网络请求",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
+    }
+  ]
+}

@@ -1,31 +1,33 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { rsshubCollector, CollectorError } from "../collectors/rsshub.js";
-import type { RSSHubConfig } from "../collectors/config.js";
-import { collectorEnabled } from "../plugins/registry.js";
+import { CollectorError } from "../plugins/definition.js";
+import type { PluginRegistry } from "../plugins/registry.js";
+import { Problem } from "../../shared/problem.js";
+import { validateResult } from "../ingest/result.js";
 import type { Claim, PollResult, SourceRepository } from "../sources/types.js";
 
 export async function executeClaim(
   repository: SourceRepository,
   claim: Claim,
-  config: RSSHubConfig | undefined,
+  registry: PluginRegistry,
+  configuration: Record<string, unknown>,
   signal?: AbortSignal,
 ) {
   let result: PollResult;
   try {
-    if (!config || !collectorEnabled())
-      throw new CollectorError({
-        code: "collector_unconfigured",
-        retryable: false,
-        blocked: true,
-      });
-    result = await rsshubCollector.poll(claim.source, config, signal);
+    const plugin = registry.resolve(claim.source.plugin, configuration);
+    if (plugin.descriptor.config_version !== claim.source.config_version)
+      throw new Problem(409, "plugin_config_version_mismatch");
+    plugin.validate(claim.source.configuration);
+    result = await validateResult(await plugin.poll(claim.source, signal));
   } catch (error) {
     await repository.fail(
       claim,
       error instanceof CollectorError
         ? error.failure
-        : { code: "collector_failed", retryable: true },
+        : error instanceof Problem
+          ? { code: error.code, retryable: false, blocked: true }
+          : { code: "collector_failed", retryable: true },
     );
     return;
   }

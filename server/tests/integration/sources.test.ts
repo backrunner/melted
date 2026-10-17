@@ -18,7 +18,7 @@ import type {
 import { configSchema } from "../../src/config/schema.js";
 import { createApp } from "../../src/http/app.js";
 import { hash, random } from "../../src/shared/crypto.js";
-import { normalizeFeed } from "../../src/modules/ingest/json-feed.js";
+import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
 
 if (
   !process.env.MELTED_TEST_DATABASE_URL ||
@@ -62,7 +62,9 @@ const config = configSchema.parse({
   app = createApp();
 const input: SourceInput = {
   name: "公开文化与新闻",
-  route: "/bbc",
+  plugin: "rsshub",
+  config_version: 1,
+  configuration: { route: "/bbc" },
   enabled: true,
   interval_seconds: 900,
 };
@@ -113,6 +115,170 @@ for (const target of ["PostgreSQL", "SQLite DO"] as const)
     };
     const sourceID = created.id;
     await t.test(
+      "plugin catalog, generic configuration and declared actions preserve ownership and version fences",
+      async () => {
+        const catalogResponse = await send("/v1/plugins");
+        assert.equal(catalogResponse.status, 200);
+        const catalog = (await catalogResponse.json()) as {
+          dsl_version: number;
+          plugins: {
+            id: string;
+            version: string;
+            available: boolean;
+            form: { fields: { id: string }[] };
+          }[];
+        };
+        assert.equal(catalog.dsl_version, 1);
+        const plugin = catalog.plugins.find((p) => p.id === "rsshub")!;
+        assert.equal(plugin.available, true);
+        assert.equal(plugin.form.fields[0]!.id, "route");
+        assert.equal(
+          (await send("/v1/plugins", "GET", undefined, undefined, "invalid"))
+            .status,
+          401,
+        );
+        const legacy = await send(
+          "/v1/sources",
+          "POST",
+          {
+            name: "Legacy",
+            route: "/bbc",
+            enabled: false,
+            interval_seconds: 3600,
+          },
+          "legacy-create",
+        );
+        assert.equal(legacy.status, 201);
+        const old = (await legacy.json()) as {
+          id: string;
+          configuration: unknown;
+          version: number;
+        };
+        assert.deepEqual(old.configuration, { route: "/bbc" });
+        assert.equal(
+          (
+            await send(
+              "/v1/sources",
+              "POST",
+              {
+                name: "Legacy",
+                route: "/bbc",
+                enabled: false,
+                interval_seconds: 3600,
+              },
+              "legacy-create",
+            )
+          ).status,
+          201,
+        );
+        const patchedResponse = await send(`/v1/sources/${old.id}`, "PATCH", {
+          expected_version: 1,
+          route: "/bbc/world-asia",
+        });
+        const patched = (await patchedResponse.json()) as {
+          version: number;
+          enabled: boolean;
+          interval_seconds: number;
+        };
+        assert.equal(patched.enabled, false);
+        assert.equal(patched.interval_seconds, 3600);
+        await send(`/v1/sources/${old.id}`, "PATCH", {
+          expected_version: 2,
+          enabled: true,
+        });
+        const actionPath = `/v1/sources/${old.id}/actions/`;
+        const actionBody = {
+          expected_version: 3,
+          plugin_version: plugin.version,
+          input: {},
+        };
+        assert.equal(
+          (await send(actionPath + "validate", "POST", actionBody, "validate"))
+            .status,
+          200,
+        );
+        assert.equal(
+          (await send(actionPath + "unknown", "POST", actionBody, "unknown"))
+            .status,
+          404,
+        );
+        assert.equal(
+          (
+            await send(
+              actionPath + "sync",
+              "POST",
+              { ...actionBody, plugin_version: "old" },
+              "old-plugin",
+            )
+          ).status,
+          409,
+        );
+        assert.equal(
+          (
+            await send(
+              actionPath + "sync",
+              "POST",
+              { ...actionBody, input: { injected: true } },
+              "bad-input",
+            )
+          ).status,
+          400,
+        );
+        assert.equal(
+          (
+            await send(
+              actionPath + "sync",
+              "POST",
+              actionBody,
+              "other-owner",
+              stranger.access_token,
+            )
+          ).status,
+          404,
+        );
+        const accepted = await send(
+          actionPath + "sync",
+          "POST",
+          actionBody,
+          "action-once",
+        );
+        assert.equal(accepted.status, 202);
+        const receipt = (await accepted.json()) as { receipt_id: string };
+        assert.deepEqual(
+          await (
+            await send(actionPath + "sync", "POST", actionBody, "action-once")
+          ).json(),
+          { status: "accepted", receipt_id: receipt.receipt_id },
+        );
+        await send(`/v1/sources/${old.id}`, "PATCH", {
+          expected_version: 3,
+          name: "Changed",
+        });
+        assert.equal(
+          (await send(actionPath + "sync", "POST", actionBody, "stale-source"))
+            .status,
+          409,
+        );
+        assert.equal(
+          (await sources.receipt(owner, receipt.receipt_id)).state,
+          "cancelled",
+        );
+        assert.equal(
+          (
+            await send(
+              `/v1/sources/${old.id}`,
+              "DELETE",
+              undefined,
+              undefined,
+              session.access_token,
+              { "If-Match": '"4"' },
+            )
+          ).status,
+          204,
+        );
+      },
+    );
+    await t.test(
       "source mutations authenticate, enforce route policy and replay idempotently",
       async () => {
         const discovery = (await (
@@ -148,7 +314,7 @@ for (const target of ["PostgreSQL", "SQLite DO"] as const)
             await send(
               "/v1/sources",
               "POST",
-              { ...input, route: "/unapproved" },
+              { ...input, configuration: { route: "/unapproved" } },
               "create-denied",
             )
           ).status,
@@ -579,7 +745,7 @@ for (const target of ["PostgreSQL", "SQLite DO"] as const)
         const resumed = await sources.patch(owner, sourceID, {
           expected_version: paused.version,
           enabled: true,
-          route: "/douban/book/latest",
+          configuration: { route: "/douban/book/latest" },
         });
         assert.deepEqual(resumed.checkpoint, {});
         const finalRun = await sources.sync(owner, sourceID, random()),

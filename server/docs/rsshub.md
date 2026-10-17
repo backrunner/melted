@@ -1,10 +1,10 @@
 # RSSHub 采集
 
-内置 `rsshub` collector 将公开 RSSHub 路由的 JSON Feed 1/1.1 内容保存为账户隔离的原始条目。支持 Node/PostgreSQL 与 Workers/SQLite DO；不依赖旧 RSS3 DSL，不执行第三方插件代码，不生成 AI 简报。
+独立模块 `src/plugins/rsshub/` 通过通用 [插件 host 与设置 DSL](plugins.md) 注册；内置 `rsshub` collector 将公开 RSSHub 路由的 JSON Feed 1/1.1 内容保存为账户隔离的原始条目。支持 Node/PostgreSQL 与 Workers/SQLite DO；不依赖旧 RSS3 DSL，不执行第三方插件代码，不生成 AI 简报。
 
 ## 配置实例
 
-实例地址与路由授权由运营者配置，用户只能选择相对路由。默认没有实例，不会自动连接公共服务。配置启用后，discovery 声明 collectors，processing 展示实例 origin、公开路由请求用途及版本 hash；不包含密钥。`RSSHUB_CONFIG` 为 JSON；Node 也可使用 YAML 的 `rsshub` 字段。显式环境变量覆盖 YAML。
+实例地址与路由授权由运营者配置，用户只能选择相对路由。默认没有实例，不会自动连接公共服务。配置启用后，discovery 声明 collectors，processing 展示实例 origin、公开路由请求用途及版本 hash；不包含密钥。推荐 `PLUGIN_CONFIG` 的 `rsshub` 配置项；兼容 `RSSHUB_CONFIG` JSON 和 Node YAML 的 `rsshub` 字段。显式环境变量覆盖 YAML。
 
 ```json
 {"base_url":"https://feeds.example.com","allowed_routes":["/bbc","/douban/book/latest","/hackernews"],"allow_private":false}
@@ -43,7 +43,9 @@ docker compose --profile rsshub up --build -d
 | --- | --- |
 | 创建/列出来源 | `POST/GET /v1/sources` |
 | 读取/修改/删除来源 | `GET/PATCH/DELETE /v1/sources/{id}` |
-| 手动采集 | `POST /v1/sources/{id}/sync` |
+| 插件设置描述 | `GET /v1/plugins` |
+| 插件动作 | `POST /v1/sources/{id}/actions/{action}` |
+| 兼容手动采集 | `POST /v1/sources/{id}/sync` |
 | 查询采集状态 | `GET /v1/receipts/{id}` |
 | 原始条目元信息列表 | `GET /v1/sources/{id}/items?limit=30&cursor=…` |
 | 原始正文或历史修订 | `GET /v1/raw-items/{id}?revision=1` |
@@ -51,7 +53,7 @@ docker compose --profile rsshub up --build -d
 创建示例；提供唯一 `Idempotency-Key` header：
 
 ```json
-{"name":"周末阅读","route":"/douban/book/latest/fiction","interval_seconds":900,"enabled":true}
+{"plugin":"rsshub","config_version":1,"name":"周末阅读","configuration":{"route":"/douban/book/latest/fiction"},"interval_seconds":900,"enabled":true}
 ```
 
 创建启用来源后自动安排首次采集。创建和手动采集的幂等键保留七天，同操作同键异 payload 返回 409。手动采集返回 202、`receipt_id` 和 `status_url`；已有活动任务时合并到同一任务，每账户每分钟至多 60 次手动请求。

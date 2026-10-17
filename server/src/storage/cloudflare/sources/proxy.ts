@@ -26,11 +26,16 @@ export class CloudSources implements SourceRepository {
   get(owner: string, id: string) {
     return this.invoke<Source>(owner, "get", { id });
   }
-  async create(owner: string, input: SourceInput, key: string) {
+  async create(
+    owner: string,
+    input: SourceInput,
+    key: string,
+    fingerprint?: string,
+  ) {
     return this.invoke<Source>(owner, "create", {
       input,
       key,
-      fingerprint: await hash(JSON.stringify(input)),
+      fingerprint: fingerprint ?? (await hash(JSON.stringify(input))),
     });
   }
   patch(owner: string, id: string, input: SourcePatch) {
@@ -39,11 +44,22 @@ export class CloudSources implements SourceRepository {
   async remove(owner: string, id: string, version: number) {
     await this.invoke(owner, "remove", { id, version });
   }
-  async sync(owner: string, id: string, key: string) {
+  async sync(
+    owner: string,
+    id: string,
+    key: string,
+    expectedVersion?: number,
+    action?: string,
+  ) {
     return this.invoke<Run>(owner, "sync", {
       id,
       key,
-      fingerprint: await hash(id),
+      fingerprint: await hash(
+        expectedVersion === undefined
+          ? id
+          : JSON.stringify({ id, expectedVersion, action }),
+      ),
+      expectedVersion,
     });
   }
   receipt(owner: string, id: string) {
