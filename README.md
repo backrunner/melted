@@ -44,7 +44,7 @@ Melted 是一个通用个人信息工作台。资料、消息、观点和兴趣�
 <details>
 <summary>查看连接入口</summary>
 
-![Melted 连接入口](assets/screenshots/landing-light.png)
+![Melted 连接入口](assets/screenshots/landing-light.jpg)
 
 输入服务器地址后，先查看运营者和处理说明，再选择信任与登录。身份密钥保存在系统钥匙串，不能用来证明 Apple 账号身份。
 

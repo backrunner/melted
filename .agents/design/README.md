@@ -8,7 +8,8 @@
 - [tokens.json](tokens.json)：颜色、macOS 布局/阅读/连接指标和 iOS 目标；脚本生成 Swift。version=7 是数值版本，与 UI 文档 v1.1 无需同号。status 保留保守的 design-baseline-not-runtime-verified，含义是整套 token 尚未完成全部运行矩阵，不否定已记录的特定原生截图。
 - [App 图标](../../assets/app-icon/README.md)：原始 m 与共享 palette 生成 SVG、1024 PNG、ICNS，构建显式绑定。
 - [品牌原始标识](../../assets/brand/mark.svg)：由 [品牌生成器](../../scripts/generate-brand-assets.py)生成 Swift 路径与亮暗 lockup，禁止替换为近似字符或 emoji。
-- [浅色阅读](../../assets/screenshots/reader-light.png)、[深色阅读](../../assets/screenshots/reader-dark.png)、[连接入口](../../assets/screenshots/landing-light.png)：2026-10-17 README 原生截图，实际开发样例，不是模型质量样本。
+- [融化标识修订](../validation/2026-10-17/melting-mark.md)：微弯左笔画、普通短中段与右侧长滴坠；旧截图按原记录保留。
+- [浅色阅读](../../assets/screenshots/reader-light.png)、[深色阅读](../../assets/screenshots/reader-dark.png)、[连接入口](../../assets/screenshots/landing-light.jpg)：2026-10-17 README 原生截图，实际开发样例，不是模型质量样本。
 - [品牌位置截图与操作](../validation/2026-10-16/brand-position.md)、[法律窗口](../validation/2026-10-17/publication.md)：按记录的构建与场景引用。
 
 ## 组件与页面映射
