@@ -26,6 +26,8 @@ export type CollectorContext<Settings> = {
   readonly configuration: Readonly<Settings>;
   readonly checkpoint: Readonly<Checkpoint>;
   readonly signal?: AbortSignal;
+  /** Opaque, stable per durable receipt; retries/fencing reclaims share this ID. */
+  readonly execution?: Readonly<{ id: string }>;
 };
 export type CollectorDefinition<Operator, Settings extends Configuration> = {
   descriptor: z.input<typeof descriptorSchema>;
@@ -133,7 +135,7 @@ export abstract class BaseCollectorPlugin<
         : {}),
       destinations: this.destinations(operator),
       validate,
-      poll: async (source, signal) => {
+      poll: async (source, signal, execution) => {
         if (
           source.plugin !== descriptor.id ||
           source.config_version !== descriptor.config_version
@@ -156,6 +158,7 @@ export abstract class BaseCollectorPlugin<
             configuration: Object.freeze(validate(source.configuration)),
             checkpoint: Object.freeze({ ...source.checkpoint }),
             signal,
+            execution: execution && Object.freeze({ ...execution }),
           },
           operator,
         );

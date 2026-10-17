@@ -27,6 +27,7 @@ server/
 │   │   ├── repository.ts    # 组合领域接口及基础运维接口
 │   │   ├── postgres/        # 连接/事务、迁移、认证、内容、查询、登录流程
 │   │   └── cloudflare/      # RPC、账户/控制 DO、SQLite、认证、内容与查询
+│   ├── agent-gateway/       # 独立 Node ACP/MCP 网关、受限 profile、证据与持久执行账本
 │   ├── config/              # 共享配置 schema 与 Node YAML 加载
 │   └── shared/              # 错误、加密原语与 schema 解析
 ├── tests/
@@ -95,3 +96,5 @@ Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.lo
 独立 `bluesky`、`fediverse`、`nostr` 插件分别订阅账号/Feed、Mastodon 兼容账号/话题、公开 relay 的作者/话题；Nostr 校验事件 ID 和 Schnorr 签名。实例与 relay 选项由服务端下发，客户端复用原生多订阅表单。配置、范围和验证见 [社交来源指南](docs/social-collectors.md)。
 
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。
+
+独立 `deepseek-harness` 插件通过 ACP 网关进行目标驱动的公开信息采集，只有工具实际获得的证据可入库；配置、独立固定 runtime、费用/恢复边界见 [Agent 采集指南](docs/agent-collection.md)。`npm run test:acp` 运行真实 Harness + 合成模型协议验收，需先安装 `agent-runtime`。

@@ -73,3 +73,12 @@ development:
 #   nostr:
 #     relays:
 #       - url: wss://nos.lol
+#   deepseek-harness:
+#     gateway_origin: https://agents.example.com
+#     access_token: replace-with-at-least-32-random-characters
+#     profiles:
+#       - id: public
+#         label: 公开新闻与文化
+#         allowed_origins: [https://feeds.bbci.co.uk, https://www.bbc.com]
+#         model_origin: https://api.deepseek.com
+# Harness / model secrets and process isolation: docs/agent-collection.md

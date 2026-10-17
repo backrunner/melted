@@ -147,3 +147,20 @@ private func pluginFixture(_ name: String) throws -> Data {
         }
     }
 }
+
+@Test func agentCollectionUsesNativeGoalScopeLimitsAndServerProfiles() throws {
+    let catalog = try Wire.decoder().decode(PluginCatalog.self, from: pluginFixture("plugin-settings"))
+    let plugin = try #require(catalog.plugins.first { $0.id == "deepseek-harness" })
+    #expect(plugin.supported && plugin.available)
+    #expect(plugin.collection.layout == "list")
+    #expect(plugin.collection.columns.contains { $0.id == "configuration.goal" })
+    #expect(plugin.form.fields.first?.type == "select")
+    var values = plugin.form.defaults
+    #expect(plugin.form.error(in: values) != nil)
+    values["goal"] = .string("寻找本周文化活动")
+    values["start_url"] = .string("https://news.example.org/feed.json")
+    #expect(plugin.form.error(in: values) == nil)
+    values["timeout_seconds"] = .number(300)
+    #expect(plugin.form.error(in: values) != nil)
+    #expect(plugin.actions.first?.confirmation != nil)
+}

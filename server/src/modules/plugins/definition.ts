@@ -13,7 +13,7 @@ export class CollectorError extends Error {
 export type Destination = {
   id: string;
   origin: string;
-  purpose: "public_feed_collection";
+  purpose: "public_feed_collection" | "agent_collection";
   data_categories: string[];
 };
 /** Trusted, installed modules. No repository, account credentials or UI code is exposed. */
@@ -28,5 +28,9 @@ export interface ConfiguredCollector {
   presets?: PresetProvider;
   destinations: Destination[];
   validate(configuration: Configuration): Configuration;
-  poll(source: Source, signal?: AbortSignal): Promise<PollResult>;
+  poll(
+    source: Source,
+    signal?: AbortSignal,
+    execution?: { id: string },
+  ): Promise<PollResult>;
 }

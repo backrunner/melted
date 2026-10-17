@@ -1,0 +1,25 @@
+FROM node:24-bookworm-slim AS build
+WORKDIR /app/server
+COPY server/package.json server/package-lock.json ./
+RUN npm ci
+COPY server/ ./
+COPY contracts/ /app/contracts/
+RUN npm run check && npm run build && npm prune --omit=dev
+
+FROM node:24-bookworm-slim AS harness
+WORKDIR /opt/dsh
+COPY server/agent-runtime/package.json server/agent-runtime/package-lock.json ./
+RUN npm ci --ignore-scripts --omit=dev
+
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production
+WORKDIR /app/server
+COPY --from=build --chown=node:node /app/server/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/server/dist ./dist
+COPY --from=build --chown=node:node /app/server/package.json ./package.json
+COPY --from=harness /opt/dsh /opt/dsh
+COPY LICENSE COPYRIGHT THIRD_PARTY.md /app/licenses/
+RUN mkdir /data && chown node:node /data
+USER node
+EXPOSE 8430
+CMD ["node", "dist/server/src/entrypoints/agent-gateway.js", "/config/agent-gateway.json"]

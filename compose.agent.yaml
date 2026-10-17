@@ -1,0 +1,20 @@
+services:
+  agent-gateway:
+    profiles: [agent]
+    build:
+      context: .
+      dockerfile: Dockerfile.agent-gateway
+    environment:
+      MELTED_AGENT_GATEWAY_TOKEN: ${MELTED_AGENT_GATEWAY_TOKEN:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ${MELTED_AGENT_CONFIG:-./server/agent-gateway.example.json}:/config/agent-gateway.json:ro
+      - agent-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ports: ["127.0.0.1:8430:8430"]
+    restart: unless-stopped
+volumes:
+  agent-data:

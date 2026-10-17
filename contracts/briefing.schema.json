@@ -440,7 +440,10 @@
                   "format": "uri"
                 },
                 "purpose": {
-                  "const": "public_feed_collection"
+                  "enum": [
+                    "public_feed_collection",
+                    "agent_collection"
+                  ]
                 },
                 "data_categories": {
                   "type": "array",

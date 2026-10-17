@@ -107,3 +107,5 @@ macOS 设置的“内容 → 来源与插件”提供添加、编辑、暂停/�
 通用接口为 `GET /v1/plugins/{id}/presets?query=&limit=40&cursor=…` 与 `POST /v1/plugins/{id}/presets/{preset}/resolve`（body 为 `{input:{…}}`）。目录只读，解析不创建来源；结果通过现有 source API 保存。目录变更 cursor 返回 409，暂时不可用返回 503，客户端保留已选项并提供重新加载。共享 fixture 为 `plugin-presets.json`，schema/OpenAPI 由 `npm run contracts:plugins` 生成。
 
 macOS 的目录、来源、参数表单与建议列表使用共享 `MeltedScrollView`，复用 `ScrollEdgeFade` 仅对内容做视口边缘渐隐；滚动条、固定标题和 footer 不参与遮罩。到达边界恢复不透明，减少透明度或提高对比度时回退无遮罩。主资讯列表的 pinned header 继续使用同一低层 modifier 保持标题不透明。`加载更多` 使用统一控件高度、居中次要样式和禁重入的加载态。
+
+`deepseek-harness` 使用同一 DSL 配置采集目标、起始地址、服务器 profile 和运行上限；独立 ACP 网关负责固定 Harness 与只读工具。模型结果只选择工具证据，原文沿用统一入库。见 [Agent 采集](agent-collection.md)。

@@ -9,29 +9,6 @@ import {
 import type { RawContent, Run } from "../../modules/sources/types.js";
 import { isHTTPURL } from "../../shared/url.js";
 
-export const originSchema = z
-  .string()
-  .max(200)
-  .refine((v) => {
-    if (!isHTTPURL(v)) return false;
-    const u = new URL(v);
-    return u.pathname === "/" && !u.search;
-  })
-  .transform((v) => new URL(v).origin);
-export function publicOrigin(v: string) {
-  const u = new URL(v);
-  return (
-    u.protocol === "https:" &&
-    !u.port &&
-    !/^[\d.]+$/.test(u.hostname) &&
-    !u.hostname.includes(":") &&
-    u.hostname.includes(".") &&
-    !/(?:\.|^)(?:localhost|local|internal|home|lan|test|invalid)\.?$/i.test(
-      u.hostname,
-    ) &&
-    !u.hostname.endsWith(".")
-  );
-}
 export const maxItemsSchema = z.number().int().min(1).max(100).default(50);
 export const maxItemsField = {
   id: "max_items",

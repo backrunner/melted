@@ -1,0 +1,19 @@
+{
+  "listen_host": "0.0.0.0",
+  "port": 8430,
+  "data_directory": "/data",
+  "dsh_package_directory": "/opt/dsh/node_modules/@deepseek-ai/dsh",
+  "access_token_env": "MELTED_AGENT_GATEWAY_TOKEN",
+  "max_daily_runs": 24,
+  "profiles": [
+    {
+      "id": "public",
+      "label": "公开新闻与文化",
+      "allowed_origins": ["https://feeds.bbci.co.uk", "https://www.bbc.com"],
+      "model_origin": "https://api.deepseek.com",
+      "model_base_url": "https://api.deepseek.com/anthropic",
+      "model": "deepseek-v4-flash",
+      "api_key_env": "DEEPSEEK_API_KEY"
+    }
+  ]
+}

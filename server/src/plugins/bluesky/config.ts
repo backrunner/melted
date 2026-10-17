@@ -1,11 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
-import {
-  maxItemsSchema,
-  originSchema,
-  publicOrigin,
-} from "../shared/social.js";
+import { originSchema, publicOrigin } from "../../shared/network-origin.js";
+import { maxItemsSchema } from "../shared/social.js";
 export const operatorSchema = z
   .object({
     service_url: originSchema.default("https://public.api.bsky.app"),

@@ -1,0 +1,103 @@
+// SPDX-FileCopyrightText: 2026 Melted contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+import { descriptorSchema } from "../../modules/plugins/sdk/index.js";
+export const descriptor = descriptorSchema.parse({
+  dsl_version: 1,
+  id: "deepseek-harness",
+  version: "1.0.0",
+  config_version: 1,
+  kind: "collector",
+  title: "DeepSeek Harness",
+  description: "让 Agent 在授权网站中寻找符合目标的信息",
+  capabilities: ["collector.poll"],
+  form: {
+    fields: [
+      {
+        id: "profile",
+        type: "text",
+        label: "采集环境",
+        max_length: 50,
+        help: "由服务器提供模型与可访问的网站",
+      },
+      {
+        id: "goal",
+        type: "text",
+        label: "采集目标",
+        max_length: 2000,
+        placeholder: "例如：寻找近期城市文化活动，保留原始介绍",
+        help: "目标及抓取的公开内容会发送给模型；自动采集会持续消耗模型额度",
+      },
+      {
+        id: "start_url",
+        type: "text",
+        label: "起始地址",
+        format: "url",
+        max_length: 2048,
+        help: "公开网页或 Feed，必须属于采集环境授权的网站",
+      },
+      {
+        id: "lookback_hours",
+        type: "integer",
+        label: "关注最近",
+        unit: "小时",
+        minimum: 1,
+        maximum: 168,
+        default: 24,
+        help: "供 Agent 筛选参考；缺少发布时间的来源仍可能保留",
+      },
+      {
+        id: "max_items",
+        type: "integer",
+        label: "单次条数上限",
+        minimum: 1,
+        maximum: 20,
+        default: 10,
+      },
+      {
+        id: "max_requests",
+        type: "integer",
+        label: "单次网页请求上限",
+        minimum: 1,
+        maximum: 10,
+        default: 5,
+      },
+      {
+        id: "timeout_seconds",
+        type: "integer",
+        label: "单次运行时限",
+        unit: "秒",
+        minimum: 15,
+        maximum: 60,
+        default: 45,
+      },
+    ],
+  },
+  collection: {
+    layout: "list",
+    title: "采集任务",
+    primary_field: "goal",
+    columns: [
+      { scope: "source", field: "name", label: "名称" },
+      { scope: "configuration", field: "goal", label: "采集目标" },
+      { scope: "configuration", field: "profile", label: "采集环境" },
+      { scope: "source", field: "enabled", label: "状态" },
+    ],
+  },
+  actions: [
+    {
+      id: "sync",
+      label: "立即采集",
+      description: "启动一次 Agent 采集任务",
+      effect: "collect",
+      input: { fields: [] },
+      confirmation: "此次采集会调用模型并消耗额度",
+    },
+    {
+      id: "validate",
+      label: "检查配置",
+      description: "检查采集环境与起始地址授权",
+      effect: "validate",
+      input: { fields: [] },
+    },
+  ],
+});

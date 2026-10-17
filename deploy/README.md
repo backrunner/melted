@@ -9,3 +9,5 @@
 配置包括 DATABASE_URL（仅 Node）、稳定 MELTED_SERVER_ID、MELTED_OPERATOR、PUBLIC_ORIGIN、REGISTRATION_MODE=key|closed，以及可选 OIDC_ISSUER / OIDC_CLIENT_ID / OIDC_CLIENT_SECRET。插件使用 `PLUGIN_CONFIG` JSON map；RSSHub 支持独立服务端秘密 `RSSHUB_ACCESS_KEY`，配置与来源 API 见 [采集指南](../server/docs/rsshub.md)。独立 Feed 插件使用 `feed.allowed_origins` 指定站点，见 [Feed 指南](../server/docs/feed.md)。密钥不得提交或记录。Node 默认容器内 0.0.0.0:8421，主机端口只映射 loopback。
 
 查询快照 5 分钟、最多 8 份/账户、2,000 条/8 MiB；状态 mutation 幂等记录保留至少 7 天。changes 是提交有序提示，完整离线同步尚未提供。公开注册按凭据持有权，客户端可同步钥匙串不证明 Apple 身份。
+
+可选 Agent 采集网关使用 `Dockerfile.agent-gateway` 与 `compose.agent.yaml`，固定独立 DeepSeek Harness runtime，经 ACP stdio 驱动；Cloudflare 通过 HTTPS 连接运营者网关。配置与密钥、费用及缓存保留见 [Agent 采集](../server/docs/agent-collection.md)。

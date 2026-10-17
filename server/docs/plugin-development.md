@@ -103,3 +103,5 @@ rtk proxy python3 scripts/dev.py check
 模板自动测试覆盖授权主题、隐藏秘密、partial、缺日期、稳定 hash 和取消。SDK 测试另外覆盖生成器拒绝覆盖/路径穿越、生成源码可导入、HTTP 限额/状态分类。集成测试将模板经 Wrangler 打包，在真实 workerd 里经过 registry/service/结果校验运行；模板上游使用注入 fixture。这不证明你新接入的真实源、运营权限、网络限制或许可证已经验证。
 
 实际插件还需测试条件请求、超时、429、正文上限与非预期格式；通过同套 Node/PG、DO/Queue 契约检查，并记录真实来源请求时间、运行状态及入库数量。只有有界规范化结果交给 host；租约/fencing、幂等、去重/修订、暂停/删除栅栏和 checkpoint 事务继续由共用层负责。
+
+付费或有外部副作用的采集器可使用 `CollectorContext.execution.id`，这是 host 从持久 receipt 派生的不透明 ID，同一任务重试保持不变，不包含原始账户/来源 ID。仅在持久任务执行时提供，不能用随机 ID 代替；外部执行仍需持久去重和未知结果处理。参考 [ACP Agent 采集](agent-collection.md)，不要将队列至少一次语义解释为恰好一次计费。

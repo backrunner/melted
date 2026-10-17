@@ -3,7 +3,7 @@
   "info": {
     "title": "Melted development API",
     "version": "0.2.0",
-    "description": "First implemented reading slice of planned protocol v1. Not the frozen full v1 API. No ingest, model execution, preferences, plugin execution, full snapshot sync or third-party processing. List bodies/evidence are empty; fetch detail. Times are UTC RFC3339. Search is literal substring, not linguistic full-text search."
+    "description": "Implemented development subset of protocol v1: reading, identity, trusted collector plugins and raw ingestion. Optional ACP agent collection uses declared external model processing. Full briefing generation, preferences, public ingest and full snapshot sync remain unimplemented. List bodies/evidence are empty; fetch detail. Times are UTC RFC3339. Search is literal substring, not linguistic full-text search."
   },
   "security": [
     {
@@ -79,7 +79,7 @@
     },
     "/.well-known/melted/processing": {
       "get": {
-        "summary": "Local-only processing declaration",
+        "summary": "Configured collection and model processing declaration",
         "operationId": "get__well-known_melted_processing",
         "responses": {
           "200": {
@@ -2071,7 +2071,10 @@
                   "format": "uri"
                 },
                 "purpose": {
-                  "const": "public_feed_collection"
+                  "enum": [
+                    "public_feed_collection",
+                    "agent_collection"
+                  ]
                 },
                 "data_categories": {
                   "type": "array",

@@ -79,6 +79,22 @@
         ],
         "required_bindings": []
       }
+    },
+    {
+      "enabled": true,
+      "manifest": {
+        "id": "deepseek-harness",
+        "version": "1.0.0",
+        "runtime": "builtin",
+        "targets": [
+          "node",
+          "cloudflare"
+        ],
+        "capabilities": [
+          "https"
+        ],
+        "required_bindings": []
+      }
     }
   ]
 }

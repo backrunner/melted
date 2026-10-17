@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
 import { bech32 } from "@scure/base";
-import { maxItemsSchema, publicOrigin } from "../shared/social.js";
+import { maxItemsSchema } from "../shared/social.js";
+import { publicOrigin } from "../../shared/network-origin.js";
 
 export const relaySchema = z
   .string()

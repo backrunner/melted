@@ -62,6 +62,7 @@ test("base collector participates in host validation without exposing source ide
       assert.deepEqual(Object.keys(context).sort(), [
         "checkpoint",
         "configuration",
+        "execution",
         "signal",
       ]);
       assert(Object.isFrozen(context.configuration));

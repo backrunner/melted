@@ -12,6 +12,7 @@
 | RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报；客户端管理通过插件 DSL 提供 |
 | Feed 采集 | 独立 feed 插件，RSS 2.0 / Atom 1.0 / JSON Feed 解析、条件请求及统一入库；URL/格式/条数 DSL | 运营者精确允许 origin；无任意域名、自动重定向、全文补抓或历史回填 |
 | 社交采集 | 独立 Bluesky、Fediverse、Nostr 插件及服务端实例/relay 选项；账号/话题/Feed 订阅、Nostr 签名校验 | 公开内容与当前窗口；Fediverse 限 Mastodon 兼容 API；无登录/发布/私信/全网回填 |
+| Agent 采集 | 独立 DeepSeek Harness 插件、ACP 网关、受限工具与真实证据选择；双部署任务与入库 | 固定 Harness + 合成模型闭环已验证；真实模型质量/费用未验收，后处理 AI 简报未接入 |
 | 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作；表单建议、list/table 集合与多选创建，来源通用 configuration；SDK 基类与可生成 boilerplate | 每行独立来源与任务，按 DSL 固定布局、无用户切换；不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
@@ -44,6 +45,8 @@
 RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。RSSHub 与 Feed 来源设置已按插件 DSL 接入，随后扩展偏好/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
 
 ## 验证与运行入口
+
+DeepSeek Harness ACP 网关、Agent 证据采集与两后端闭环见 [2026-10-17 ACP 验收](validation/2026-10-17/acp-collection/README.md)。真实 Harness 使用合成模型验证，真实模型质量与费用尚待凭据验收。
 
 Bluesky、Fediverse、Nostr 的独立插件、原生 DSL 配置和双后端真实采集见 [2026-10-17 社交来源验收](validation/2026-10-17/social-collectors/README.md)。Fediverse 限 Mastodon 兼容公开 API，Nostr relay 可用性与历史回填边界单独记录。
 

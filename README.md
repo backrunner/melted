@@ -159,3 +159,5 @@ python3 scripts/dev.py down
 Copyright © 2026 Melted contributors。
 
 Melted 原创代码、文档与品牌资产采用 **GNU GPL 第三版或任何后续版本（GPL-3.0-or-later）**，不提供任何担保。完整条款见 [LICENSE](LICENSE)，适用范围见 [COPYRIGHT](COPYRIGHT)，第三方依赖保留各自的许可与版权声明，见 [THIRD_PARTY.md](THIRD_PARTY.md)。项目当前没有 App Store 分发例外。
+
+Agent 化采集支持 [DeepSeek Harness ACP 插件](server/docs/agent-collection.md)：原生目标配置、受限公开来源工具和证据选择，结果进入同一原始入库流程；尚不自动生成 AI 简报。

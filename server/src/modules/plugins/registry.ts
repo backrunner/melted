@@ -69,7 +69,9 @@ export class PluginRegistry {
         const origin = new URL(destination.origin);
         if (
           destination.id !== descriptor.id ||
-          destination.purpose !== "public_feed_collection" ||
+          !["public_feed_collection", "agent_collection"].includes(
+            destination.purpose,
+          ) ||
           ![
             "http:",
             "https:",

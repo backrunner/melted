@@ -1,0 +1,16 @@
+{
+  "deepseek-harness": {
+    "gateway_origin": "https://agents.example.org",
+    "access_token": "fixture-only-not-a-real-gateway-token-0000",
+    "profiles": [
+      {
+        "id": "public",
+        "label": "公开文化来源",
+        "allowed_origins": [
+          "https://news.example.org"
+        ],
+        "model_origin": "https://api.deepseek.com"
+      }
+    ]
+  }
+}

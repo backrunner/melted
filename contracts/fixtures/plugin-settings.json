@@ -633,6 +633,146 @@
       ],
       "available": true,
       "unavailable_reason": null
+    },
+    {
+      "dsl_version": 1,
+      "id": "deepseek-harness",
+      "version": "1.0.0",
+      "title": "DeepSeek Harness",
+      "description": "让 Agent 在授权网站中寻找符合目标的信息",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "profile",
+            "label": "采集环境",
+            "required": true,
+            "type": "select",
+            "default": "public",
+            "options": [
+              {
+                "value": "public",
+                "label": "公开文化来源"
+              }
+            ]
+          },
+          {
+            "id": "goal",
+            "label": "采集目标",
+            "help": "目标及抓取的公开内容会发送给模型；自动采集会持续消耗模型额度",
+            "required": true,
+            "type": "text",
+            "placeholder": "例如：寻找近期城市文化活动，保留原始介绍",
+            "max_length": 2000
+          },
+          {
+            "id": "start_url",
+            "label": "起始地址",
+            "help": "公开网页或 Feed，必须属于采集环境授权的网站",
+            "required": true,
+            "type": "text",
+            "max_length": 2048,
+            "format": "url"
+          },
+          {
+            "id": "lookback_hours",
+            "label": "关注最近",
+            "help": "供 Agent 筛选参考；缺少发布时间的来源仍可能保留",
+            "required": true,
+            "type": "integer",
+            "default": 24,
+            "minimum": 1,
+            "maximum": 168,
+            "step": 1,
+            "unit": "小时"
+          },
+          {
+            "id": "max_items",
+            "label": "单次条数上限",
+            "required": true,
+            "type": "integer",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 20,
+            "step": 1
+          },
+          {
+            "id": "max_requests",
+            "label": "单次网页请求上限",
+            "required": true,
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 10,
+            "step": 1
+          },
+          {
+            "id": "timeout_seconds",
+            "label": "单次运行时限",
+            "required": true,
+            "type": "integer",
+            "default": 45,
+            "minimum": 15,
+            "maximum": 60,
+            "step": 1,
+            "unit": "秒"
+          }
+        ]
+      },
+      "collection": {
+        "layout": "list",
+        "title": "采集任务",
+        "columns": [
+          {
+            "scope": "source",
+            "field": "name",
+            "label": "名称"
+          },
+          {
+            "scope": "configuration",
+            "field": "goal",
+            "label": "采集目标"
+          },
+          {
+            "scope": "configuration",
+            "field": "profile",
+            "label": "采集环境"
+          },
+          {
+            "scope": "source",
+            "field": "enabled",
+            "label": "状态"
+          }
+        ],
+        "primary_field": "goal"
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "启动一次 Agent 采集任务",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          },
+          "confirmation": "此次采集会调用模型并消耗额度"
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查采集环境与起始地址授权",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
     }
   ]
 }

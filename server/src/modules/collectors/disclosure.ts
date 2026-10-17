@@ -19,9 +19,10 @@ export async function collectionDisclosure(
     .sort(
       (a, b) => a.id.localeCompare(b.id) || a.origin.localeCompare(b.origin),
     );
+  const agent = destinations.some((d) => d.purpose === "agent_collection");
   return {
     version: "plugins-v1:" + (await hash(JSON.stringify(destinations))),
     destinations,
-    description: `启用来源后，服务端向 ${destinations.map((d) => d.origin).join("、")} 请求公开订阅内容并保存原始数据；RSSHub 实例可能继续访问上游，其请求记录由运营者管理。不会发送 Melted 账户凭据、已存正文或附件，也未启用 AI 整理`,
+    description: `启用来源后，服务端向 ${destinations.map((d) => d.origin).join("、")} 请求公开内容并保存原始数据；RSSHub 实例可能继续访问上游，其请求记录由运营者管理。${agent ? "Agent 采集会将采集目标、来源地址及新抓取的公开内容发送给已声明的 ACP 网关和模型服务，由模型选择入库条目并消耗额度。" : ""}不会发送 Melted 账户凭据或已有资料库内容；采集结果尚不自动进入 AI 简报`,
   };
 }
