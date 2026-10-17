@@ -33,7 +33,7 @@ private struct MeltedButtonBody: View {
         let active = isHovered && isEnabled
         configuration.label
             .font(.system(size: MeltedType.control, weight: .semibold))
-            .foregroundStyle(prominent ? palette.accentText : palette.text)
+            .foregroundStyle(prominent ? palette.accentText : (configuration.role == .destructive ? palette.danger : palette.text))
             .padding(.horizontal, 20)
             .background {
                 if prominent {

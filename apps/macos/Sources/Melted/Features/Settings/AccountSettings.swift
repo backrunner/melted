@@ -20,8 +20,11 @@ struct AccountSettings: View {
             LabeledContent("登录方式", value: credentialTitle)
 
             if model.connected {
-                Button("退出登录", role: .destructive) { Task { await model.logout() } }
-                    .foregroundStyle(palette.danger)
+                Button(role: .destructive) { Task { await model.logout() } } label: {
+                    Text("退出登录")
+                        .frame(minHeight: 32)
+                }
+                .buttonStyle(MeltedSecondaryButtonStyle())
             }
             if let failure = model.failure {
                 Label(failure.message, systemImage: "exclamationmark.triangle")
@@ -35,9 +38,6 @@ struct AccountSettings: View {
             }
         } header: {
             Text("账户")
-        } footer: {
-            Text("登录会话保存在本机钥匙串，应用不保存密码或 API Key。")
-                .foregroundStyle(palette.secondary)
         }
     }
 
