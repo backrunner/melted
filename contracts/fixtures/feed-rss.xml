@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:c="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>文化阅读</title><link>https://feeds.example.org/</link><description>测试订阅</description><language>zh-CN</language>
+    <item><guid isPermaLink="false">book-1</guid><title>书与城市</title><link>/books/1</link><description>摘要</description><c:encoded><![CDATA[<p>阅读与生活</p><script>untrusted()</script>]]></c:encoded><dc:creator>作者甲</dc:creator><pubDate>Sat, 17 Oct 2026 08:00:00 +0800</pubDate><category>文化</category><enclosure url="/audio/1.mp3" type="audio/mpeg" length="1200"/></item>
+    <item><guid isPermaLink="false">no-date</guid><title>没有日期的条目</title><description>保留未知</description></item>
+  </channel>
+</rss>

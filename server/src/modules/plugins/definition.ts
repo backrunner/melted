@@ -24,7 +24,7 @@ export interface CollectorPlugin {
 }
 export interface ConfiguredCollector {
   descriptor: PluginDescriptor;
-  destination: Destination;
+  destinations: Destination[];
   validate(configuration: Configuration): Configuration;
   poll(source: Source, signal?: AbortSignal): Promise<PollResult>;
 }

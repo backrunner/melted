@@ -41,13 +41,15 @@ export class RSSHubCollector extends BaseCollectorPlugin<
       },
     };
   }
-  protected destination(operator: RSSHubConfig): Destination {
-    return {
-      id: this.descriptor.id,
-      origin: operator.base_url,
-      purpose: "public_feed_collection",
-      data_categories: ["source_route"],
-    };
+  protected destinations(operator: RSSHubConfig): Destination[] {
+    return [
+      {
+        id: this.descriptor.id,
+        origin: operator.base_url,
+        purpose: "public_feed_collection",
+        data_categories: ["source_route"],
+      },
+    ];
   }
   protected override deploymentIssues(
     operator: RSSHubConfig,

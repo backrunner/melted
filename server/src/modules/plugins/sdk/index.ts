@@ -7,7 +7,14 @@ export {
   type CollectorContext,
   type CollectorDefinition,
 } from "./collector.js";
-export { requestJSON, retryAfter, type JSONResponse } from "./http.js";
+export {
+  requestBytes,
+  requestJSON,
+  retryAfter,
+  type ByteResponse,
+  type JSONResponse,
+  type RequestOptions,
+} from "./http.js";
 export { collectionResult } from "./result.js";
 export {
   CollectorError,

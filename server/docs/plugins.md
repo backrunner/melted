@@ -2,6 +2,8 @@
 
 当前版本提供 `BaseCollectorPlugin` 基类、可编译注册的 `CollectorPlugin` 模块、统一任务执行和 DSL v1。RSSHub 是第一个独立实现，文件全部位于 `src/plugins/rsshub/`；host 不解析 RSSHub 路由或 JSON Feed。macOS 从已连接服务器读取设置描述，渲染原生表单和动作，不按插件 ID 写专用页面。
 
+直接订阅 RSS/Atom/JSON Feed 的独立 `feed` 插件及运营配置见 [Feed 指南](feed.md)。
+
 ## 层次与扩展
 
 | 层次 | 职责 |
@@ -18,7 +20,7 @@
 
 新增采集器使用 [开发指南与 boilerplate](plugin-development.md) 生成 `src/plugins/<id>/`，继承 `BaseCollectorPlugin`，在组合根登记，并在 `server/plugins.json` 启用与实现完全匹配的 manifest。无需修改来源、任务或存储分支。单元测试以独立 `example.culture` 模块验证不同设置和动作 ID 使用同一 host；它是测试实现，不是部署提供的数据源。
 
-模块声明部署 manifest、公开 descriptor、`configure(operator)` 和 `deploymentErrors(operator, target)`。configure 只接收该插件的运营配置，返回目的地声明、`validate(configuration)` 和 `poll(source, signal)`；不会注入数据库或账户凭据。poll 返回通用 PollResult，按失败类别抛 CollectorError。输出仍需通过 host 的条数、大小、schema、hash 校验，任务入库和 checkpoint 由原有事务完成。
+模块声明部署 manifest、公开 descriptor、`configure(operator)` 和 `deploymentErrors(operator, target)`。configure 只接收该插件的运营配置，返回 destinations 目的地列表、`validate(configuration)` 和 `poll(source, signal)`；不会注入数据库或账户凭据。poll 返回通用 PollResult，按失败类别抛 CollectorError。输出仍需通过 host 的条数、大小、schema、hash 校验，任务入库和 checkpoint 由原有事务完成。
 
 这是受信任代码随服务端构建的扩展入口，不是动态下载执行器或安全沙箱。模块仍具有运行进程的权限；远程 HTTP invoke、sidecar、自定义脚本、插件市场和任意第三方代码加载未实现。启用未知模块或 manifest 不匹配会被预检拒绝，Worker 必须真实打包。
 
@@ -29,7 +31,7 @@
 - 公共表单描述名称、自动采集和轮询间隔；插件表单描述自己的 configuration。
 - 仅支持 text、integer、boolean、select；包括名称、说明、必填、默认值、文本长度、数字上下限/步长和枚举选项。配置仅保存 string/number/boolean，最多 40 个字段。
 - text/integer 可附带最多 100 条 `suggestions`（value/label/group/description），text 可声明 `monospaced`。建议不是枚举或授权范围，自定义值仍按同一字段规则校验；重复、类型错误或越界建议会被拒绝。无建议的字段仍可使用普通输入控件。
-- 不允许 URL endpoint、脚本、HTML、表达式或网络控件。客户端始终调用当前信任服务器的固定 API，不从 DSL 加载资源。
+- text 可声明 `format:url`，输入完整 HTTP(S) 地址；它只是保存的字段值，不能变成客户端网络动作。禁止脚本、HTML、表达式或远程加载控件。客户端始终调用当前信任服务器的固定 API，不从 DSL 加载资源。
 - 动作由插件命名和描述，v1 仅允许 host 已实现的 `collect` 与 `validate` 效果，input 必须为空表单。collect 使用持久任务；validate 只校验现有设置，不访问上游。
 - 未知 DSL/配置版本、控件、能力和动作不执行；macOS 提示需要更新。不可用插件仍列出描述，已保存来源可暂停或删除。
 

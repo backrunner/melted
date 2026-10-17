@@ -59,7 +59,7 @@ export abstract class BaseCollectorPlugin<
   protected describe(_operator: Operator): PluginDescriptor {
     return this.descriptor;
   }
-  protected abstract destination(operator: Operator): Destination;
+  protected abstract destinations(operator: Operator): Destination[];
   protected validateConfiguration(
     _settings: Settings,
     _operator: Operator,
@@ -101,7 +101,7 @@ export abstract class BaseCollectorPlugin<
     };
     return {
       descriptor,
-      destination: this.destination(operator),
+      destinations: this.destinations(operator),
       validate,
       poll: async (source, signal) => {
         if (

@@ -4,9 +4,10 @@ import settings from "../../plugins.json" with { type: "json" };
 import { PluginRegistry } from "../modules/plugins/registry.js";
 import type { Manifest } from "../modules/plugins/compatibility.js";
 import { rsshubPlugin } from "./rsshub/plugin.js";
+import { feedPlugin } from "./feed/plugin.js";
 
 // The composition root is the only file changed to register another installed module.
-export const installedPlugins = [rsshubPlugin];
+export const installedPlugins = [rsshubPlugin, feedPlugin];
 export const pluginRegistry = new PluginRegistry(installedPlugins, settings);
 export function executableBuiltin(manifest: Manifest) {
   return pluginRegistry.matches(manifest);

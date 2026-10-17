@@ -11,20 +11,21 @@ export function retryAfter(value: string | null, now = Date.now()) {
     ? Math.max(0, Math.min(delay, 8.64e15 - now))
     : undefined;
 }
-export type JSONResponse =
-  | { status: 200; data: unknown; headers: Headers }
+export type ByteResponse =
+  | { status: 200; data: Uint8Array; headers: Headers }
   | { status: 304; headers: Headers };
+export type RequestOptions = {
+  headers?: HeadersInit;
+  signal?: AbortSignal;
+  transport?: typeof fetch;
+  timeoutMs?: number;
+  maxBytes?: number;
+};
 /** Target must first be authorized by the plugin's operator policy. Never follows redirects. */
-export async function requestJSON(
+export async function requestBytes(
   target: URL,
-  options: {
-    headers?: HeadersInit;
-    signal?: AbortSignal;
-    transport?: typeof fetch;
-    timeoutMs?: number;
-    maxBytes?: number;
-  } = {},
-): Promise<JSONResponse> {
+  options: RequestOptions = {},
+): Promise<ByteResponse> {
   for (const value of [options.timeoutMs, options.maxBytes])
     if (value !== undefined && (!Number.isFinite(value) || value <= 0))
       throw new RangeError("Request limits must be positive finite numbers");
@@ -89,17 +90,7 @@ export async function requestJSON(
       bytes.set(chunk, offset);
       offset += chunk.byteLength;
     }
-    try {
-      return {
-        status: 200,
-        data: JSON.parse(
-          new TextDecoder("utf-8", { fatal: true }).decode(bytes),
-        ),
-        headers: response.headers,
-      };
-    } catch {
-      throw new CollectorError({ code: "invalid_feed", retryable: false });
-    }
+    return { status: 200, data: bytes, headers: response.headers };
   } catch (error) {
     if (error instanceof CollectorError) throw error;
     // Fetch errors may contain credential-bearing URLs. Only stable codes leave this boundary.
@@ -109,5 +100,26 @@ export async function requestJSON(
     });
   } finally {
     clearTimeout(timer);
+  }
+}
+
+export type JSONResponse =
+  | { status: 200; data: unknown; headers: Headers }
+  | { status: 304; headers: Headers };
+export async function requestJSON(
+  target: URL,
+  options: RequestOptions = {},
+): Promise<JSONResponse> {
+  const response = await requestBytes(target, options);
+  if (response.status === 304) return response;
+  try {
+    return {
+      ...response,
+      data: JSON.parse(
+        new TextDecoder("utf-8", { fatal: true }).decode(response.data),
+      ),
+    };
+  } catch {
+    throw new CollectorError({ code: "invalid_feed", retryable: false });
   }
 }

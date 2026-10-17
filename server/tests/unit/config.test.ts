@@ -27,7 +27,7 @@ test("plugin configuration keeps the RSSHub secret on the server", () => {
     "server-only-secret",
   );
   assert.equal(
-    pluginRegistry.resolve("rsshub", operator).destination.origin,
+    pluginRegistry.resolve("rsshub", operator).destinations[0]!.origin,
     "https://new.example.com",
   );
   assert.equal(

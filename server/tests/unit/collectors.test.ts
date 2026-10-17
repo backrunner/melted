@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
-import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { normalizeFeed } from "../../src/modules/ingest/feeds/json-feed.js";
 import { validRoute, authorizeRoute } from "../../src/plugins/rsshub/routes.js";
 import { newSource } from "../../src/modules/sources/lifecycle.js";
 import {} from "../../src/modules/sources/schemas.js";

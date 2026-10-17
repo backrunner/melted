@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from "zod";
-import { hash } from "../../shared/crypto.js";
-import { hasPortableText } from "../../shared/text.js";
-import type { PollResult, RawContent } from "../../modules/sources/types.js";
+import { hash } from "../../../shared/crypto.js";
+import { hasPortableText } from "../../../shared/text.js";
+import type { PollResult, RawContent } from "../../sources/types.js";
 
 const url = z
   .url()

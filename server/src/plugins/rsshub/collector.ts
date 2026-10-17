@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { authorizeRoute } from "./routes.js";
 import { hash } from "../../shared/crypto.js";
-import { normalizeFeed } from "./json-feed.js";
+import { normalizeFeed } from "../../modules/ingest/feeds/json-feed.js";
 import type { RSSHubConfig } from "./config.js";
 import type {
   CollectorContext,

@@ -30,7 +30,7 @@ export function registerDiscoveryRoutes(
       capabilities: {
         input: [],
         plugin_settings: 1,
-        collectors: manifest.destinations.map((d) => d.id),
+        collectors: [...new Set(manifest.destinations.map((d) => d.id))],
         subject_pull: false,
         html_static: false,
         push: [],

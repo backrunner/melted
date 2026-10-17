@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<a:feed xmlns:a="http://www.w3.org/2005/Atom" xml:lang="zh" xml:base="https://feeds.example.org/notes/">
+  <a:title>生活笔记</a:title><a:id>urn:feed:notes</a:id><a:updated>2026-10-17T08:00:00Z</a:updated>
+  <a:author><a:name>作者乙</a:name><a:uri>../people/one</a:uri></a:author>
+  <a:entry xml:base="2026/">
+    <a:id>urn:entry:one</a:id><a:title>周末</a:title><a:updated>2026-10-17T16:00:00+08:00</a:updated><a:link href="weekend"/>
+    <a:content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>散步 &amp; 阅读 <em>安静</em></p></div></a:content>
+    <a:link rel="enclosure" href="audio.m4a" type="audio/mp4" length="42"/><a:category term="生活"/>
+  </a:entry>
+  <a:entry><a:id>urn:entry:two</a:id><a:title>外部内容</a:title><a:content src="https://elsewhere.example.org/full"/><a:summary type="html">&lt;p&gt;只保留摘要&lt;/p&gt;</a:summary></a:entry>
+</a:feed>

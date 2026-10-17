@@ -62,3 +62,9 @@ development:
 #   rsshub:
 #     base_url: https://feeds.example.com
 #     allowed_routes: [/bbc, /douban/book/latest, /hackernews]
+#   feed:
+#     allowed_origins: [https://feeds.bbci.co.uk, https://www.jsonfeed.org]
+#     suggestions:
+#       - value: https://feeds.bbci.co.uk/news/world/rss.xml
+#         label: BBC 世界新闻
+#         group: 新闻

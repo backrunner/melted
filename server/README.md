@@ -19,10 +19,10 @@ server/
 │   │   ├── sync/            # 变化日志契约
 │   │   ├── sources/         # 来源、任务、原始条目与代际规则
 │   │   ├── collectors/      # 汇总已配置插件的处理目的地声明
-│   │   ├── ingest/          # 通用采集结果校验与存储 hash
+│   │   ├── ingest/          # 通用结果校验、Feed 解析与存储 hash
 │   │   ├── jobs/            # 共享采集执行规则
 │   │   └── plugins/         # SDK 基类、注册表、DSL、设置/动作及部署能力检查
-│   ├── plugins/             # 已安装实现与组合根；rsshub 拥有路由/JSON Feed
+│   ├── plugins/             # 已安装实现与组合根；rsshub 拥有路由策略，feed 拥有直接订阅配置
 │   ├── storage/
 │   │   ├── repository.ts    # 组合领域接口及基础运维接口
 │   │   ├── postgres/        # 连接/事务、迁移、认证、内容、查询、登录流程
@@ -89,5 +89,7 @@ python3 scripts/dev.py exec npm run build
 Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.local.yaml`、`config.yaml` 读取；显式 `CONFIG_PATH` 不存在时直接报错，未指定时本机文件优先。显式环境变量覆盖 YAML 默认值，使 Compose 与 Apple Container 不依赖本机配置。配置包含凭据，应保存在本机且不提交。管理 CLI 使用环境变量连接数据库；Workers 使用 bindings。配置加载和部署操作详见 [迁移与部署](../.agents/15-typescript-transition.md) 和 [部署入口](../deploy/README.md)。
 
 已实现内置 `rsshub` 的 `collector.poll`、来源与原始条目接口、PG 持久任务及 DO Alarms/outbox/Queues。RSSHub 与 boilerplate 使用同一 SDK 基类；新增受信任编译模块见 [插件开发指南](docs/plugin-development.md)，客户端设置接入见 [插件与 DSL](docs/plugins.md)。注册表与部署预检限制为同一已知版本，动态下载和任意代码执行未开放。配置、限制与真实验收见 [RSSHub 采集](docs/rsshub.md)。
+
+独立 `feed` 插件直接采集 RSS 2.0、Atom 1.0 和 JSON Feed，设置通过同一 DSL 渲染；见 [Feed 指南](docs/feed.md)。
 
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。

@@ -15,6 +15,7 @@
         ],
         "required_bindings": []
       }
-    }
+    },
+    { "enabled": true, "manifest": { "id": "feed", "version": "1.0.0", "targets": ["node", "cloudflare"], "runtime": "builtin", "capabilities": ["https"], "required_bindings": [] } }
   ]
 }

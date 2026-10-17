@@ -55,13 +55,15 @@ export class ExampleCollector extends BaseCollectorPlugin<Operator, Settings> {
       },
     };
   }
-  protected destination(operator: Operator): Destination {
-    return {
-      id: this.descriptor.id,
-      origin: operator.base_url,
-      purpose: "public_feed_collection",
-      data_categories: ["source_topic"],
-    };
+  protected destinations(operator: Operator): Destination[] {
+    return [
+      {
+        id: this.descriptor.id,
+        origin: operator.base_url,
+        purpose: "public_feed_collection",
+        data_categories: ["source_topic"],
+      },
+    ];
   }
   protected override validateConfiguration(
     settings: Settings,

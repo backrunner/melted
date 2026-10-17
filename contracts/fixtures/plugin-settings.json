@@ -225,6 +225,141 @@
       ],
       "available": true,
       "unavailable_reason": null
+    },
+    {
+      "dsl_version": 1,
+      "id": "feed",
+      "version": "1.0.0",
+      "title": "RSS / Atom",
+      "description": "直接订阅网站的 RSS、Atom 或 JSON Feed",
+      "kind": "collector",
+      "config_version": 1,
+      "capabilities": [
+        "collector.poll"
+      ],
+      "form": {
+        "fields": [
+          {
+            "id": "url",
+            "label": "订阅地址",
+            "help": "填写完整的 Feed 地址，网站首页不会自动查找订阅链接",
+            "required": true,
+            "type": "text",
+            "placeholder": "https://example.com/feed.xml",
+            "max_length": 2048,
+            "format": "url",
+            "suggestions": [
+              {
+                "value": "https://feeds.bbci.co.uk/news/world/rss.xml",
+                "label": "BBC 世界新闻",
+                "group": "新闻"
+              }
+            ]
+          },
+          {
+            "id": "format",
+            "label": "Feed 格式",
+            "required": true,
+            "type": "select",
+            "default": "auto",
+            "options": [
+              {
+                "value": "auto",
+                "label": "自动识别"
+              },
+              {
+                "value": "rss",
+                "label": "RSS 2.0"
+              },
+              {
+                "value": "atom",
+                "label": "Atom 1.0"
+              },
+              {
+                "value": "json",
+                "label": "JSON Feed"
+              }
+            ]
+          },
+          {
+            "id": "max_items",
+            "label": "单次条数上限",
+            "help": "按 Feed 的条目顺序读取，最多保存前 100 条；不回填历史",
+            "required": true,
+            "type": "integer",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 100,
+            "step": 1,
+            "suggestions": [
+              {
+                "value": 20,
+                "label": "20 条"
+              },
+              {
+                "value": 50,
+                "label": "50 条"
+              },
+              {
+                "value": 100,
+                "label": "100 条"
+              }
+            ]
+          }
+        ]
+      },
+      "collection": {
+        "layout": "table",
+        "title": "订阅",
+        "columns": [
+          {
+            "scope": "source",
+            "field": "name",
+            "label": "名称"
+          },
+          {
+            "scope": "configuration",
+            "field": "url",
+            "label": "订阅地址"
+          },
+          {
+            "scope": "source",
+            "field": "enabled",
+            "label": "状态"
+          },
+          {
+            "scope": "source",
+            "field": "interval_seconds",
+            "label": "采集间隔"
+          }
+        ],
+        "add_from_suggestions": {
+          "field": "url",
+          "maximum": 20
+        }
+      },
+      "actions": [
+        {
+          "id": "sync",
+          "label": "立即采集",
+          "description": "从 Feed 获取当前条目",
+          "effect": "collect",
+          "input": {
+            "fields": []
+          }
+        },
+        {
+          "id": "validate",
+          "label": "检查配置",
+          "description": "检查地址格式、允许的站点与采集设置",
+          "effect": "validate",
+          "input": {
+            "fields": []
+          }
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null
     }
   ]
 }

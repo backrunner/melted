@@ -56,35 +56,48 @@ export class PluginRegistry {
     try {
       const configured = plugin.configure(configuration[id]);
       const descriptor = descriptorSchema.parse(configured.descriptor);
-      const destination = configured.destination;
-      const origin = new URL(destination.origin);
       if (
         descriptor.id !== plugin.descriptor.id ||
         descriptor.version !== plugin.descriptor.version ||
         descriptor.config_version !== plugin.descriptor.config_version ||
-        destination.id !== descriptor.id ||
-        destination.purpose !== "public_feed_collection" ||
-        !["http:", "https:"].includes(origin.protocol) ||
-        origin.username ||
-        origin.password ||
-        origin.search ||
-        origin.hash ||
-        origin.pathname !== "/" ||
-        !Array.isArray(destination.data_categories) ||
-        destination.data_categories.length > 40 ||
-        destination.data_categories.some(
-          (value) =>
-            typeof value !== "string" || !/^[a-z][a-z0-9_]{0,99}$/.test(value),
-        )
+        !Array.isArray(configured.destinations) ||
+        !configured.destinations.length ||
+        configured.destinations.length > 50
       )
         throw new Error("Invalid configured plugin descriptor");
+      const destinations = configured.destinations.map((destination) => {
+        const origin = new URL(destination.origin);
+        if (
+          destination.id !== descriptor.id ||
+          destination.purpose !== "public_feed_collection" ||
+          !["http:", "https:"].includes(origin.protocol) ||
+          origin.username ||
+          origin.password ||
+          origin.search ||
+          origin.hash ||
+          origin.pathname !== "/" ||
+          !Array.isArray(destination.data_categories) ||
+          destination.data_categories.length > 40 ||
+          destination.data_categories.some(
+            (value) =>
+              typeof value !== "string" ||
+              !/^[a-z][a-z0-9_]{0,99}$/.test(value),
+          )
+        )
+          throw new Error("Invalid configured plugin destination");
+        return { ...destination, origin: origin.origin };
+      });
+      if (
+        new Set(destinations.map((d) => d.origin)).size !== destinations.length
+      )
+        throw new Error("Duplicate plugin destination");
       for (const field of descriptor.form.fields)
         if (field.default !== undefined)
           validateSettings({ fields: [field] }, {});
       return {
         ...configured,
         descriptor,
-        destination: { ...destination, origin: origin.origin },
+        destinations,
       };
     } catch {
       throw new Problem(503, "plugin_configuration_invalid");

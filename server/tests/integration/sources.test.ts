@@ -18,7 +18,7 @@ import type {
 import { configSchema } from "../../src/config/schema.js";
 import { createApp } from "../../src/http/app.js";
 import { hash, random } from "../../src/shared/crypto.js";
-import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { normalizeFeed } from "../../src/modules/ingest/feeds/json-feed.js";
 
 if (
   !process.env.MELTED_TEST_DATABASE_URL ||

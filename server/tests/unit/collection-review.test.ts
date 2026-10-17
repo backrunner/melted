@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { validRoute } from "../../src/plugins/rsshub/routes.js";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
-import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { normalizeFeed } from "../../src/modules/ingest/feeds/json-feed.js";
 import { sourceInputSchema } from "../../src/modules/sources/schemas.js";
 import {
   failed,

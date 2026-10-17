@@ -36,7 +36,7 @@ def envfile(path, values):
     path.chmod(0o600)
 
 def execute(*args):
-    extra = ['--env-file', str(LOCAL/'rsshub.env')] if (LOCAL/'rsshub.env').exists() else []
+    extra = ['--env-file', str(LOCAL/'plugins.env')] if (LOCAL/'plugins.env').exists() else []
     run('container', 'exec', '--env-file', str(LOCAL/'node.env'), *extra, 'melted-tools', *args)
 
 def setup():
@@ -84,7 +84,7 @@ def up():
     if old:
         if old['status']['state']=='running':run('container','stop','melted-api')
         run('container','delete','melted-api')
-    extra = ['--env-file', str(LOCAL/'rsshub.env')] if (LOCAL/'rsshub.env').exists() else []
+    extra = ['--env-file', str(LOCAL/'plugins.env')] if (LOCAL/'plugins.env').exists() else []
     ensure('melted-api',['--env-file',str(LOCAL/'node.env'),*extra,'--publish','127.0.0.1:8421:8421',
                          '--volume',f'{REPO}:/workspace','--workdir','/workspace/server',NODE,
                          'node','dist/server/src/entrypoints/node.js'])
@@ -100,9 +100,13 @@ def rsshub():
                            '--env','CACHE_TYPE=memory','--env','DEBUG_INFO=false',
                            '--env','LOGGER_LEVEL=error','--env','ALLOW_USER_SUPPLY_UNSAFE_DOMAIN=false',RSSHUB_IMAGE])
     ip = state('melted-rsshub')['status']['networks'][0]['ipv4Address'].split('/')[0]
-    envfile(LOCAL/'rsshub.env', {'MELTED_RSSHUB_IMAGE':RSSHUB_IMAGE, 'PLUGIN_CONFIG':json.dumps({'rsshub':{'base_url':f'http://{ip}:1200',
+    path = LOCAL/'plugins.env'
+    values = dict(line.split('=',1) for line in path.read_text().splitlines() if '=' in line) if path.exists() else {}
+    plugins = json.loads(values.get('PLUGIN_CONFIG', '{}'))
+    plugins['rsshub'] = {'base_url':f'http://{ip}:1200',
              'allowed_routes':['/bbc','/abc','/douban/book/latest','/douban/event/hot','/hackernews'],
-             'allow_private':True}},separators=(',',':'))})
+             'allow_private':True}
+    envfile(path, {**values, 'MELTED_RSSHUB_IMAGE':RSSHUB_IMAGE, 'PLUGIN_CONFIG':json.dumps(plugins,separators=(',',':'))})
     print('RSSHub configured for container commands; run dev.py collector for background collection')
 
 
@@ -113,8 +117,8 @@ elif action=='rsshub':rsshub()
 elif action=='collector':execute('npm','run','worker')
 elif action=='worker':
     extra = []
-    if (LOCAL/'rsshub.env').exists():
-        values = dict(line.split('=',1) for line in (LOCAL/'rsshub.env').read_text().splitlines() if '=' in line)
+    if (LOCAL/'plugins.env').exists():
+        values = dict(line.split('=',1) for line in (LOCAL/'plugins.env').read_text().splitlines() if '=' in line)
         extra = ['--var', 'PLUGIN_CONFIG:' + values['PLUGIN_CONFIG']]
     execute('npx','wrangler','dev','--env','local','--ip','0.0.0.0','--port','8787','--local','--persist-to','.wrangler/local',*extra)
 elif action=='check':

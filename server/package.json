@@ -26,6 +26,7 @@
     "worker": "tsx src/entrypoints/collector-worker.ts",
     "worker:start": "node dist/server/src/entrypoints/collector-worker.js",
     "test:live:rsshub": "node --import tsx tests/live/rsshub.ts",
+    "test:live:feed": "node --import tsx tests/live/feed.ts",
     "contracts:plugins": "tsx scripts/plugin-contracts.ts",
     "plugins:new": "tsx scripts/new-plugin.ts"
   },
@@ -36,12 +37,14 @@
     "jose": "6.2.12",
     "js-yaml": "^5.4.3",
     "pg": "8.23.1",
+    "sax": "1.6.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261014.1",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",
+    "@types/sax": "1.2.7",
     "miniflare": "5.20261012.0-beta",
     "prettier": "3.9.10",
     "tsx": "4.23.15",

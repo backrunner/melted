@@ -95,7 +95,7 @@ rtk proxy python3 scripts/dev.py up
 rtk proxy python3 scripts/dev.py worker
 ```
 
-`rsshub` 命令保存本地容器地址到 `.local/rsshub.env`，不会覆盖账户凭据。`worker` 将该公开实例配置传给本地 Wrangler，正式 Worker 仍须单独配置。普通测试使用合成 JSON Feed 和独立测试库，不访问上游网站。
+`rsshub` 命令保存本地容器地址到 `.local/plugins.env`，仅更新 rsshub 配置项，保留其他插件设置且不覆盖账户凭据。`worker` 将该公开实例配置传给本地 Wrangler，正式 Worker 仍须单独配置。普通测试使用合成 JSON Feed 和独立测试库，不访问上游网站。
 
 ```sh
 rtk proxy python3 scripts/dev.py check

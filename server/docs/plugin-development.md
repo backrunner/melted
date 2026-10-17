@@ -40,12 +40,12 @@ server/tests/unit/culture-notes-plugin.test.ts
 | 扩展点 | 职责 |
 | --- | --- |
 | `describe(operator)` | 可选：根据运营配置提供公开建议；默认返回静态 descriptor |
-| `destination(operator)` | 必需：声明目的地 origin、用途和出站数据类别，不包含凭据 |
+| `destinations(operator)` | 必需：返回 1–50 个目的地，声明各 origin、用途和出站数据类别，不包含凭据 |
 | `validateConfiguration(settings, operator)` | 可选：在字段/schema 校验后执行授权规则；禁止网络 IO |
 | `deploymentIssues(operator, target)` | 可选：目标平台额外约束；例如生产 Worker 不接受 HTTP/内网实例 |
 | `collect(context, operator)` | 必需：在事务外访问上游，返回 PollResult |
 
-基类先解析运营配置和 descriptor，校验配置身份；每次 poll 再验证插件 ID/config_version、账户设置和取消信号。`context` 只包含只读的 `configuration`、复制后的 `checkpoint` 和 `signal`，不注入 owner、数据库、账户会话或完整来源对象。运营者秘密仅由闭包传给插件实现，不下发客户端。`describe`/`destination` 必须保持公开数据边界，host 还会再次校验配置描述和目的地。
+基类先解析运营配置和 descriptor，校验配置身份；每次 poll 再验证插件 ID/config_version、账户设置和取消信号。`context` 只包含只读的 `configuration`、复制后的 `checkpoint` 和 `signal`，不注入 owner、数据库、账户会话或完整来源对象。运营者秘密仅由闭包传给插件实现，不下发客户端。`describe`/`destinations` 必须保持公开数据边界，host 还会再次校验配置描述和目的地。
 
 运行模块是受信任代码，基类不是安全沙箱。只读 TypeScript 类型/冻结快照限制意外修改，不撤销进程或网络权限；安装前仍需审查插件代码、上游地址与部署 egress。
 
@@ -53,7 +53,7 @@ server/tests/unit/culture-notes-plugin.test.ts
 | --- | --- |
 | `PluginSettingsError(code, status)` | 账户配置错误，status 为 400（默认）或 403；返回稳定 code |
 | `CollectorError({code,retryable,blocked?,retry_after_ms?})` | 采集失败；由 host 持久化重试/阻塞状态 |
-| `requestJSON(url, options)` | GET、禁止重定向、最多 30 秒/4 MiB；返回 200+unknown JSON 或 304；网络错误脱敏，429/5xx 可重试，遵守 Retry-After |
+| `requestBytes(url, options)` / `requestJSON(url, options)` | GET、禁止重定向、最多 30 秒/4 MiB；返回 200+有界字节/unknown JSON 或 304；网络错误脱敏，429/5xx 可重试，遵守 Retry-After |
 | `retryAfter(header, now?)` | 转换秒数或 HTTP 日期，保持持久时间可表示 |
 | `collectionResult({items,checkpoint?,warnings?,notModified?})` | 从 RawContent 构造计数与规范化存储 hash，并校验总量/单条大小 |
 | `CollectorContext` / `Configuration` / `RawContent` / `PollResult` | 实现所用的公共类型 |
@@ -80,6 +80,8 @@ server/tests/unit/culture-notes-plugin.test.ts
 可选 token 由服务端秘密配置提供，不能写入 Git、descriptor、来源配置或日志。`server/plugins.json` 声明已编译实现，不是下载地址或动态代码加载器。启用未知 ID、错误 manifest 或不支持的平台能力会被预检拒绝。
 
 ## 设置、集合与动作
+
+text 字段可用 `format: "url"` 声明地址语义；客户端校验格式、服务器执行地址授权，字段本身不会加载资源。
 
 descriptor 必须包含 `collection`，声明 `list` 或 `table`、标题和最多 8 个合法列绑定。每一行是独立 source；`add_from_suggestions` 可提供最多 20 项的批量创建。表单/建议/列/动作都来自插件描述，macOS 负责原生样式、导航与交互。详见 [设置 DSL](plugins.md)。
 

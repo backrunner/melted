@@ -1,0 +1,18 @@
+{
+  "id": "src_feed_example",
+  "plugin": "feed",
+  "config_version": 1,
+  "configuration": {
+    "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "format": "auto",
+    "max_items": 100
+  },
+  "name": "BBC 世界新闻",
+  "enabled": true,
+  "interval_seconds": 900,
+  "version": 1,
+  "blocked": false,
+  "last_success_at": null,
+  "last_run_id": null,
+  "last_error": null
+}

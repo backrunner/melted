@@ -21,7 +21,7 @@ import type {
   PollResult,
   SourceRepository,
 } from "../../src/modules/sources/types.js";
-import { normalizeFeed } from "../../src/plugins/rsshub/json-feed.js";
+import { normalizeFeed } from "../../src/modules/ingest/feeds/json-feed.js";
 import { validateResult } from "../../src/modules/ingest/result.js";
 import fixture from "../../../contracts/fixtures/rsshub-feed.json" with { type: "json" };
 
@@ -85,12 +85,14 @@ const plugin: CollectorPlugin = {
   configure() {
     return {
       descriptor: this.descriptor,
-      destination: {
-        id: this.descriptor.id,
-        origin: "https://culture.example.org",
-        purpose: "public_feed_collection",
-        data_categories: ["topic"],
-      },
+      destinations: [
+        {
+          id: this.descriptor.id,
+          origin: "https://culture.example.org",
+          purpose: "public_feed_collection",
+          data_categories: ["topic"],
+        },
+      ],
       validate: (value) => validateSettings(this.descriptor.form, value),
       poll: async () => normalizeFeed(fixture),
     };
@@ -304,19 +306,30 @@ test("unavailable plugins retain descriptors but cannot execute and never disclo
 
 test("configured modules cannot change identity, disclose credential URLs or persist undeclared settings", () => {
   for (const change of [
+    { destinations: [] },
+    {
+      destinations: [
+        ...plugin.configure({}).destinations,
+        ...plugin.configure({}).destinations,
+      ],
+    },
     { descriptor: { ...plugin.descriptor, id: "another.plugin" } },
     { descriptor: { ...plugin.descriptor, version: "3.0.0" } },
     {
-      destination: {
-        ...plugin.configure({}).destination,
-        origin: "https://user:secret@culture.example.org",
-      },
+      destinations: [
+        {
+          ...plugin.configure({}).destinations[0]!,
+          origin: "https://user:secret@culture.example.org",
+        },
+      ],
     },
     {
-      destination: {
-        ...plugin.configure({}).destination,
-        origin: "https://culture.example.org/?key=secret",
-      },
+      destinations: [
+        {
+          ...plugin.configure({}).destinations[0]!,
+          origin: "https://culture.example.org/?key=secret",
+        },
+      ],
     },
   ]) {
     const invalid: CollectorPlugin = {
@@ -394,6 +407,16 @@ test("published plugin fixture and DSL schema match the installed registry", asy
     rsshub: {
       base_url: "https://feeds.example.org",
       allowed_routes: ["/bbc", "/douban/book/latest"],
+    },
+    feed: {
+      allowed_origins: ["https://feeds.bbci.co.uk", "https://www.nasa.gov"],
+      suggestions: [
+        {
+          value: "https://feeds.bbci.co.uk/news/world/rss.xml",
+          label: "BBC 世界新闻",
+          group: "新闻",
+        },
+      ],
     },
   });
   assert.deepEqual(await read("fixtures/plugin-settings.json"), expected);

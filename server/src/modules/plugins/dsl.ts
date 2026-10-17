@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { isPortableText } from "../../shared/text.js";
 import { Problem } from "../../shared/problem.js";
+import { isHTTPURL } from "../../shared/url.js";
 
 export const identifier = z
   .string()
@@ -42,6 +43,7 @@ export const fieldSchema = z.discriminatedUnion("type", [
       placeholder: label.optional(),
       max_length: z.number().int().min(1).max(4096),
       monospaced: z.boolean().optional(),
+      format: z.literal("url").optional(),
       suggestions: z.array(suggestionSchema).max(100).optional(),
     })
     .strict(),
@@ -245,6 +247,7 @@ export function validateSettings(
         valid =
           typeof v === "string" &&
           v.length <= field.max_length &&
+          (field.format !== "url" || isHTTPURL(v)) &&
           (!field.required || v.trim().length > 0);
         break;
       case "integer":

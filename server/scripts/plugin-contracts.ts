@@ -21,6 +21,16 @@ const catalog = pluginRegistry.catalog({
     base_url: "https://feeds.example.org",
     allowed_routes: ["/bbc", "/douban/book/latest"],
   },
+  feed: {
+    allowed_origins: ["https://feeds.bbci.co.uk", "https://www.nasa.gov"],
+    suggestions: [
+      {
+        value: "https://feeds.bbci.co.uk/news/world/rss.xml",
+        label: "BBC 世界新闻",
+        group: "新闻",
+      },
+    ],
+  },
 });
 await save("plugin-settings.schema.json", z.toJSONSchema(catalogSchema));
 await save("fixtures/plugin-settings.json", catalog);
@@ -39,6 +49,17 @@ const source = {
   last_error: null,
 };
 await save("fixtures/plugin-source.json", source);
+await save("fixtures/feed-source.json", {
+  ...source,
+  id: "src_feed_example",
+  plugin: "feed",
+  name: "BBC 世界新闻",
+  configuration: {
+    url: "https://feeds.bbci.co.uk/news/world/rss.xml",
+    format: "auto",
+    max_items: 100,
+  },
+});
 const openapi = JSON.parse(
   await readFile(new URL("openapi.json", root), "utf8"),
 );
