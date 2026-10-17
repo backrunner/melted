@@ -48,6 +48,7 @@
 | ADR-024 | 采集器按模块注册，客户端消费版本化有限设置 DSL | 用户要求扩展插件设置与动作；host 负责鉴权/校验/任务，原生客户端掌握控件与导航；v1 仅 collect/validate | 已实施，见 [插件验收](validation/2026-10-17/plugin-settings/README.md) |
 | ADR-025 | 插件设置以来源集合呈现，DSL 声明 list/table 与多选创建 | 用户要求同时订阅多个来源；每行保留独立来源、任务和幂等键，批量部分失败只重试未完成行 | 已实施，见 [订阅集合验收](validation/2026-10-17/route-settings/README.md)；collection 依 ADR-026 现为必需字段 |
 | ADR-026 | 首次发布前只维护当前契约；插件开发使用统一 SDK 与 boilerplate | 用户明确不要未发布版本兼容代码；清除旧 API/配置/数据转换，RSSHub 与新插件共用基类和有界请求工具 | 已实施；见 [插件开发](../server/docs/plugin-development.md) |
+| ADR-027 | 直接 Feed 作为独立采集插件，复用 SDK、解析规范化与设置 DSL | 用户要求 RSSHub 之外的真实 RSS 等订阅；支持 RSS 2.0/Atom 1.0/JSON Feed，运营者限定 origin、多目的地披露、原生 URL/select/integer 和多来源集合 | 已实施；见 [Feed 验收](validation/2026-10-17/feed-collector/README.md) |
 
 表中按状态区分已确认/已实施与候选设计；不把“待评审”当作常规实现都需重新授权的门槛。实现时若发现反例，记录变更原因、替代方案、验收影响和迁移方式。
 

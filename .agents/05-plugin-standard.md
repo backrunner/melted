@@ -1,6 +1,6 @@
 # 插件标准草案 v1
 
-更新：2026-10-17。已实现受信任模块注册、设置 DSL v1、原生来源管理，以及独立 RSSHub `collector.poll`、持久任务与原始入库；远程第三方插件执行与模板属于后续能力，原生正文呈现边界与 [UI v1.1](11-ui-design-system.md)一致。
+更新：2026-10-17。已实现受信任模块注册、设置 DSL v1、原生来源管理，以及独立 RSSHub 与 Feed `collector.poll`、持久任务与原始入库；远程第三方插件执行与模板属于后续能力，原生正文呈现边界与 [UI v1.1](11-ui-design-system.md)一致。
 
 ## 运行形态
 
@@ -18,17 +18,19 @@
 
 插件仅声明实际能力；poll/pull 语义区分。每种类型提供契约 fixture，核心流程不依赖外部 mem/stage。首期外部 memory 示例验证协议，不代表已经选定任何商业 mem 厂商。
 
-新采集器使用 [开发指南](../server/docs/plugin-development.md) 的 boilerplate 与 `BaseCollectorPlugin`，RSSHub 自身使用同一 SDK。当前要求 collection 集合描述，不保留未发布旧版 API/DSL 的兼容分支。
+新采集器使用 [开发指南](../server/docs/plugin-development.md) 的 boilerplate 与 `BaseCollectorPlugin`，RSSHub 与 Feed 自身使用同一 SDK。当前要求 collection 集合描述，不保留未发布旧版 API/DSL 的兼容分支。
 
 ## 部署兼容性预检（已实现）
 
-`server/plugins.json` 保存启用清单；`server/src/modules/plugins/compatibility.ts` 校验 targets、runtime、capabilities、required_bindings 与 HTTPS endpoint。未知能力、缺失 binding、Cloudflare 的本地进程/文件系统/原生扩展/raw TCP/常驻进程均拒绝。`npm run worker:check` 还实际打包 Worker；`worker:deploy` 先拒绝占位服务器配置。注册表按已编译模块核对身份与 manifest；目前随包提供 `rsshub@1.0.0`、runtime=builtin 和 `collector.poll`，与实际执行一致；Cloudflare 还要求 COLLECTION_QUEUE。未注册或清单不匹配的 enabled 插件明确阻止部署，不会静默忽略。部署预检通过不表示插件代码已沙箱化。
+`server/plugins.json` 保存启用清单；`server/src/modules/plugins/compatibility.ts` 校验 targets、runtime、capabilities、required_bindings 与 HTTPS endpoint。未知能力、缺失 binding、Cloudflare 的本地进程/文件系统/原生扩展/raw TCP/常驻进程均拒绝。`npm run worker:check` 还实际打包 Worker；`worker:deploy` 先拒绝占位服务器配置。注册表按已编译模块核对身份与 manifest；目前随包提供 `rsshub@1.0.0` 与 `feed@1.0.0`、runtime=builtin 和 `collector.poll`，与实际执行一致；Cloudflare 还要求 COLLECTION_QUEUE。未注册或清单不匹配的 enabled 插件明确阻止部署，不会静默忽略。部署预检通过不表示插件代码已沙箱化。
 
-部署 descriptor 与下方业务协议 manifest 分开；前者描述能否运行，后者描述能做什么。内置实现见 [RSSHub 指南](../server/docs/rsshub.md)；以下远程请求/返回、外部来源权限、样例插件仍属目标契约。
+部署 descriptor 与下方业务协议 manifest 分开；前者描述能否运行，后者描述能做什么。内置实现见 [RSSHub 指南](../server/docs/rsshub.md)与 [Feed 指南](../server/docs/feed.md)；以下远程请求/返回、外部来源权限、样例插件仍属目标契约。
 
 ## 原生设置 DSL（已实现）
 
-模块接口与注册方法见 [插件开发说明](../server/docs/plugins.md)。`GET /v1/plugins` 返回 DSL v1：text/integer/boolean/select 字段、校验约束、可选建议、collection 列表/表格与动作描述；来源保存 plugin/config_version/configuration。原生客户端根据有限语法渲染设置，不执行服务端代码、HTML 或任意 URL。动作 ID 由插件定义，v1 效果仅限 host 的 collect/validate，额外动作参数未开放。collection 的每行对应独立来源；列只引用公开 source 字段或声明的 configuration 字段，批量添加按行幂等，不形成跨行原子事务。运营者秘密与账户设置分开。模块升级改变语法或配置版本时拒绝静默回退。
+模块接口与注册方法见 [插件开发说明](../server/docs/plugins.md)。`GET /v1/plugins` 返回 DSL v1：text（含 URL 格式）/integer/boolean/select 字段、校验约束、可选建议、collection 列表/表格与动作描述；来源保存 plugin/config_version/configuration。原生客户端根据有限语法渲染设置，不执行服务端代码、HTML 或任意 URL。动作 ID 由插件定义，v1 效果仅限 host 的 collect/validate，额外动作参数未开放。collection 的每行对应独立来源；列只引用公开 source 字段或声明的 configuration 字段，批量添加按行幂等，不形成跨行原子事务。运营者秘密与账户设置分开。模块升级改变语法或配置版本时拒绝静默回退。
+
+Feed 设置声明完整 URL、格式和单次条数；每个 URL 对应独立来源。运营者按精确 origin 授权，SDK 使用 `destinations()` 列出全部数据去向；不是任意公网域名爬虫，也不把 origin 校验宣称为 DNS/IP 固定。Node 私有来源须显式授权，Cloudflare 仅允许公开 HTTPS。详见 [Feed 边界](../server/docs/feed.md)。
 
 ## Manifest（远程协议目标）
 

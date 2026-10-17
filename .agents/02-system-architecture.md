@@ -4,7 +4,7 @@
 
 ## 总体结构
 
-服务端采用 TypeScript + Hono 共享 HTTP 契约与领域规则，Node.js 24 LTS 和 Cloudflare Workers 分别提供入口。自托管用 PostgreSQL；Cloudflare 完全使用 Workers + SQLite-backed Durable Objects，不连接外部 PostgreSQL 或 Hyperdrive。每账户一个 AccountStore，限流和短期浏览器登录流程用 ControlStore。已实现阅读、鉴权和 RSSHub 公开来源的采集入库：Node 独立进程及 PG 持久任务，Cloudflare AccountStore Alarms/outbox/Queues；采集器实现放在 `server/src/plugins/`，共享 modules/plugins 提供注册、设置 DSL 和 host 动作，存储与任务不依赖 RSSHub 细节；AI 管线仍是后续能力。
+服务端采用 TypeScript + Hono 共享 HTTP 契约与领域规则，Node.js 24 LTS 和 Cloudflare Workers 分别提供入口。自托管用 PostgreSQL；Cloudflare 完全使用 Workers + SQLite-backed Durable Objects，不连接外部 PostgreSQL 或 Hyperdrive。每账户一个 AccountStore，限流和短期浏览器登录流程用 ControlStore。已实现阅读、鉴权和 RSSHub / RSS / Atom / JSON Feed 公开来源的采集入库：Node 独立进程及 PG 持久任务，Cloudflare AccountStore Alarms/outbox/Queues；采集器实现放在 `server/src/plugins/`，共享 modules/plugins 提供注册、设置 DSL 和 host 动作，存储与任务不依赖具体协议；RSSHub 与 Feed 共用 modules/ingest/feeds 规范化及 SDK 有界网络请求；AI 管线仍是后续能力。
 
 Cloudflare 后续附件使用 R2，任务分发使用 Queues，长流程按需要使用 Workflows，周期触发使用 Cron Triggers / DO Alarms，模型缓存与向量能力按需要选 Workers AI / Vectorize。所有基础设施留在 Cloudflare；配置外部信息源、可选模型/OIDC 是业务集成，不把第三方数据库、Redis、对象存储作为部署依赖。详细映射、事务差异与部署步骤见 [TypeScript 迁移](15-typescript-transition.md)。
 

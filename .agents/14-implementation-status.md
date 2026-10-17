@@ -10,6 +10,7 @@
 | 身份 | 服务器 methods/preferred；预置密码/API Key、P-256、配置后 OIDC；客户端原生表单与 Keychain | 密钥不证明 Apple 身份；账户恢复、设备/多服务器管理 UI 后续 |
 | 内容 API | 词表、q/view/category/tag/subject 查询、中文子串、固定快照分页、详情、幂等状态与提交有序 changes | 不是 FTS/语义搜索；完整 v1 未冻结，无 facets/time UI |
 | RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报；客户端管理通过插件 DSL 提供 |
+| Feed 采集 | 独立 feed 插件，RSS 2.0 / Atom 1.0 / JSON Feed 解析、条件请求及统一入库；URL/格式/条数 DSL | 运营者精确允许 origin；无任意域名、自动重定向、全文补抓或历史回填 |
 | 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作；表单建议、list/table 集合与多选创建，来源通用 configuration；SDK 基类与可生成 boilerplate | 每行独立来源与任务；不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
@@ -29,7 +30,7 @@
 | --- | --- | --- |
 | M0 | 部分完成；GPL/贡献已确定，公开仓库已建立 | 完整协议冻结、来源授权/质量语料、完整威胁模型 |
 | M1 | 基础身份/读取/状态/迁移，以及来源 receipt/持久队列/租约/fencing/outbox 已运行 | 邀请/恢复、通用摄取/上传、预算/同意、完整备份恢复/导出 |
-| M2 | RSSHub 真实公开来源采集入库已运行，两后端各验证三类来源 | URL/push、第三方插件、真实模型与多模态、核验/聚类、渠道 |
+| M2 | RSSHub 与 Feed 真实公开来源采集入库已运行，两后端验证新闻/文化/社区及 RSS/Atom/JSON Feed | URL/push、第三方插件、真实模型与多模态、核验/聚类、渠道 |
 | M3 | 原生阅读链路、搜索呈现与到达反馈已运行 | 状态/删除同步、持久缓存/重放、业务设置页、反馈、附件/静态 HTML、完整原生验收 |
 | M4 | 未开始 | QueryPlan、主动获取/调度、学习、memory、回滚 |
 | M5 | 开源材料与本地构建已有 | conformance、真实质量/安全/负载/持续使用、签名公证与 alpha 发布 |
@@ -39,9 +40,11 @@
 
 优先处理 [设计复核中的实现缺口](13-design-review.md)：列表去冗余、分散 token、远端状态/删除的完整应用与辅助设置矩阵。搜索面板挂载和同步失败提示已修复。每项修复按当前构建做对应原生检查，不能把旧浏览器参考当通过。
 
-RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。来源设置已按插件 DSL 接入，随后扩展偏好/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
+RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。RSSHub 与 Feed 来源设置已按插件 DSL 接入，随后扩展偏好/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
 
 ## 验证与运行入口
+
+独立 Feed 插件与通用 URL DSL 见 [2026-10-17 Feed 验收](validation/2026-10-17/feed-collector/README.md)，包含双后端真实 RSS/Atom/JSON Feed 入库、重复采集及本地 CA 配置差异。
 
 当前契约清理、共享采集 SDK 与可生成 boilerplate 见 [2026-10-17 SDK 验收](validation/2026-10-17/plugin-sdk/README.md)，包含双后端测试、模板生成与真实 RSSHub 回归。
 

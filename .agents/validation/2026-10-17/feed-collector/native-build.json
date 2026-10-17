@@ -1,0 +1,22 @@
+{
+  "macos": "27.0.1",
+  "arch": "arm64",
+  "bundle_id": "com.alkinum.melted",
+  "version": "0.2.0 (13)",
+  "executable_sha256": "ce832f5215811ebe91592ac5e25b8703ec4ee245b2e069dfe8d8a0693dbac905",
+  "window_points": {
+    "source_panel": [
+      760,
+      520
+    ],
+    "editor": [
+      620,
+      520
+    ]
+  },
+  "theme": "light and dark",
+  "reading_scale": "100%",
+  "evidence_scope": "Final local build. Captures cover the same Feed form/collection code; one temporary shared-panel clipping experiment was reverted after inconclusive scroll capture results.",
+  "initial_form_build_sha256": "1f154028d17961b136328b9bf7f102f7cd814406cad62dd89f8f7ec43bce49c3",
+  "temporary_panel_probe_sha256": "d5b150925348d69a987dfb950620d893387be57bd864bd31716185ffda7d5e7b"
+}
