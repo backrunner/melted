@@ -19,45 +19,74 @@ struct SourcesPanel: View {
     @StateObject private var model: SourceSettingsModel
     @State private var editor: SourceEditorSelection?
     @State private var action: ActionSelection?
+    @State private var batchPlugin: PluginDescriptor?
     @State private var deleting: PluginSource?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var scheme
     init(client: any PluginClient) { _model = StateObject(wrappedValue: SourceSettingsModel(client: client)) }
+    private var palette: MeltedPalette { MeltedPalette(scheme) }
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("来源与插件").font(.title2.weight(.semibold))
-                Spacer()
-                Button { Task { await model.load() } } label: { Image(systemName: "arrow.clockwise") }.help("刷新来源").accessibilityLabel("刷新来源").disabled(model.loading || model.busy)
-                Menu {
-                    ForEach(model.catalog?.plugins ?? []) { plugin in
-                        Button(plugin.title) { model.error = nil; editor = .init(plugin: plugin, source: nil) }
-                            .disabled(!plugin.available || !plugin.supported)
+        MeltedPanel("来源与插件") {
+            Button { Task { await model.load() } } label: {
+                Image(systemName: "arrow.clockwise").frame(height: MeltedPanelMetrics.controlHeight)
+            }.buttonStyle(MeltedSecondaryButtonStyle()).help("刷新来源").accessibilityLabel("刷新来源").disabled(model.loading || model.busy)
+            Menu {
+                ForEach(model.catalog?.plugins ?? []) { plugin in
+                    Button("添加 \(plugin.title) 订阅") {
+                        model.error = nil
+                        if let batch = plugin.collection?.addFromSuggestions, plugin.form.fields.first(where: { $0.id == batch.field })?.suggestions?.isEmpty == false { batchPlugin = plugin }
+                        else { editor = .init(plugin: plugin, source: nil) }
+                    }.disabled(!plugin.available || !plugin.supported)
+                    if plugin.collection?.addFromSuggestions != nil {
+                        Button("自定义 \(plugin.title) 订阅") { model.error = nil; editor = .init(plugin: plugin, source: nil) }.disabled(!plugin.available || !plugin.supported)
                     }
-                } label: { Label("添加来源", systemImage: "plus") }
-                .fixedSize()
-                .disabled(model.catalog == nil || model.busy)
-            }.padding()
-            if let notice = model.notice { Text(notice).font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20) }
-            Form {
-                if model.loading { Section { ProgressView("正在加载来源") } }
-                if let error = model.error { Section { Text(error).foregroundStyle(MeltedPalette(scheme).danger).textSelection(.enabled) } }
-                if let catalog = model.catalog {
-                    if model.sources.isEmpty {
-                        Section { Text("尚未添加来源").font(.headline); Text("选择一个可用插件，设置你希望持续采集的内容").foregroundStyle(.secondary) }
-                    }
-                    ForEach(model.sources) { source in sourceSection(source, catalog: catalog) }
-                    Section {
-                        ForEach(catalog.plugins) { plugin in
-                            LabeledContent(plugin.title, value: !plugin.supported ? "需要更新客户端" : plugin.available ? "可用" : "运营者尚未启用或配置")
-                        }
-                    } header: { Text("服务器提供的插件") } footer: { Text("采集结果保存为原始资料，暂不自动生成资讯").frame(maxWidth: .infinity, alignment: .leading) }
                 }
-            }.formStyle(.grouped).scrollContentBackground(.hidden)
-            HStack { Spacer(); Button("完成") { dismiss() }.keyboardShortcut(.cancelAction) }.padding()
+            } label: { Label("添加来源", systemImage: "plus") }
+                .menuStyle(.borderlessButton).modifier(MeltedMenuChrome()).fixedSize()
+                .disabled(model.catalog == nil || model.busy)
+        } content: {
+            ScrollView {
+                VStack(alignment: .leading, spacing: MeltedPanelMetrics.sectionGap) {
+                    if model.loading { ProgressView("正在加载来源").frame(maxWidth: .infinity, alignment: .leading) }
+                    if let error = model.error { MeltedNotice(title: error) }
+                    if let catalog = model.catalog {
+                        ForEach(catalog.plugins) { plugin in
+                            let sources = model.sources.filter { $0.plugin == plugin.id }
+                            if let collection = plugin.collection, plugin.supported {
+                                PluginSourceCollection(plugin: plugin, collection: collection, sources: sources, sourceForm: catalog.sourceForm) { source in
+                                    sourceActions(source, plugin: plugin)
+                                } detail: { source in sourceRunSummary(source) }.disabled(model.busy)
+                            } else {
+                                ForEach(sources) { source in sourceSection(source, catalog: catalog) }
+                            }
+                        }
+                        ForEach(model.sources.filter { source in !catalog.plugins.contains { $0.id == source.plugin } }) { source in sourceSection(source, catalog: catalog) }
+                        DisclosureGroup("服务器插件（\(catalog.plugins.count)）") {
+                            VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
+                                ForEach(catalog.plugins) { plugin in
+                                    HStack(alignment: .top) {
+                                        Text(plugin.title)
+                                        Spacer()
+                                        Text(!plugin.supported ? "需要更新客户端" : plugin.available ? "可用" : "尚未启用或配置").foregroundStyle(palette.secondary)
+                                    }
+                                }
+                            }.padding(.top, MeltedReading.actionGap)
+                        }.font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
+                    }
+                }.padding(MeltedPanelMetrics.inset)
+            }
+        } footer: {
+            HStack(spacing: MeltedReading.actionGap) {
+                VStack(alignment: .leading, spacing: MeltedPanelMetrics.detailGap) {
+                    Text(model.notice ?? "\(model.sources.count) 个来源").lineLimit(2)
+                    Text("原始资料暂不自动生成资讯").foregroundStyle(palette.secondary)
+                }.font(.system(size: MeltedType.metadata))
+                Spacer(minLength: 0)
+                Button { dismiss() } label: { Text("完成").frame(height: MeltedPanelMetrics.controlHeight) }
+                    .buttonStyle(MeltedSecondaryButtonStyle()).keyboardShortcut(.cancelAction)
+            }
         }
-        .background(MeltedPalette(scheme).canvas).tint(MeltedPalette(scheme).accent)
-        .frame(width: 640, height: 600)
+        .frame(width: MeltedPanelMetrics.width, height: MeltedPanelMetrics.height)
         .task {
             await model.load()
             while !Task.isCancelled {
@@ -68,6 +97,9 @@ struct SourcesPanel: View {
         .sheet(item: $editor) { item in
             if let form = model.catalog?.sourceForm { SourceEditor(model: model, plugin: item.plugin, sourceForm: form, source: item.source) }
         }
+        .sheet(item: $batchPlugin) { plugin in
+            if let form = model.catalog?.sourceForm, let batch = plugin.collection?.addFromSuggestions { SourceBatchEditor(model: model, plugin: plugin, sourceForm: form, batch: batch) }
+        }
         .sheet(item: $action) { item in PluginActionPanel(model: model, plugin: item.plugin, source: item.source, action: item.action) }
         .alert("删除来源？", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
             Button("取消", role: .cancel) { deleting = nil }
@@ -76,43 +108,67 @@ struct SourcesPanel: View {
     }
     @ViewBuilder private func sourceSection(_ source: PluginSource, catalog: PluginCatalog) -> some View {
         let plugin = catalog.plugins.first { $0.id == source.plugin }
-        Section {
+        VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
             HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(source.name).font(.headline)
-                    Text(plugin?.title ?? source.plugin).font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: MeltedPanelMetrics.detailGap) {
+                    Text(source.name).font(.system(size: MeltedType.row, weight: .semibold)).textSelection(.enabled)
+                    Text(plugin?.title ?? source.plugin).font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
                 }
                 Spacer()
-                Text(source.enabled ? source.blocked ? "需要处理" : "自动采集" : "已暂停").foregroundStyle(.secondary)
-                Menu {
-                    Button(source.enabled ? "暂停采集" : "启用采集") { Task { await model.toggle(source) } }
-                        .disabled(!source.enabled && (plugin?.available != true || plugin?.supported != true))
-                    if let plugin, plugin.available && plugin.supported && plugin.configVersion == source.configVersion {
-                        Button("编辑设置") { model.error = nil; editor = .init(plugin: plugin, source: source) }
-                        ForEach(plugin.actions) { item in
-                            Button(item.label) { model.error = nil; action = .init(plugin: plugin, source: source, action: item) }
-                                .disabled(item.effect == "collect" && !source.enabled)
-                        }
-                    }
-                    if let run = source.lastRunId { Button("查看最近任务") { Task { await model.refreshReceipt(run, sourceID: source.id) } } }
-                    Divider()
-                    Button("删除来源", role: .destructive) { deleting = source }
-                } label: { Text("管理") }.menuStyle(.borderlessButton).fixedSize().accessibilityLabel("管理\(source.name)").disabled(model.busy)
+                Text(source.enabled ? source.blocked ? "需要处理" : "自动采集" : "已暂停").foregroundStyle(palette.secondary)
+                sourceActions(source, plugin: plugin)
+            }
+            if let field = plugin?.form.fields.first(where: { $0.monospaced == true }), let value = source.configuration[field.id] {
+                Text(value.text).font(.system(size: MeltedType.metadata, design: .monospaced)).foregroundStyle(palette.secondary).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
             }
             if let last = source.lastSuccessAt { LabeledContent("最近成功", value: last.formatted(date: .abbreviated, time: .shortened)) }
-            if let error = source.lastError { Text("来源需要检查：\(error)").font(.caption).foregroundStyle(MeltedPalette(scheme).warning) }
+            if let error = source.lastError { Text("来源需要检查：\(error)").font(.system(size: MeltedType.metadata)).foregroundStyle(MeltedPalette(scheme).warning) }
             if let receipt = model.receipts[source.id] {
                 LabeledContent("最近任务", value: receipt.label)
                 if receipt.pending { ProgressView().controlSize(.small) }
                 else {
-                    VStack(spacing: 8) {
-                        HStack(spacing: 24) { count("新增", receipt.counts.inserted); count("更新", receipt.counts.updated) }
-                        HStack(spacing: 24) { count("重复", receipt.counts.duplicates); count("无效", receipt.counts.invalid) }
-                    }.font(.caption).foregroundStyle(.secondary)
+                    VStack(spacing: MeltedReading.listSpacing) {
+                        HStack(spacing: MeltedPanelMetrics.inset) { count("新增", receipt.counts.inserted); count("更新", receipt.counts.updated) }
+                        HStack(spacing: MeltedPanelMetrics.inset) { count("重复", receipt.counts.duplicates); count("无效", receipt.counts.invalid) }
+                    }.font(.system(size: MeltedType.metadata)).foregroundStyle(palette.secondary)
                 }
-                if let error = receipt.error { Text(error.code).font(.caption).foregroundStyle(MeltedPalette(scheme).warning) }
+                if let error = receipt.error { Text(error.code).font(.system(size: MeltedType.metadata)).foregroundStyle(MeltedPalette(scheme).warning) }
             }
         }
+    }
+    private func sourceRunSummary(_ source: PluginSource) -> some View {
+        VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
+            HStack {
+                Text(source.name).font(.system(size: MeltedType.row, weight: .medium))
+                Spacer()
+                Text(model.receipts[source.id]?.label ?? "等待任务状态").foregroundStyle(palette.secondary)
+            }
+            if let date = source.lastSuccessAt { LabeledContent("最近成功", value: date.formatted(date: .abbreviated, time: .shortened)).foregroundStyle(palette.secondary) }
+            if let receipt = model.receipts[source.id] {
+                HStack(spacing: MeltedPanelMetrics.inset) {
+                    count("新增", receipt.counts.inserted); count("更新", receipt.counts.updated)
+                    count("重复", receipt.counts.duplicates); count("无效", receipt.counts.invalid)
+                }.foregroundStyle(palette.secondary)
+                if let error = receipt.error { Text(error.code).foregroundStyle(palette.warning) }
+            }
+            if let error = source.lastError { Text(error).foregroundStyle(palette.warning) }
+        }.font(.system(size: MeltedType.metadata))
+    }
+    private func sourceActions(_ source: PluginSource, plugin: PluginDescriptor?) -> some View {
+        Menu {
+            Button(source.enabled ? "暂停采集" : "启用采集") { Task { await model.toggle(source) } }
+                .disabled(!source.enabled && (plugin?.available != true || plugin?.supported != true))
+            if let plugin, plugin.available && plugin.supported && plugin.configVersion == source.configVersion {
+                Button("编辑设置") { model.error = nil; editor = .init(plugin: plugin, source: source) }
+                ForEach(plugin.actions) { item in
+                    Button(item.label) { model.error = nil; action = .init(plugin: plugin, source: source, action: item) }
+                        .disabled(item.effect == "collect" && !source.enabled)
+                }
+            }
+            if let run = source.lastRunId { Button("查看最近任务") { Task { await model.refreshReceipt(run, sourceID: source.id) } } }
+            Divider()
+            Button("删除来源", role: .destructive) { deleting = source }
+        } label: { Text("管理") }.menuStyle(.borderlessButton).fixedSize().accessibilityLabel("管理\(source.name)").disabled(model.busy)
     }
     private func count(_ label: String, _ value: Int) -> some View {
         HStack { Text(label); Spacer(minLength: 8); Text(value, format: .number).monospacedDigit() }.frame(maxWidth: .infinity)

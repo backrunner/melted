@@ -12,6 +12,7 @@ struct SourceEditor: View {
     @State private var common: PluginConfiguration
     @State private var configuration: PluginConfiguration
     @State private var requestID = UUID().uuidString
+    @State private var suggestedName: String?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var scheme
     init(model: SourceSettingsModel, plugin: PluginDescriptor, sourceForm: PluginForm, source: PluginSource?) {
@@ -19,24 +20,34 @@ struct SourceEditor: View {
         _common = State(initialValue: source?.commonSettings ?? sourceForm.defaults)
         _configuration = State(initialValue: source?.configuration ?? plugin.form.defaults)
     }
-    private var validation: String? { sourceForm.error(in: common) ?? plugin.form.error(in: configuration) }
+    private var validation: String? { plugin.form.error(in: configuration) ?? sourceForm.error(in: common) }
     var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                Section { PluginFields(form: sourceForm, values: $common) } header: { Text(source == nil ? "添加来源" : "编辑来源") }
-                Section { PluginFields(form: plugin.form, values: $configuration) } header: { Text(plugin.title) } footer: { Text(plugin.description).frame(maxWidth: .infinity, alignment: .leading) }
-                if let error = model.error { Section { Text(error).foregroundStyle(MeltedPalette(scheme).danger).textSelection(.enabled) } }
+        MeltedPanel(source == nil ? "添加来源" : "编辑来源", subtitle: plugin.title) {
+            if model.busy { ProgressView().controlSize(.small) }
+        } content: {
+            ScrollView {
+                VStack(alignment: .leading, spacing: MeltedPanelMetrics.sectionGap) {
+                    PluginFields(form: plugin.form, values: $configuration) { suggestion in
+                        let name = common["name"]?.text ?? ""
+                        if source == nil && (name.isEmpty || name == suggestedName) { common["name"] = .string(suggestion.label); suggestedName = suggestion.label }
+                    }
+                    Rectangle().fill(MeltedPalette(scheme).separator).frame(height: MeltedPanelMetrics.ruleWidth)
+                    PluginFields(form: sourceForm, values: $common)
+                    if let error = model.error { MeltedNotice(title: error) }
+                }.padding(MeltedPanelMetrics.inset)
             }
-            .formStyle(.grouped).scrollContentBackground(.hidden)
-            HStack {
-                Button("取消") { dismiss() }.keyboardShortcut(.cancelAction)
-                Spacer()
-                if let validation { Text(validation).font(.caption).foregroundStyle(.secondary) }
-                Button("保存") { Task { if await model.save(source, plugin: plugin, common: common, configuration: configuration, requestID: requestID) { dismiss() } } }
-                    .keyboardShortcut(.defaultAction).disabled(validation != nil || model.busy)
-            }.padding()
+        } footer: {
+            HStack(spacing: MeltedReading.actionGap) {
+                if let validation { Text(validation).font(.system(size: MeltedType.metadata)).foregroundStyle(MeltedPalette(scheme).secondary).lineLimit(2) }
+                Spacer(minLength: 0)
+                Button { dismiss() } label: { Text("取消").frame(height: MeltedPanelMetrics.controlHeight) }
+                    .buttonStyle(MeltedSecondaryButtonStyle()).keyboardShortcut(.cancelAction)
+                Button { Task { if await model.save(source, plugin: plugin, common: common, configuration: configuration, requestID: requestID) { dismiss() } } } label: {
+                    Text(model.busy ? "正在保存" : "保存").frame(height: MeltedPanelMetrics.controlHeight)
+                }.buttonStyle(MeltedPrimaryButtonStyle()).keyboardShortcut(.defaultAction).disabled(validation != nil || model.busy)
+            }
         }
-        .background(MeltedPalette(scheme).canvas).frame(width: 580, height: 480)
+        .frame(width: MeltedPanelMetrics.editorWidth, height: MeltedPanelMetrics.height)
         .disabled(model.busy).interactiveDismissDisabled(model.busy)
         .onChange(of: common) { _, _ in requestID = UUID().uuidString; model.error = nil }
         .onChange(of: configuration) { _, _ in requestID = UUID().uuidString; model.error = nil }
@@ -51,30 +62,33 @@ struct PluginActionPanel: View {
     @State private var input: PluginConfiguration
     @State private var requestID = UUID().uuidString
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var scheme
     init(model: SourceSettingsModel, plugin: PluginDescriptor, source: PluginSource, action: PluginAction) {
         self.model = model; self.plugin = plugin; self.source = source; self.action = action
         _input = State(initialValue: action.input.defaults)
     }
     var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                Section {
-                    LabeledContent("来源", value: source.name)
-                    Text(action.description).foregroundStyle(.secondary)
+        MeltedPanel(action.label, subtitle: source.name) {
+            if model.busy { ProgressView().controlSize(.small) }
+        } content: {
+            ScrollView {
+                VStack(alignment: .leading, spacing: MeltedPanelMetrics.fieldGap) {
+                    Text(action.description).fixedSize(horizontal: false, vertical: true)
                     PluginFields(form: action.input, values: $input)
                     if let confirmation = action.confirmation { Text(confirmation).fontWeight(.medium) }
-                } header: { Text(action.label) }
-                if let error = model.error { Text(error).foregroundStyle(MeltedPalette(scheme).danger) }
-            }.formStyle(.grouped).scrollContentBackground(.hidden)
-            HStack {
-                Button("取消") { dismiss() }.keyboardShortcut(.cancelAction)
+                    if let error = model.error { MeltedNotice(title: error) }
+                }.frame(maxWidth: .infinity, alignment: .leading).padding(MeltedPanelMetrics.inset)
+            }
+        } footer: {
+            HStack(spacing: MeltedReading.actionGap) {
                 Spacer()
-                Button(action.label) { Task { if await model.perform(action, source: source, plugin: plugin, input: input, requestID: requestID) { dismiss() } } }
-                    .disabled(model.busy || action.input.error(in: input) != nil).keyboardShortcut(.defaultAction)
-            }.padding()
+                Button { dismiss() } label: { Text("取消").frame(height: MeltedPanelMetrics.controlHeight) }
+                    .buttonStyle(MeltedSecondaryButtonStyle()).keyboardShortcut(.cancelAction)
+                Button { Task { if await model.perform(action, source: source, plugin: plugin, input: input, requestID: requestID) { dismiss() } } } label: {
+                    Text(action.label).frame(height: MeltedPanelMetrics.controlHeight)
+                }.buttonStyle(MeltedPrimaryButtonStyle()).disabled(model.busy || action.input.error(in: input) != nil).keyboardShortcut(.defaultAction)
+            }
         }
-        .background(MeltedPalette(scheme).canvas).frame(width: 540, height: action.input.fields.isEmpty ? 280 : 440)
+        .frame(width: MeltedPanelMetrics.editorWidth, height: MeltedPanelMetrics.suggestionHeight)
         .disabled(model.busy).interactiveDismissDisabled(model.busy)
         .onChange(of: input) { _, _ in requestID = UUID().uuidString }
     }

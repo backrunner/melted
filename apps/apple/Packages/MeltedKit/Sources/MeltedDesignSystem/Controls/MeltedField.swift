@@ -7,15 +7,17 @@ import SwiftUI
 public struct MeltedField<Content: View>: View {
     private let label: String
     private let isFocused: Bool
+    private let height: CGFloat
     private let content: Content
     @Environment(\.colorScheme) private var scheme
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
-    public init(_ label: String, isFocused: Bool, @ViewBuilder content: () -> Content) {
+    public init(_ label: String, isFocused: Bool, height: CGFloat = MeltedConnection.controlHeight, @ViewBuilder content: () -> Content) {
         self.label = label
         self.isFocused = isFocused
+        self.height = height
         self.content = content()
     }
 
@@ -29,9 +31,10 @@ public struct MeltedField<Content: View>: View {
             content
                 .textFieldStyle(.plain)
                 .font(.system(size: MeltedType.row))
+                .accessibilityElement(children: .contain)
                 .accessibilityLabel(label)
                 .padding(.horizontal, 12)
-                .frame(height: MeltedConnection.controlHeight)
+                .frame(height: height)
                 .background(palette.surface, in: shape)
                 .overlay {
                     shape.strokeBorder(

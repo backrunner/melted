@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import Foundation
 
-public enum SettingValue: Codable, Equatable, Sendable {
+public enum SettingValue: Codable, Hashable, Sendable {
     case string(String), number(Double), boolean(Bool)
     public init(from decoder: any Decoder) throws {
         let c = try decoder.singleValueContainer()
@@ -19,6 +19,18 @@ public enum SettingValue: Codable, Equatable, Sendable {
 }
 public typealias PluginConfiguration = [String: SettingValue]
 
+public struct SettingSuggestion: Codable, Identifiable, Sendable {
+    public let value: SettingValue
+    public let label: String
+    public let group, description: String?
+    public var id: SettingValue { value }
+    public func matches(_ query: String) -> Bool {
+        let words = query.split(whereSeparator: \.isWhitespace)
+        let content = [label, group ?? "", description ?? "", value.text].joined(separator: " ")
+        return words.allSatisfy { content.localizedCaseInsensitiveContains($0) }
+    }
+}
+
 public struct PluginField: Codable, Identifiable, Sendable {
     public struct Option: Codable, Sendable { public let value, label: String }
     public let id, type, label: String
@@ -30,6 +42,8 @@ public struct PluginField: Codable, Identifiable, Sendable {
     public let minimum, maximum, step: Double?
     public let unit: String?
     public let options: [Option]?
+    public let monospaced: Bool?
+    public let suggestions: [SettingSuggestion]?
     public var supported: Bool {
         guard PluginIdentifiers.valid(id), !label.isEmpty, label.count <= 1000, (help?.count ?? 0) <= 1000 else { return false }
         switch type {
@@ -56,7 +70,11 @@ public struct PluginField: Codable, Identifiable, Sendable {
 }
 public struct PluginForm: Codable, Sendable {
     public let fields: [PluginField]
-    public var supported: Bool { fields.count <= 40 && Set(fields.map(\.id)).count == fields.count && fields.allSatisfy { $0.supported && ($0.default == nil || $0.accepts($0.default)) } }
+    public func excluding(_ ids: Set<String>) -> PluginForm { PluginForm(fields: fields.filter { !ids.contains($0.id) }) }
+    public var supported: Bool { fields.count <= 40 && Set(fields.map(\.id)).count == fields.count && fields.allSatisfy { field in
+        let choices = field.suggestions ?? []
+        return field.supported && (field.default == nil || field.accepts(field.default)) && choices.count <= 100 && Set(choices.map(\.value)).count == choices.count && choices.allSatisfy { field.accepts($0.value) }
+    } }
     public var defaults: PluginConfiguration { Dictionary(uniqueKeysWithValues: fields.compactMap { f in f.default.map { (f.id, $0) } }) }
     public func error(in values: PluginConfiguration) -> String? {
         guard supported else { return "此设置格式需要更新客户端" }
@@ -70,16 +88,35 @@ public struct PluginAction: Codable, Identifiable, Sendable {
     public let confirmation: String?
     public var supported: Bool { PluginIdentifiers.valid(id) && ["collect", "validate"].contains(effect) && input.supported && input.fields.isEmpty }
 }
+public struct PluginCollection: Codable, Sendable {
+    public struct Column: Codable, Identifiable, Sendable {
+        public let scope, field, label: String
+        public var id: String { scope + "." + field }
+    }
+    public struct Batch: Codable, Sendable { public let field: String; public let maximum: Int }
+    public let layout, title: String
+    public let columns: [Column]
+    public let addFromSuggestions: Batch?
+    public func supported(form: PluginForm) -> Bool {
+        guard ["list", "table"].contains(layout), !title.isEmpty, (1...8).contains(columns.count), Set(columns.map(\.id)).count == columns.count else { return false }
+        guard columns.allSatisfy({ column in
+            !column.label.isEmpty && (column.scope == "source" ? ["name", "enabled", "interval_seconds", "last_success_at", "last_error"].contains(column.field) : column.scope == "configuration" && form.fields.contains { $0.id == column.field })
+        }) else { return false }
+        guard let batch = addFromSuggestions else { return true }
+        return (1...20).contains(batch.maximum) && form.fields.contains { $0.id == batch.field && $0.type == "text" } && !form.fields.contains { $0.id != batch.field && $0.required && $0.default == nil }
+    }
+}
 public struct PluginDescriptor: Codable, Identifiable, Sendable {
     public let dslVersion: Int
     public let id, version, title, description, kind: String
     public let configVersion: Int
     public let capabilities: [String]
     public let form: PluginForm
+    public let collection: PluginCollection?
     public let actions: [PluginAction]
     public let available: Bool
     public let unavailableReason: String?
-    public var supported: Bool { dslVersion == 1 && PluginIdentifiers.valid(id) && configVersion == 1 && kind == "collector" && capabilities == ["collector.poll"] && form.supported && actions.count <= 10 && Set(actions.map(\.id)).count == actions.count && actions.allSatisfy(\.supported) }
+    public var supported: Bool { dslVersion == 1 && PluginIdentifiers.valid(id) && configVersion == 1 && kind == "collector" && capabilities == ["collector.poll"] && form.supported && (collection?.supported(form: form) ?? true) && actions.count <= 10 && Set(actions.map(\.id)).count == actions.count && actions.allSatisfy(\.supported) }
 }
 public struct PluginCatalog: Codable, Sendable {
     public let dslVersion: Int

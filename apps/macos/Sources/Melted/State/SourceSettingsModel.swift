@@ -3,6 +3,14 @@
 import Foundation
 import MeltedCore
 
+struct SourceBatchDraft: Identifiable {
+    let id: String
+    let common, configuration: PluginConfiguration
+}
+struct SourceBatchResult {
+    var saved: Set<String> = []
+    var errors: [String: String] = [:]
+}
 @MainActor
 final class SourceSettingsModel: ObservableObject {
     @Published private(set) var catalog: PluginCatalog?
@@ -49,6 +57,24 @@ final class SourceSettingsModel: ObservableObject {
         do { try await client.removeSource(source); generation = UUID(); sources.removeAll { $0.id == source.id }; receipts[source.id] = nil; notice = "来源及其原始数据已删除" }
         catch { self.error = message(error) }
     }
+    /// Each row has its own durable idempotency key. A failed retry never replays successful rows.
+    func addBatch(_ drafts: [SourceBatchDraft], plugin: PluginDescriptor) async -> SourceBatchResult {
+        guard !busy, drafts.count <= 20 else { return SourceBatchResult(errors: Dictionary(uniqueKeysWithValues: drafts.map { ($0.id, "请稍后重试") })) }
+        busy = true; error = nil; notice = nil
+        defer { busy = false }
+        var result = SourceBatchResult()
+        for draft in drafts {
+            do {
+                try Task.checkCancellation()
+                let saved = try await client.saveSource(nil, plugin: plugin, common: draft.common, configuration: draft.configuration, requestID: draft.id)
+                generation = UUID()
+                if let index = sources.firstIndex(where: { $0.id == saved.id }) { sources[index] = saved } else { sources.append(saved) }
+                result.saved.insert(draft.id)
+            } catch { result.errors[draft.id] = message(error) }
+        }
+        notice = result.errors.isEmpty ? "已添加 \(result.saved.count) 个订阅" : "已添加 \(result.saved.count) 个，\(result.errors.count) 个未完成"
+        return result
+    }
     func toggle(_ source: PluginSource) async {
         guard !busy else { return }
         busy = true; error = nil; notice = nil
@@ -93,11 +119,21 @@ final class SourceSettingsModel: ObservableObject {
         } catch is CancellationError {} catch { self.error = message(error) }
     }
     func pollReceipts() async {
-        guard !busy else { return }
-        for receipt in receipts.values.filter(\.pending) {
-            guard !Task.isCancelled else { return }
-            await refreshReceipt(receipt.id, sourceID: receipt.sourceId)
-        }
+        guard !busy, !loading, !sources.isEmpty else { return }
+        let current = generation
+        do {
+            let latest = try await client.sources()
+            try Task.checkCancellation()
+            guard current == generation, !busy else { return }
+            sources = latest
+            let activeIDs = Set(latest.map(\.id))
+            receipts = receipts.filter { activeIDs.contains($0.key) }
+            for source in latest {
+                guard !Task.isCancelled, current == generation, !busy else { return }
+                guard let run = source.lastRunId, receipts[source.id]?.id != run || receipts[source.id]?.pending == true else { continue }
+                await refreshReceipt(run, sourceID: source.id)
+            }
+        } catch is CancellationError {} catch { if current == generation { self.error = message(error) } }
     }
     private func message(_ error: Error) -> String {
         if case APIError.response(409, _) = error { return "设置已在其他位置更新，请刷新来源后重试" }

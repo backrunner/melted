@@ -23,6 +23,9 @@ struct NativeSearchField: NSViewRepresentable {
     let focusRequest: Int
     var focusOnAppear = false
     var prominent = false
+    var prompt: String?
+    var accessibilityTitle: String?
+    var fontSize: CGFloat = 20
     var onSubmit: () -> Void = {}
     var onCancel: () -> Void = {}
     var onMove: (Int) -> Void = { _ in }
@@ -31,10 +34,10 @@ struct NativeSearchField: NSViewRepresentable {
     func makeNSView(context: Context) -> NSSearchField {
         let field = FocusedSearchField()
         field.focusOnAttach = focusOnAppear
-        field.placeholderString = prominent ? "搜索内容、分类、标签或关注主题" : "搜索资讯"
-        field.setAccessibilityLabel(prominent ? "搜索与筛选" : "搜索资讯")
+        field.placeholderString = prompt ?? (prominent ? "搜索内容、分类、标签或关注主题" : "搜索资讯")
+        field.setAccessibilityLabel(accessibilityTitle ?? (prominent ? "搜索与筛选" : "搜索资讯"))
         if prominent {
-            field.font = .systemFont(ofSize: 20)
+            field.font = .systemFont(ofSize: fontSize)
             field.isBezeled = false; field.drawsBackground = false
             field.focusRingType = .none
             (field.cell as? NSSearchFieldCell)?.searchButtonCell = nil
@@ -50,8 +53,8 @@ struct NativeSearchField: NSViewRepresentable {
         let palette = MeltedPalette(scheme)
         field.textColor = NSColor(palette.text)
         field.placeholderAttributedString = NSAttributedString(
-            string: prominent ? "搜索内容、分类、标签或关注主题" : "搜索资讯",
-            attributes: [.foregroundColor: NSColor(palette.secondary), .font: field.font ?? NSFont.systemFont(ofSize: 20)]
+            string: prompt ?? (prominent ? "搜索内容、分类、标签或关注主题" : "搜索资讯"),
+            attributes: [.foregroundColor: NSColor(palette.secondary), .font: field.font ?? NSFont.systemFont(ofSize: fontSize)]
         )
         context.coordinator.text = $text
         context.coordinator.onSubmit = onSubmit

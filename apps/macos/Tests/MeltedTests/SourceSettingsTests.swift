@@ -103,3 +103,46 @@ private actor SettingsClient: PluginClient {
     #expect(model.notice == nil)
     #expect(model.error != nil)
 }
+
+private actor BatchClient: PluginClient {
+    let catalog: PluginCatalog
+    var stored: [String: PluginSource] = [:]
+    var requests: [String: Int] = [:]
+    init() throws { catalog = try settingsFixture("plugin-settings") }
+    func pluginCatalog() -> PluginCatalog { catalog }
+    func sources() -> [PluginSource] { Array(stored.values) }
+    func saveSource(_ source: PluginSource?, plugin: PluginDescriptor, common: PluginConfiguration, configuration: PluginConfiguration, requestID: String) throws -> PluginSource {
+        requests[requestID, default: 0] += 1
+        if let existing = stored[requestID] { return existing }
+        let base: PluginSource = try settingsFixture("plugin-source")
+        var json = try #require(JSONSerialization.jsonObject(with: Wire.encoder().encode(base)) as? [String: Any])
+        json["id"] = "src_" + requestID; json["name"] = common["name"]?.text
+        json["configuration"] = try JSONSerialization.jsonObject(with: Wire.encoder().encode(configuration))
+        let saved = try Wire.decoder().decode(PluginSource.self, from: JSONSerialization.data(withJSONObject: json))
+        stored[requestID] = saved
+        // Simulate a committed row whose HTTP response was lost.
+        if requestID == "lost" { throw URLError(.timedOut) }
+        return saved
+    }
+    func removeSource(_ source: PluginSource) {}
+    func setSourceEnabled(_ source: PluginSource, enabled: Bool) -> PluginSource { source }
+    func performAction(_ action: PluginAction, source: PluginSource, plugin: PluginDescriptor, input: PluginConfiguration, requestID: String) throws -> PluginActionResult { throw APIError.incompatible }
+    func collectionReceipt(_ id: String) throws -> CollectionReceipt { throw APIError.incompatible }
+}
+@Test @MainActor func partialBatchRetryPreservesRowKeysAndDoesNotRepeatSuccessfulSubscriptions() async throws {
+    let client = try BatchClient(), model = SourceSettingsModel(client: client)
+    await model.load()
+    let plugin = try #require(model.catalog?.plugins.first)
+    let drafts = ["first", "lost", "last"].map { id in
+        SourceBatchDraft(id: id, common: ["name": .string(id), "enabled": .boolean(true), "interval_seconds": .number(900)], configuration: ["route": .string("/bbc/" + id)])
+    }
+    let first = await model.addBatch(drafts, plugin: plugin)
+    #expect(first.saved == ["first", "last"])
+    #expect(Set(first.errors.keys) == ["lost"])
+    #expect(model.sources.count == 2)
+    let retry = await model.addBatch(drafts.filter { !first.saved.contains($0.id) }, plugin: plugin)
+    #expect(retry.saved == ["lost"] && retry.errors.isEmpty)
+    #expect(model.sources.count == 3)
+    #expect(await client.stored.count == 3)
+    #expect(await client.requests == ["first": 1, "lost": 2, "last": 1])
+}

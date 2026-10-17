@@ -19,6 +19,9 @@ private func pluginFixture(_ name: String) throws -> Data {
     let plugin = try #require(catalog.plugins.first)
     #expect(plugin.supported && plugin.available)
     #expect(plugin.form.fields.first?.id == "route")
+    #expect(plugin.collection?.layout == "table")
+    #expect(plugin.collection?.columns.map(\.id) == ["source.name", "configuration.route", "source.enabled", "source.interval_seconds"])
+    #expect(plugin.collection?.addFromSuggestions?.maximum == 20)
     #expect(plugin.actions.map(\.effect) == ["collect", "validate"])
     #expect(catalog.sourceForm.error(in: ["name": .string("新闻"), "enabled": .boolean(true), "interval_seconds": .number(900)]) == nil)
     #expect(plugin.form.error(in: ["route": .string("/bbc/world-asia")]) == nil)
@@ -58,4 +61,42 @@ private func pluginFixture(_ name: String) throws -> Data {
     #expect(try !receipt("partial").pending)
     #expect(try receipt("partial").label == "部分内容未能采集")
     #expect(try receipt("future").label == "未知任务状态")
+}
+
+@Test func suggestionsSearchAcrossLabelsCategoriesAndRoutesWithoutClosingCustomInput() throws {
+    let catalog = try Wire.decoder().decode(PluginCatalog.self, from: pluginFixture("plugin-settings"))
+    let field = try #require(catalog.plugins.first?.form.fields.first)
+    #expect(field.monospaced == true)
+    let choices = try #require(field.suggestions)
+    #expect(choices.count == 15)
+    #expect(choices.filter { $0.matches("文化 小说") }.map(\.value) == [.string("/douban/book/latest/fiction")])
+    #expect(choices.filter { $0.matches("BBC business") }.map(\.value) == [.string("/bbc/business")])
+    #expect(choices.allSatisfy { $0.matches("  ") })
+    #expect(choices.allSatisfy { !$0.matches("missing-category") })
+    #expect(field.accepts(.string("/bbc/science_and_environment")))
+}
+
+@Test func suggestionCompatibilityAndInvalidMetadata() throws {
+    func form(_ suggestions: String) throws -> PluginForm {
+        try Wire.decoder().decode(PluginForm.self, from: Data("{\"fields\":[{\"id\":\"count\",\"type\":\"integer\",\"label\":\"数量\",\"required\":true,\"minimum\":1,\"maximum\":9,\"step\":2\(suggestions)}]}".utf8))
+    }
+    #expect(try form("").supported) // Old v1 descriptors still render.
+    #expect(try form(#","suggestions":[{"value":3,"label":"常用"}]"#).supported)
+    for items in [#"[{"value":3,"label":"A"},{"value":3,"label":"B"}]"#, #"[{"value":"3","label":"Wrong type"}]"#, #"[{"value":2,"label":"Wrong step"}]"#, #"[{"value":11,"label":"Range"}]"#] {
+        #expect(try !form(",\"suggestions\":\(items)").supported)
+    }
+}
+
+@Test func collectionRenderingRejectsUnknownBindingsAndKeepsLegacyDescriptors() throws {
+    var document = try #require(JSONSerialization.jsonObject(with: pluginFixture("plugin-settings")) as? [String: Any])
+    var plugins = try #require(document["plugins"] as? [[String: Any]])
+    for collection in [
+        ["layout": "execute", "title": "Rows", "columns": [["scope": "source", "field": "name", "label": "Name"]]],
+        ["layout": "table", "title": "Rows", "columns": [["scope": "configuration", "field": "unknown", "label": "Unknown"]]],
+    ] as [[String: Any]] {
+        plugins[0]["collection"] = collection; document["plugins"] = plugins
+        #expect(try !Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)).plugins[0].supported)
+    }
+    plugins[0].removeValue(forKey: "collection"); document["plugins"] = plugins
+    #expect(try Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)).plugins[0].supported)
 }

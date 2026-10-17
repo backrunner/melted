@@ -131,6 +131,28 @@ public enum MeltedEmptyState {
     public static let tileCornerRadius: CGFloat = 18
 }
 
+public enum MeltedPanelMetrics {
+    public static let width: CGFloat = 760
+    public static let height: CGFloat = 520
+    public static let editorWidth: CGFloat = 620
+    public static let inset: CGFloat = 24
+    public static let headerInset: CGFloat = 18
+    public static let sectionGap: CGFloat = 24
+    public static let fieldGap: CGFloat = 16
+    public static let detailGap: CGFloat = 6
+    public static let controlHeight: CGFloat = 32
+    public static let ruleWidth: CGFloat = 1
+    public static let suggestionWidth: CGFloat = 500
+    public static let suggestionHeight: CGFloat = 340
+    public static let columnWide: CGFloat = 240
+    public static let columnNarrow: CGFloat = 85
+    public static let columnActions: CGFloat = 60
+    public static let tableRow: CGFloat = 36
+    public static let tableMinimum: CGFloat = 120
+    public static let tableMaximum: CGFloat = 260
+    public static let columnTitle: CGFloat = 140
+}
+
 public enum MeltedMotion {
     public static let feedback: Double = 0.16
     public static let selection: Double = 0.12
