@@ -11,13 +11,12 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
     let sourceForm: PluginForm
     @ViewBuilder let actions: (PluginSource) -> Actions
     @ViewBuilder let detail: (PluginSource) -> Detail
-    @State private var layout: String
     @State private var selected: String?
     @Environment(\.colorScheme) private var scheme
     init(plugin: PluginDescriptor, collection: PluginCollection, sources: [PluginSource], sourceForm: PluginForm,
          @ViewBuilder actions: @escaping (PluginSource) -> Actions, @ViewBuilder detail: @escaping (PluginSource) -> Detail) {
         self.plugin = plugin; self.collection = collection; self.sources = sources; self.sourceForm = sourceForm
-        self.actions = actions; self.detail = detail; _layout = State(initialValue: collection.layout)
+        self.actions = actions; self.detail = detail
     }
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
@@ -25,14 +24,10 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
                 Text(plugin.title).font(.system(size: MeltedType.section, weight: .semibold))
                 Text("\(sources.count) 个\(collection.title)").foregroundStyle(MeltedPalette(scheme).secondary)
                 Spacer()
-                Picker("显示方式", selection: $layout) {
-                    Text("表格").tag("table")
-                    Text("列表").tag("list")
-                }.pickerStyle(.segmented).labelsHidden().fixedSize().accessibilityLabel(plugin.title + "显示方式")
             }
             if sources.isEmpty {
                 Text(collection.addFromSuggestions == nil ? "尚未添加订阅，可添加多个独立来源" : "尚未添加订阅，可一次选择多个来源").foregroundStyle(MeltedPalette(scheme).secondary).padding(.vertical, MeltedReading.paragraphSpacing)
-            } else if layout == "table" {
+            } else if collection.layout == "table" {
                 SettingsTable(columns: collection.columns.map { column in
                     SettingsTableColumn(id: column.id, title: column.label,
                                         width: column.scope == "configuration" ? MeltedPanelMetrics.columnWide : column.field == "name" ? MeltedPanelMetrics.columnTitle : MeltedPanelMetrics.columnNarrow)
@@ -65,7 +60,7 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
                     Rectangle().fill(MeltedPalette(scheme).separator).frame(height: MeltedPanelMetrics.ruleWidth)
                 }
             }
-            if layout == "table", let source = sources.first(where: { $0.id == selected }) {
+            if collection.layout == "table", let source = sources.first(where: { $0.id == selected }) {
                 detail(source).padding(.top, MeltedReading.actionGap)
             }
         }
@@ -74,8 +69,7 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
         let text = text(column, source: source)
         let mono = column.scope == "configuration" && plugin.form.fields.first(where: { $0.id == column.field })?.monospaced == true
         return Text(text).font(.system(size: MeltedType.metadata, design: mono ? .monospaced : .default))
-            .foregroundStyle(MeltedPalette(scheme).text).lineLimit(layout == "table" ? 1 : nil).help(text)
-            .frame(minHeight: layout == "table" ? MeltedPanelMetrics.controlHeight : nil)
+            .foregroundStyle(MeltedPalette(scheme).text).help(text)
     }
     private func text(_ column: PluginCollection.Column, source: PluginSource) -> String {
         if column.scope == "configuration" { return source.configuration[column.field]?.text ?? "—" }

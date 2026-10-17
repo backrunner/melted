@@ -43,7 +43,7 @@
 {"layout":"table","title":"订阅","columns":[{"scope":"source","field":"name","label":"名称"},{"scope":"configuration","field":"route","label":"订阅路由"},{"scope":"source","field":"enabled","label":"状态"},{"scope":"source","field":"interval_seconds","label":"采集间隔"}],"add_from_suggestions":{"field":"route","maximum":20}}
 ```
 
-列最多 8 个，引用必须唯一。`source` 仅允许 name、enabled、interval_seconds、last_success_at、last_error；`configuration` 只能引用该插件表单已声明的字段。列值由客户端格式化，没有 JavaScript、任意路径表达式、模板或 endpoint。客户端可在表格和列表之间切换，行操作继续使用来源版本与已声明动作。缺少 collection 的描述不符合当前契约；未知布局或字段映射拒绝交互。
+列最多 8 个，引用必须唯一。`source` 仅允许 name、enabled、interval_seconds、last_success_at、last_error；`configuration` 只能引用该插件表单已声明的字段。列值由客户端格式化，没有 JavaScript、任意路径表达式、模板或 endpoint。客户端固定按 `collection.layout` 呈现，不向用户提供表格/列表切换或保存布局偏好；两种布局通过开发测试分别覆盖。行操作继续使用来源版本与已声明动作。缺少 collection 的描述不符合当前契约；未知布局或字段映射拒绝交互。
 
 `add_from_suggestions` 指定一个 text 字段及单批上限（1–20），其余必填配置必须有默认值。原生批量选择跨搜索保留勾选，已订阅值标记并禁选，共享启停/间隔可展开修改。保存时创建独立来源，每行使用独立幂等键；部分成功不会回滚成功行。当前面板保留失败行的请求键与 payload，重试仅提交未完成行。发起提交后冻结该批输入，防止未知结果下改变 payload。关闭面板会结束该批客户端重试上下文；重新打开从已保存的来源恢复“已订阅”提示。不是跨多来源的原子事务，也不是任意嵌套数组配置编辑器。
 

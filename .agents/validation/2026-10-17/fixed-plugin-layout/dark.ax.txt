@@ -1,0 +1,50 @@
+Window: "", App: Melted.
+0 sheet Secondary Actions: Raise
+	1 container
+		2 text 来源与插件
+		3 button Description: 刷新来源, ID: arrow.clockwise
+		4 menu button 添加来源, ID: plus
+		5 scroll area
+			6 text RSSHub 0 个订阅 尚未添加订阅，可一次选择多个来源 RSS / Atom 2 个订阅
+			7 scroll area
+				8 table RSS / Atom订阅
+					9 row (selectable)
+						10 cell
+							11 text 固定布局验收 BBC
+						12 cell
+							13 text https://feeds.bbci.co.uk/news/world/rss.xml
+						14 cell
+							15 text 已暂停
+						16 cell
+							17 text 每 15 分钟
+						18 cell
+							19 menu button 管理固定布局验收 BBC
+					20 row (selectable)
+						21 cell
+							22 text 固定布局验收 JSON Feed
+						23 cell
+							24 text https://www.jsonfeed.org/feed.json
+						25 cell
+							26 text 已暂停
+						27 cell
+							28 text 每 15 分钟
+						29 cell
+							30 menu button 管理固定布局验收 JSON Feed
+					31 container
+						32 sort button 名称
+						33 sort button 订阅地址
+						34 sort button 状态
+						35 sort button 采集间隔
+						36 sort button 操作
+			37 text 选择一行查看采集状态；每个订阅可独立管理
+			38 disclosure triangle Description: 服务器插件（2）, Value: off
+		39 text 2 个来源 原始资料暂不自动生成资讯
+		40 button 完成
+41 menu bar
+	42 Melted
+	43 Edit
+	44 View
+	45 Window
+	46 Help
+
+The focused UI element is 0 sheet Secondary Actions: Raise

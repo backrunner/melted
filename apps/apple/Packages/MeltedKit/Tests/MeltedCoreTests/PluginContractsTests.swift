@@ -90,6 +90,13 @@ private func pluginFixture(_ name: String) throws -> Data {
 @Test func collectionRenderingRequiresCurrentDescriptorAndRejectsUnknownBindings() throws {
     var document = try #require(JSONSerialization.jsonObject(with: pluginFixture("plugin-settings")) as? [String: Any])
     var plugins = try #require(document["plugins"] as? [[String: Any]])
+    for layout in ["list", "table"] {
+        plugins[0]["collection"] = ["layout": layout, "title": "Rows", "columns": [["scope": "source", "field": "name", "label": "Name"]]]
+        document["plugins"] = plugins
+        let plugin = try Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)).plugins[0]
+        #expect(plugin.supported)
+        #expect(plugin.collection.layout == layout)
+    }
     for collection in [
         ["layout": "execute", "title": "Rows", "columns": [["scope": "source", "field": "name", "label": "Name"]]],
         ["layout": "table", "title": "Rows", "columns": [["scope": "configuration", "field": "unknown", "label": "Unknown"]]],
