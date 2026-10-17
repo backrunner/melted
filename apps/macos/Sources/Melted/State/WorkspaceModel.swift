@@ -35,6 +35,7 @@ final class WorkspaceModel: ObservableObject {
     @Published var total = 0
     @Published var searchRequest = 0
     private var client: (any WorkspaceClient)?
+    var pluginClient: (any PluginClient)? { connected ? client : nil }
     private let defaults: UserDefaults
     private let makeClient: (URL) -> any WorkspaceClient
     private var queryGeneration = UUID()

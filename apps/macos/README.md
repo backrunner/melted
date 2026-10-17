@@ -12,7 +12,7 @@ SwiftUI 原生应用，最低目标 macOS 14。当前视觉基线见 [UI v1.1](.
 | `Sources/Melted/Features/Library` | 日期分组、内容列表和针对被点击行的菜单 |
 | `Sources/Melted/Features/Reading` | 阅读容器、正文、标题动作、元信息和来源依据 |
 | `Sources/Melted/Features/Search` | 搜索面板和原生输入框桥接 |
-| `Sources/Melted/Features/Settings` | 外观、账户、版本和设置布局组件 |
+| `Sources/Melted/Features/Settings` | 外观、内容/来源与插件、账户、版本和设置布局组件 |
 | `../apple/Packages/MeltedKit/Sources/MeltedCore` | DTO、API actor、Keychain、密钥证明；不依赖业务 View |
 | `../apple/Packages/MeltedKit/Sources/MeltedDesignSystem` | 语义 token、Logo、列表行、底栏、连接按钮、错误和空状态 |
 | `../apple/Packages/MeltedKit/Sources/MeltedRendering` | Markdown 渲染及安全链接 |

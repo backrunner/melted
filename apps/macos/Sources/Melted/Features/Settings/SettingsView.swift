@@ -7,10 +7,18 @@ import MeltedDesignSystem
 struct SettingsView: View {
     @ObservedObject var model: WorkspaceModel
     @Environment(\.colorScheme) private var scheme
+    @State private var showingSources = false
 
     var body: some View {
         Form {
             AppearanceSettings()
+            if model.connected {
+                Section {
+                    Button { showingSources = true } label: {
+                        HStack { Text("来源与插件"); Spacer(); Image(systemName: "chevron.right").foregroundStyle(.secondary) }
+                    }.buttonStyle(.plain)
+                } header: { Text("内容") }
+            }
             AccountSettings(model: model)
             AboutSettings()
         }
@@ -21,5 +29,7 @@ struct SettingsView: View {
         .frame(width: 520)
         .frame(minHeight: 460, idealHeight: 540)
         .navigationTitle("设置")
+        .sheet(isPresented: $showingSources) { if let client = model.pluginClient { SourcesPanel(client: client) } }
+        .onChange(of: model.connected) { _, connected in if !connected { showingSources = false } }
     }
 }

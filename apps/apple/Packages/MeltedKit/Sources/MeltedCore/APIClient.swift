@@ -123,7 +123,7 @@ public actor APIClient {
         if let session { try credentials.delete(server: serverID, account: session.accountId) }
         session = nil
     }
-    private func accessToken() async throws -> String {
+    func accessToken() async throws -> String {
         guard let s = session else { throw APIError.response(401, "unauthorized") }
         if s.expiresAt.timeIntervalSinceNow > 30 { return s.accessToken }
         if let refreshTask { return try await refreshTask.value.accessToken }
@@ -150,7 +150,7 @@ public actor APIClient {
     }
     private struct Empty: Decodable, Sendable {}
     private struct Failure: Decodable { let code: String }
-    private func send<T: Decodable & Sendable>(_ path: String, method: String = "GET", query: [URLQueryItem] = [], body: Data? = nil, token: String? = nil) async throws -> T {
+    func send<T: Decodable & Sendable>(_ path: String, method: String = "GET", query: [URLQueryItem] = [], body: Data? = nil, token: String? = nil, headers: [String: String] = [:]) async throws -> T {
         var c = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
         c.path = path; c.queryItems = query.isEmpty ? nil : query
         guard let url = c.url else { throw APIError.invalidServer }
@@ -158,6 +158,7 @@ public actor APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
         if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
+        for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         let (bytes, response) = try await transport.bytes(for: request)
         let limit = 16 * 1024 * 1024
         guard response.expectedContentLength <= limit else { bytes.task.cancel(); throw APIError.oversizedResponse }
