@@ -20,7 +20,6 @@ public struct MeltedBackdrop: View {
                     .opacity(dark ? 0.05 : 0.04)
                 Canvas { context, size in Self.melt(&context, size: size, t: t, tint: tint) }
                     .opacity(dark ? 0.12 : 0.10)
-                    .blur(radius: 0.8)
             }
         }
         .ignoresSafeArea()
@@ -70,7 +69,8 @@ public struct MeltedBackdrop: View {
     private static func melt(_ context: inout GraphicsContext, size: CGSize, t: Double, tint: Color) {
         let w = size.width, h = size.height
         let unit = min(w, 1400)
-        // Blurred shapes are thresholded back to a hard edge, so nearby shapes fuse like liquid.
+        // Blur joins nearby shapes; the threshold restores a crisp liquid contour.
+        // Keep the finished Canvas unblurred so the edge stays sharp at display resolution.
         context.addFilter(.alphaThreshold(min: 0.5, color: tint))
         context.addFilter(.blur(radius: 14))
         context.drawLayer { layer in
