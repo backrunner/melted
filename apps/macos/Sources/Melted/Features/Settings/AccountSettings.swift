@@ -20,11 +20,14 @@ struct AccountSettings: View {
             LabeledContent("登录方式", value: credentialTitle)
 
             if model.connected {
-                Button(role: .destructive) { Task { await model.logout() } } label: {
-                    Text("退出登录")
-                        .frame(minHeight: 32)
+                HStack {
+                    Spacer(minLength: 0)
+                    Button(role: .destructive) { Task { await model.logout() } } label: {
+                        Text("退出登录")
+                            .frame(minHeight: 32)
+                    }
+                    .buttonStyle(MeltedSecondaryButtonStyle())
                 }
-                .buttonStyle(MeltedSecondaryButtonStyle())
             }
             if let failure = model.failure {
                 Label(failure.message, systemImage: "exclamationmark.triangle")

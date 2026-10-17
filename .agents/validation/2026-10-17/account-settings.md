@@ -13,3 +13,11 @@
 - 真实设置窗口中，浅色/深色按钮的文字、边框、圆角和左边线正常，账户卡片之后直接进入关于分组；AX 保留“退出登录”按钮且已无被删除说明。见 [深色](account-settings/dark.jpg)、[浅色](account-settings/light.jpg)。
 - 恢复深色、100% 阅读字号并停留设置页，最新构建保持运行。
 - 视觉样式及文案修改未新增单元测试，未执行退出以免改变现有登录状态；本记录不声称已重新验收注销链路、完整键盘/VoiceOver、iOS 或全页面状态。
+
+## 退出按钮右对齐补充
+
+用户随后要求退出按钮也靠右：在原按钮外增加 HStack 与 Spacer，保持同一按钮样式及原退出回调；与关于区许可按钮右边线一致，UI 规范同步更新。以上左对齐图片保留历史状态。
+
+- 重新构建/签名并实际启动 build/latest/Melted.app，主程序 SHA-256：1b44ebc13a007b76da1e08640899eb187641c7fa4c6d3586cee9bfdb9fd581c3；codesign --verify --deep --strict 通过。
+- 520 pt 设置窗口亮暗主题均确认：退出按钮靠右，与下方第三方声明右边线一致，文字和边框完整。见 [深色右对齐](account-settings/right-aligned-dark.jpg)、[浅色右对齐](account-settings/right-aligned-light.jpg)。
+- 恢复深色、100% 字号并停留账户/关于区域，新构建保持运行。纯对齐修改未新增测试或触发退出操作。
