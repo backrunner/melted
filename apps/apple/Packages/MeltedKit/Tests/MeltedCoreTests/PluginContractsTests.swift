@@ -100,3 +100,21 @@ private func pluginFixture(_ name: String) throws -> Data {
     plugins[0].removeValue(forKey: "collection"); document["plugins"] = plugins
     #expect(throws: DecodingError.self) { try Wire.decoder().decode(PluginCatalog.self, from: JSONSerialization.data(withJSONObject: document)) }
 }
+
+@Test func feedDSLProvidesURLFormatChoicesLimitsAndIndependentSubscriptions() throws {
+    let catalog = try Wire.decoder().decode(PluginCatalog.self, from: pluginFixture("plugin-settings"))
+    let feed = try #require(catalog.plugins.first { $0.id == "feed" })
+    #expect(feed.supported && feed.available)
+    let field = try #require(feed.form.fields.first { $0.id == "url" })
+    #expect(field.format == "url")
+    #expect(feed.collection.columns.contains { $0.id == "configuration.url" })
+    #expect(feed.form.error(in: ["url": .string("https://feeds.bbci.co.uk/news/world/rss.xml")]) == nil)
+    for value in ["/feed", "https://user:secret@feeds.example.org/a", "https://feeds.example.org/#frag", "https://feeds.example.org/white space", "https://feeds.example.org/%GG", "file:///etc/passwd", "https://feeds.example.org\\@localhost/a"] { #expect(!field.accepts(.string(value))) }
+    #expect(feed.form.error(in: ["url": .string("https://feeds.example.org/rss"), "format": .string("html")]) != nil)
+    #expect(feed.form.error(in: ["url": .string("https://feeds.example.org/rss"), "max_items": .number(101)]) != nil)
+    let source = try Wire.decoder().decode(PluginSource.self, from: pluginFixture("feed-source"))
+    #expect(source.plugin == "feed")
+    #expect(feed.form.error(in: source.configuration) == nil)
+    let unknown = try Wire.decoder().decode(PluginForm.self, from: Data(#"{"fields":[{"id":"url","type":"text","format":"script","label":"URL","required":true,"max_length":2048}]}"#.utf8))
+    #expect(!unknown.supported)
+}

@@ -42,6 +42,7 @@ private struct PluginFieldControl: View {
                 HStack(spacing: MeltedReading.actionGap) {
                     TextField(field.placeholder ?? "", text: Binding(get: { value?.text ?? "" }, set: { value = .string($0) }))
                         .font(.system(size: MeltedType.control, design: field.monospaced == true ? .monospaced : .default))
+                        .autocorrectionDisabled(field.format == "url")
                         .focused($focused).accessibilityLabel(field.label)
                     if !suggestions.isEmpty {
                         Button { choosing = true } label: { Label("选择", systemImage: "list.bullet") }
@@ -82,10 +83,13 @@ private struct PluginFieldControl: View {
         case "select":
             VStack(alignment: .leading, spacing: MeltedPanelMetrics.detailGap) {
                 Text(field.label).font(.system(size: MeltedType.control, weight: .medium)).foregroundStyle(palette.secondary)
-                Picker(field.label, selection: Binding(get: { value?.text ?? "" }, set: { value = .string($0) })) {
-                    Text("请选择").tag("")
-                    ForEach(field.options ?? [], id: \.value) { Text($0.label).tag($0.value) }
-                }.labelsHidden().tint(palette.accent)
+                Menu {
+                    ForEach(field.options ?? [], id: \.value) { option in
+                        Button(option.label) { value = .string(option.value) }
+                    }
+                } label: {
+                    Text(field.options?.first(where: { $0.value == value?.text })?.label ?? "请选择")
+                }.menuStyle(.borderlessButton).modifier(MeltedMenuChrome()).accessibilityLabel(field.label)
             }
         default: Text("此字段需要更新客户端").foregroundStyle(palette.secondary)
         }

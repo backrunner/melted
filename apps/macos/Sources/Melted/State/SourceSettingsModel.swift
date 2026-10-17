@@ -137,7 +137,7 @@ final class SourceSettingsModel: ObservableObject {
     }
     private func message(_ error: Error) -> String {
         if case APIError.response(409, _) = error { return "设置已在其他位置更新，请刷新来源后重试" }
-        if case APIError.response(403, "route_not_allowed") = error { return "此路由未获运营者允许，请检查路由或联系运营者" }
+        if case APIError.response(403, _) = error { return "此来源未获运营者允许，请检查订阅配置或联系运营者" }
         if case APIError.response(503, _) = error { return "此插件当前不可用，请联系运营者检查配置" }
         return error.localizedDescription
     }

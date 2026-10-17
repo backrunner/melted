@@ -31,7 +31,7 @@ struct PluginSourceCollection<Actions: View, Detail: View>: View {
                 }.pickerStyle(.segmented).labelsHidden().fixedSize().accessibilityLabel(plugin.title + "显示方式")
             }
             if sources.isEmpty {
-                Text("尚未添加订阅，可一次选择多个来源").foregroundStyle(MeltedPalette(scheme).secondary).padding(.vertical, MeltedReading.paragraphSpacing)
+                Text(collection.addFromSuggestions == nil ? "尚未添加订阅，可添加多个独立来源" : "尚未添加订阅，可一次选择多个来源").foregroundStyle(MeltedPalette(scheme).secondary).padding(.vertical, MeltedReading.paragraphSpacing)
             } else if layout == "table" {
                 SettingsTable(columns: collection.columns.map { column in
                     SettingsTableColumn(id: column.id, title: column.label,

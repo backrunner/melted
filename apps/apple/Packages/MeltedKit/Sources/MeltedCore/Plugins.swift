@@ -43,9 +43,10 @@ public struct PluginField: Codable, Identifiable, Sendable {
     public let unit: String?
     public let options: [Option]?
     public let monospaced: Bool?
+    public let format: String?
     public let suggestions: [SettingSuggestion]?
     public var supported: Bool {
-        guard PluginIdentifiers.valid(id), !label.isEmpty, label.count <= 1000, (help?.count ?? 0) <= 1000 else { return false }
+        guard PluginIdentifiers.valid(id), !label.isEmpty, label.count <= 1000, (help?.count ?? 0) <= 1000, format == nil || (type == "text" && format == "url") else { return false }
         switch type {
         case "text": return maxLength.map { (1...4096).contains($0) } ?? false
         case "integer":
@@ -60,12 +61,20 @@ public struct PluginField: Codable, Identifiable, Sendable {
         guard supported else { return false }
         guard let value = value ?? `default` else { return !required }
         switch (type, value) {
-        case ("text", .string(let v)): return v.utf16.count <= (maxLength ?? 0) && (!required || !v.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) && !v.contains("\0")
+        case ("text", .string(let v)): return v.utf16.count <= (maxLength ?? 0) && (!required || !v.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) && !v.contains("\0") && (format != "url" || Self.isHTTPURL(v))
         case ("integer", .number(let v)): return v.isFinite && v.rounded() == v && v >= minimum! && v <= maximum! && (v - minimum!).truncatingRemainder(dividingBy: step!) == 0
         case ("boolean", .boolean): return true
         case ("select", .string(let v)): return options?.contains(where: { $0.value == v }) == true
         default: return false
         }
+    }
+    private static func isHTTPURL(_ value: String) -> Bool {
+        guard value.range(of: "^https?://", options: [.regularExpression, .caseInsensitive]) != nil,
+              !value.unicodeScalars.contains(where: { CharacterSet.whitespacesAndNewlines.contains($0) || CharacterSet.controlCharacters.contains($0) }),
+              !value.contains("\\"), !value.contains("#"), value.range(of: "%(?![A-Fa-f0-9]{2})", options: .regularExpression) == nil,
+              let url = URLComponents(string: value), let host = url.host, !host.isEmpty,
+              url.user == nil, url.password == nil, url.fragment == nil else { return false }
+        return true
     }
 }
 public struct PluginForm: Codable, Sendable {
