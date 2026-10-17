@@ -174,6 +174,10 @@ export class ACPClient {
       prompt: [{ type: "text", text: prompt }],
     });
     this.receiving = false;
+    // A terminal response and an invalid/denied message can arrive in one read.
+    // Resolving the request must not hide a failure detected later in that read.
+    if (this.failure) throw this.failure;
+    this.signal.throwIfAborted();
     if (response?.stopReason !== "end_turn")
       throw new Error("agent_turn_incomplete");
     return this.text;

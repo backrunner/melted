@@ -56,6 +56,16 @@ readline.createInterface({ input: process.stdin }).on("line", async (line) => {
       process.stdout.write("not json\n");
       return;
     }
+    if (prompt.includes("INVALID_AFTER_END")) {
+      process.stdout.write(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: m.id,
+          result: { stopReason: "end_turn" },
+        }) + "\nnot json\n",
+      );
+      return;
+    }
     const result = await rpc("tools/call", {
       name: "collect_url",
       arguments: { url: "https://news.example.org/feed.json" },

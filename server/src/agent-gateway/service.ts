@@ -258,6 +258,7 @@ export async function startGateway(
       controller.signal.throwIfAborted();
       await tools.get(toolID)!.tail;
       result = await evidence.result();
+      controller.signal.throwIfAborted();
     } catch (error) {
       const code =
         error instanceof Error && /^agent_[a-z_]{1,80}$/.test(error.message)
@@ -271,6 +272,9 @@ export async function startGateway(
       tools.delete(toolID);
       await rm(directory, { recursive: true, force: true });
     }
+    // Cleanup awaits I/O too; cancellation during it must still fence the commit.
+    if (controller.signal.aborted)
+      result = { error: "agent_timeout_or_cancelled" };
     ledger.complete(input.execution_id, result);
     return result;
   }
@@ -300,6 +304,10 @@ export async function startGateway(
       return previous.hash === digest
         ? c.json((await previous.result) as object)
         : c.json({ error: "agent_execution_conflict" }, 409);
+    // Replaying a committed result consumes no model slot. A full gateway must
+    // still let a reclaimed worker recover its already-paid result.
+    const replay = ledger.replay(input.execution_id, digest);
+    if (replay) return c.json(replay.value as object);
     if (active.size >= 2) return c.json({ error: "agent_gateway_busy" }, 429);
     const admission = ledger.admit(
       input.execution_id,

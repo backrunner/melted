@@ -220,6 +220,7 @@ test("gateway drives real child-process ACP, isolates runs, persists replays and
       ["FAKE_EVIDENCE", "agent_selection_missing"],
       ["MAX_TOKENS", "agent_turn_incomplete"],
       ["BAD_PROTOCOL", "agent_protocol_invalid"],
+      ["INVALID_AFTER_END", "agent_protocol_invalid"],
     ])
       await assert.rejects(poll(goal!, goal!), new RegExp(code!));
     const wrongToken = await fetch(gateway.origin + "/v1/collect", {
@@ -255,6 +256,104 @@ test("gateway drives real child-process ACP, isolates runs, persists replays and
     await gateway.close();
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("completed gateway replays remain available when both model slots are busy", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "melted-busy-replay-"));
+  let release!: () => void, occupied!: () => void;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const started = new Promise<void>((resolve) => {
+    occupied = resolve;
+  });
+  let calls = 0;
+  const gateway = await startGateway(
+    {
+      data_directory: directory,
+      dsh_package_directory: "/test-only-runtime",
+      port: 0,
+      profiles: [profile],
+    },
+    { MELTED_AGENT_GATEWAY_TOKEN: token },
+    {
+      transport: (async () => fixture()) as typeof fetch,
+      runner: async (i) => {
+        if (++calls > 1) {
+          if (calls === 3) occupied();
+          await released;
+        }
+        const call = async (name: string, args: unknown) => {
+          const response = await fetch(i.mcp.url, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${i.mcp.token}` },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              method: "tools/call",
+              params: { name, arguments: args },
+            }),
+          });
+          assert.equal(response.status, 200);
+          assert.equal(
+            ((await response.json()) as any).result.isError,
+            undefined,
+          );
+        };
+        await call("collect_url", { url: settings.start_url });
+        await call("submit_collection", { evidence_ids: [] });
+      },
+    },
+  );
+  const post = async (id: string) =>
+    fetch(gateway.origin + "/v1/collect", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        version: 1,
+        execution_id: await hash(id),
+        policy_hash: await policyHash(profile),
+        configuration: settings,
+      }),
+    });
+  const pending: Promise<Response>[] = [];
+  try {
+    const first = await (await post("completed")).json();
+    pending.push(post("busy-1"), post("busy-2"));
+    await started;
+    const replay = await post("completed");
+    assert.equal(replay.status, 200);
+    assert.deepEqual(await replay.json(), first);
+    assert.equal(calls, 3);
+    assert.equal((await post("new-while-busy")).status, 429);
+  } finally {
+    release();
+    await Promise.allSettled(pending);
+    await gateway.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("cancelled evidence cannot serve cached data, accept selections or produce a successful result", async () => {
+  const controller = new AbortController();
+  const create = () =>
+    new EvidenceStore(settings, profile, controller.signal, (async () =>
+      fixture()) as typeof fetch);
+  const pending = create(),
+    selected = create();
+  await pending.fetch({ url: settings.start_url });
+  const data = (await selected.fetch({ url: settings.start_url })) as {
+    candidates: { evidence_id: string }[];
+  };
+  selected.select({ evidence_ids: [data.candidates[0]!.evidence_id] });
+  controller.abort();
+  await assert.rejects(pending.fetch({ url: settings.start_url }), {
+    name: "AbortError",
+  });
+  assert.throws(() => pending.select({ evidence_ids: [] }), {
+    name: "AbortError",
+  });
+  await assert.rejects(selected.result(), { name: "AbortError" });
 });
 
 test("ledger preserves interrupted and conflicting admissions across restart and enforces daily budget", async () => {

@@ -23,6 +23,20 @@ export class RunLedger {
         Date.now() - 86400000,
       );
   }
+  replay(id: string, hash: string): { value: unknown } | undefined {
+    const row = this.db
+      .prepare("SELECT hash,result FROM agent_runs WHERE id=?")
+      .get(id);
+    if (!row) return undefined;
+    return {
+      value:
+        row.hash !== hash
+          ? { error: "agent_execution_conflict" }
+          : row.result
+            ? JSON.parse(String(row.result))
+            : { error: "agent_run_indeterminate" },
+    };
+  }
   admit(
     id: string,
     hash: string,
@@ -30,19 +44,8 @@ export class RunLedger {
   ): { fresh: boolean; value?: unknown } {
     this.db.exec("BEGIN IMMEDIATE");
     try {
-      const row = this.db
-        .prepare("SELECT hash,result FROM agent_runs WHERE id=?")
-        .get(id);
-      if (row) {
-        if (row.hash !== hash)
-          return { fresh: false, value: { error: "agent_execution_conflict" } };
-        return {
-          fresh: false,
-          value: row.result
-            ? JSON.parse(String(row.result))
-            : { error: "agent_run_indeterminate" },
-        };
-      }
+      const replay = this.replay(id, hash);
+      if (replay) return { fresh: false, ...replay };
       const count = this.db
         .prepare("SELECT COUNT(*) AS n FROM agent_runs WHERE created > ?")
         .get(Date.now() - 86400000)!;

@@ -36,6 +36,7 @@ export class EvidenceStore {
     private readonly transport: typeof fetch = fetch,
   ) {}
   async fetch(input: unknown) {
+    this.signal.throwIfAborted();
     if (this.selection) throw new Error("agent_already_submitted");
     const { url: value, format } = fetchInput.parse(input);
     const url = authorizedURL(this.profile, value),
@@ -139,6 +140,7 @@ export class EvidenceStore {
     }
   }
   select(input: unknown) {
+    this.signal.throwIfAborted();
     if (!this.successful) throw new Error("agent_no_evidence");
     if (this.selection) throw new Error("agent_already_submitted");
     const selection = z
@@ -157,6 +159,7 @@ export class EvidenceStore {
     return { selected: this.selection.length };
   }
   async result() {
+    this.signal.throwIfAborted();
     if (!this.selection) throw new Error("agent_selection_missing");
     const items = this.selection.map((id) => this.items.get(id)!);
     return collectionResult({
