@@ -411,3 +411,28 @@ private actor WorkspaceStub: WorkspaceClient {
     #expect(model.failure?.kind == .sessionExpired)
     #expect(await stub.logins == 0)
 }
+
+@Test @MainActor func deletedGeneratedContentIsRemovedFromLoadedPagesAndOpenArticle() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub(), model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    let opened = stub.item
+    model.selectedID = opened.id; model.detail = opened
+    var tail = opened; tail.id = "deleted-tail"; model.items.append(tail)
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 1, entityId: opened.id, kind: "delete"), SyncChange(sequence: 2, entityId: tail.id, kind: "delete")], nextCursor: 2, hasMore: false))
+    await model.pollSync()
+    #expect(model.items.isEmpty); #expect(model.detail == nil); #expect(model.selectedID == nil)
+    await model.pollSync(); #expect(await stub.syncRequests == [0, 2])
+}
+@Test @MainActor func deleteThenRegenerateUsesTheLatestChangeForTheSameContent() async throws {
+    let suite = "melted-test-\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let stub = try WorkspaceStub(), model = WorkspaceModel(defaults: defaults, makeClient: { _ in stub })
+    await model.discover(); model.acceptedServer = true; await model.login()
+    let item = stub.item
+    await stub.serve(SyncPage(changes: [SyncChange(sequence: 1, entityId: item.id, kind: "delete"), SyncChange(sequence: 2, entityId: item.id, kind: "upsert")], nextCursor: 2, hasMore: false))
+    await model.pollSync(); #expect(model.items.contains { $0.id == item.id }); #expect(model.arrivalSequences[item.id] == 2)
+}

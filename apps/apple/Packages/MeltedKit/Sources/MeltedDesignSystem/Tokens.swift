@@ -161,6 +161,7 @@ public enum MeltedPanelMetrics {
     public static let tableMinimum: CGFloat = 120
     public static let tableMaximum: CGFloat = 260
     public static let columnTitle: CGFloat = 140
+    public static let detailLabelWidth: CGFloat = 72
 }
 
 public enum MeltedMotion {

@@ -36,6 +36,7 @@ final class WorkspaceModel: ObservableObject {
     @Published var searchRequest = 0
     private var client: (any WorkspaceClient)?
     var pluginClient: (any PluginClient)? { connected ? client : nil }
+    var serverSettingsClient: (any ServerSettingsClient)? { connected ? client as? any ServerSettingsClient : nil }
     private let defaults: UserDefaults
     private let makeClient: (URL) -> any WorkspaceClient
     private var queryGeneration = UUID()
@@ -350,20 +351,38 @@ final class WorkspaceModel: ObservableObject {
         do {
             var cursor = syncCursor ?? 0
             var arrivals: [String: Int] = [:]
+            var removals = Set<String>()
             // Bound each tick and combine pages so a second page cannot erase the
             // first page's highlights. Commit the cursor only after content succeeds.
             for _ in 0..<20 {
                 let page = try await client.syncChanges(after: cursor)
                 try Task.checkCancellation()
                 guard generation == syncGeneration, connected else { return }
-                for change in page.changes where change.kind == "upsert" {
-                    arrivals[change.entityId] = change.sequence
+                for change in page.changes {
+                    if change.kind == "upsert" {
+                        arrivals[change.entityId] = change.sequence
+                        removals.remove(change.entityId)
+                    } else if change.kind == "delete" {
+                        arrivals.removeValue(forKey: change.entityId)
+                        removals.insert(change.entityId)
+                    }
                 }
                 guard !page.hasMore || page.nextCursor > cursor else { throw APIError.incompatible }
                 cursor = page.nextCursor
                 if !page.hasMore { break }
             }
+            if !removals.isEmpty {
+                let removed = items.filter { removals.contains($0.id) }.count
+                items.removeAll { removals.contains($0.id) }
+                total = max(0, total - removed)
+                arrivalSequences = arrivalSequences.filter { !removals.contains($0.key) }
+                if let selectedID, removals.contains(selectedID) {
+                    detailGeneration = UUID(); self.selectedID = nil; detail = nil; loadingDetail = false
+                }
+            }
             if !arrivals.isEmpty {
+                terms = try await client.taxonomy()
+                guard generation == syncGeneration, connected else { return }
                 guard try await applyArrivals(arrivals), generation == syncGeneration else { return }
             }
             syncCursor = cursor

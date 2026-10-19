@@ -1,0 +1,194 @@
+
+> @melted/server@0.2.0 test
+> wrangler deploy --dry-run --env="" --outdir .wrangler/test-build && npm run test:unit && npm run test:integration
+
+
+ ⛅️ wrangler 4.151.0 (update available 4.151.1)
+───────────────────────────────────────────────
+Total Upload: 1286.14 KiB / gzip: 244.63 KiB
+Your Worker has access to the following bindings:
+Binding                                                        Resource                  
+env.ACCOUNTS (AccountStore)                                    Durable Object            
+env.CONTROL (ControlStore)                                     Durable Object            
+env.COLLECTION_QUEUE (melted-collections)                      Queue                     
+env.MELTED_SERVER_ID ("replace-with-a-stable-server-id")       Environment Variable      
+env.MELTED_OPERATOR ("Melted")                                 Environment Variable      
+env.PUBLIC_ORIGIN ("https://replace.example.com")              Environment Variable      
+env.REGISTRATION_MODE ("key")                                  Environment Variable      
+
+--dry-run: exiting now.
+
+> @melted/server@0.2.0 test:unit
+> node --import tsx --test --test-concurrency=1 tests/unit/*.test.ts templates/collector/*.test.ts
+
+✔ collector boilerplate handles typed settings, partial items, secrets and stable identities (17.448792ms)
+✔ agent configuration and disclosure expose operator profiles, never credentials, and reject arbitrary targets (9.324625ms)
+✔ evidence requires an actual fetch and only permits observed IDs, original content and bounded authorized requests (11.064375ms)
+✔ gateway drives real child-process ACP, isolates runs, persists replays and fails closed on permissions, incomplete turns and invented evidence (1188.320209ms)
+✔ completed gateway replays remain available when both model slots are busy (22.685167ms)
+✔ cancelled evidence cannot serve cached data, accept selections or produce a successful result (1.234166ms)
+✔ ledger preserves interrupted and conflicting admissions across restart and enforces daily budget (9.719167ms)
+✔ ACP cancellation terminates an unfinished child and rejects the turn (356.096833ms)
+✔ conflicting IDs are partial instead of repeatedly changing revisions (3.891084ms)
+✔ nonportable Unicode is rejected per item and at source configuration (1.043667ms)
+✔ impossible calendar dates and lossy numeric identifiers remain invalid (1.110833ms)
+✔ switching instance or credentials does not reuse validators from another target (10.39775ms)
+✔ runtime registration fails closed for incomplete, duplicate or unknown enabled plugins (1.71475ms)
+✔ inherited feed metadata cannot expand the normalized batch without a bound (18.452458ms)
+✔ extreme Retry-After stays representable after the response is committed (0.330917ms)
+✔ collection disclosure tracks destinations without exposing instance secrets (3.059666ms)
+✔ JSON Feed preserves provenance and untrusted HTML, never invents dates or downloads media (2.883833ms)
+✔ invalid items are partial, empty feed is successful and limits are enforced (10.535167ms)
+✔ routes cannot escape the configured instance, prefix or credential boundary (0.360292ms)
+✔ conditional requests, 304, credentials and redirects use the actual fetch boundary (9.572ms)
+✔ 429, auth failures, malformed payload, body bounds, timeout and network errors remain distinguishable (9.522333ms)
+✔ only installed builtins with known version are executable (0.581833ms)
+Loaded configuration from: /tmp/melted-yaml-pGzFk2/config.local.yaml
+Loaded configuration from: /tmp/melted-yaml-pGzFk2/config.local.yaml
+Loaded configuration from: /tmp/melted-yaml-pGzFk2/config.yaml
+✔ plugin configuration keeps the RSSHub secret on the server (1.595042ms)
+✔ clean deployments run from environment without an untracked YAML file (0.650625ms)
+✔ deployment environment overrides YAML defaults and local file wins over base file (1.776666ms)
+✔ authentication policy rejects unavailable methods and ambiguous identities (1.641792ms)
+✔ published schemas stay aligned and shared Apple fixtures satisfy the server contract (6.895042ms)
+✔ RSS XML maps namespaces, raw HTML, authors, dates and enclosures without extra fetches (9.693625ms)
+✔ Atom respects namespace identity, inherited xml:base/lang, XHTML, updated and summaries (1.473917ms)
+✔ invalid XML, entities, deep trees, unexpected formats and HTML pages fail explicitly (3.05175ms)
+✔ feed window limits are intentional, invalid entries remain partial and revisions are stable (2.173792ms)
+✔ JSON Feed and XML encoding use the same bounded normalization contract (0.592208ms)
+✔ Feed plugin validates URL DSL, operator origins, format, limits and multiple disclosures (6.078209ms)
+✔ Feed collector revalidates target and binds validators to URL, format and item window (9.329625ms)
+✔ bounded NIP-01 transport handles EOSE, truncation, invalid frames, cancellation and handshake policies (40.803167ms)
+✔ a separately registered collector validates and executes without an RSSHub branch (9.36375ms)
+✔ DSL rejects execution directives, duplicate fields, unsupported controls and invalid scalar settings (1.15675ms)
+✔ collection DSL validates row references and batch controls without executing expressions (0.524084ms)
+✔ actions reject stale descriptors, unknown operations and configuration versions (1.449166ms)
+✔ unavailable plugins retain descriptors but cannot execute and never disclose operator secrets (0.200958ms)
+✔ configured modules cannot change identity, disclose credential URLs or persist undeclared settings (1.62525ms)
+✔ host rejects malformed output and recomputes storage identity supplied by a plugin (1.590791ms)
+✔ published plugin fixture and DSL schema match the installed registry (40.739417ms)
+✔ boilerplate generator is usable, validates IDs and never overwrites existing work (107.591333ms)
+✔ base collector participates in host validation without exposing source identity or operator secrets (10.599458ms)
+✔ SDK request transport bounds data, redacts failures and classifies redirect/rate-limit errors (0.943417ms)
+✔ Cloudflare rejects host capabilities, unknown features, absent bindings and insecure endpoints (1.653458ms)
+✔ client credentials need an explicit mode, sealing key and server-controlled shared administrators (1.992959ms)
+✔ write-only credential mutations reject scope injection, empty changes, header injection and unsupported keys (0.342042ms)
+✔ processing config, public disclosure and workflow never disclose credentials or permit arbitrary endpoints (6.19325ms)
+✔ bounded model transport validates structured output, exact questions and distributions without leaking upstream errors (13.286083ms)
+✔ instance catalog exposes only open routes, uses declared parameters and reveals requirements without secrets (20.50225ms)
+✔ regex metadata is never executed, path parameters and unsupported templates remain represented (1.987708ms)
+✔ search, pagination and cache bind to query and authorization, coalescing concurrent metadata requests (2.0505ms)
+✔ malformed, oversized, redirecting and failed catalogs return a stable error and can retry (8.786417ms)
+✔ DSL rejects ambiguous, wrongly typed and out-of-range suggestions without restricting custom input (0.508334ms)
+✔ nested namespaces, empty root aliases and unicode metadata stay usable (1.205375ms)
+✔ a narrow authorization does not enable a different route sharing a parameterized namespace (0.690959ms)
+✔ settings contract and shared Apple fixtures match server descriptors (7.746959ms)
+✔ settings DSL rejects executable, external, credential and unsupported request descriptors (0.906125ms)
+✔ natural language is stored verbatim and cannot change schema or account scope (0.613583ms)
+✔ social plugins publish finite native configurations, server-only credentials and exact destinations (8.203667ms)
+✔ Bluesky maps stable post identity, media and dates, filters replies/reposts and records partial failures (13.185542ms)
+✔ Fediverse pins lookup and statuses to authorized instance, protects token, skips non-public posts and retains revisions (5.543209ms)
+✔ social HTTP errors preserve retry policy and never disclose upstream bodies or tokens (1.475042ms)
+✔ Nostr accepts npub, verifies hash/signature/filter, ignores relay hints and rejects forged events as partial (18.749709ms)
+✔ Nostr long-form uses address identity and newest verified revision with independent publication time (8.149083ms)
+ℹ tests 67
+ℹ suites 0
+ℹ pass 67
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4069.525002
+
+> @melted/server@0.2.0 test:integration
+> node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts
+
+✔ Node/PostgreSQL: ACP gateway collection uses durable execution IDs, revisions, partial failures and account/generation fences (4743.972502ms)
+✔ workerd/SQLite DO + Queues: ACP gateway collection uses durable execution IDs, revisions, partial failures and account/generation fences (5883.650294ms)
+✔ PostgreSQL: negotiated credentials, isolation, disabled methods and session lifecycle (515.7995ms)
+✔ Cloudflare workerd: negotiated credentials, isolation, disabled methods and session lifecycle (867.252834ms)
+✔ Cloudflare persisted outbox, real Alarms and Queue consumer survive restart and duplicate delivery (2585.752834ms)
+✔ Node collector processes recover a crashed lease and schedule only one committed result (657.168792ms)
+✔ SQLite DO persists across process restart; browser code and replay revocation are durable (877.748709ms)
+✔ Node/PostgreSQL: independent Feed plugin uses DSL, durable collection, revisions, conditional requests and owner isolation (9452.824588ms)
+✔ workerd/SQLite DO + Queues: independent Feed plugin uses DSL, durable collection, revisions, conditional requests and owner isolation (10510.161588ms)
+✔ OIDC validates provider identity, state, nonce, PKCE, expiry and one-time codes (69.09675ms)
+✔ migrations serialize and can be reapplied (42.811042ms)
+▶ PostgreSQL
+  ✔ key possession, one-time challenge, stable owner, separate users (33.089667ms)
+  ✔ owner isolation, seeded fixture, literal query and combined filters (65.109959ms)
+  ✔ atomic state updates, replay, version races and visibility during pagination (37.82425ms)
+  ✔ refresh rotation and family revocation survive replay (15.916667ms)
+✔ PostgreSQL (153.125584ms)
+▶ Cloudflare workerd + SQLite DO
+  ✔ key possession, one-time challenge, stable owner, separate users (74.907916ms)
+  ✔ owner isolation, seeded fixture, literal query and combined filters (136.997042ms)
+  ✔ atomic state updates, replay, version races and visibility during pagination (27.726333ms)
+  ✔ refresh rotation and family revocation survive replay (28.998291ms)
+✔ Cloudflare workerd + SQLite DO (269.346583ms)
+✔ collector boilerplate bundles and runs through the plugin host in real workerd (663.002ms)
+✔ Node/PostgreSQL: operator credential visibility, authority, encryption, account binding and revocation (45.378667ms)
+✔ Node/PostgreSQL: byok credential visibility, authority, encryption, account binding and revocation (199.80575ms)
+✔ Node/PostgreSQL: shared credential visibility, authority, encryption, account binding and revocation (168.444917ms)
+✔ workerd/SQLite DO: operator credential visibility, authority, encryption, account binding and revocation (290.184583ms)
+✔ workerd/SQLite DO: byok credential visibility, authority, encryption, account binding and revocation (623.466ms)
+✔ workerd/SQLite DO: shared credential visibility, authority, encryption, account binding and revocation (568.148667ms)
+✔ Node worker/PostgreSQL operator: automatic collector-to-publication runtime (synthetic model transport) (2506.466292ms)
+✔ Node worker/PostgreSQL byok: automatic collector-to-publication runtime (synthetic model transport) (2538.727126ms)
+✔ Node worker/PostgreSQL shared: automatic collector-to-publication runtime (synthetic model transport) (2497.650793ms)
+✔ workerd/DO Alarm + Queues operator: automatic collector-to-publication runtime (synthetic model transport) (3626.670001ms)
+✔ workerd/DO Alarm + Queues byok: automatic collector-to-publication runtime (synthetic model transport) (3553.718668ms)
+✔ workerd/DO Alarm + Queues shared: automatic collector-to-publication runtime (synthetic model transport) (3572.081418ms)
+▶ Node/PostgreSQL: synthetic-model full preference pipeline, durable boundaries and source deletion
+  ✔ save is inert; explicit compilation produces a draft, activation is separate and owner isolated (83.346417ms)
+  ✔ active policy applies to new culture/transport content, filters promotion and holds uncertainty without deleting originals (127.865458ms)
+  ✔ broken citations, invented numbers and unsupported statements cannot publish (99.342708ms)
+  ✔ lease fencing, checkpoint reuse, budget and raw revision checks survive retry (57.563667ms)
+  ✔ settings changes cancel late work and withdraw old publication; delete scrubs generated bodies and stage caches (31.526834ms)
+✔ Node/PostgreSQL: synthetic-model full preference pipeline, durable boundaries and source deletion (430.557459ms)
+▶ workerd/SQLite DO: synthetic-model full preference pipeline, durable boundaries and source deletion
+  ✔ save is inert; explicit compilation produces a draft, activation is separate and owner isolated (71.558959ms)
+  ✔ active policy applies to new culture/transport content, filters promotion and holds uncertainty without deleting originals (156.624ms)
+  ✔ broken citations, invented numbers and unsupported statements cannot publish (132.338917ms)
+  ✔ lease fencing, checkpoint reuse, budget and raw revision checks survive retry (71.837958ms)
+  ✔ settings changes cancel late work and withdraw old publication; delete scrubs generated bodies and stage caches (40.524625ms)
+✔ workerd/SQLite DO: synthetic-model full preference pipeline, durable boundaries and source deletion (744.15375ms)
+✔ current PostgreSQL schema initializes and replays without retired account fields or source conversions (86.655959ms)
+✔ Node/PostgreSQL: settings DSL transport, durable owner isolation, conflicts, history and idempotent retries (102.224791ms)
+✔ workerd/SQLite DO: settings DSL transport, durable owner isolation, conflicts, history and idempotent retries (321.529625ms)
+✔ Node/PostgreSQL: social plugins collect, replay, revise, reject invalid entries and isolate owners (13483.964964ms)
+✔ workerd/SQLite DO + Queues: social plugins collect, replay, revise, reject invalid entries and isolate owners (14540.744799ms)
+▶ PostgreSQL: collection contracts, revisions, recovery and ownership
+  ✔ plugin catalog, generic configuration and declared actions preserve ownership and version fences (72.279667ms)
+  ✔ source mutations authenticate, enforce route policy and replay idempotently (35.384375ms)
+  ✔ manual enqueue is durable, duplicate deliveries cannot claim twice (39.925291ms)
+  ✔ same item replays deduplicate; changed payload appends an immutable revision (27.174667ms)
+  ✔ partial results do not checkpoint past invalid items; 304 and empty remain successful (13.774958ms)
+  ✔ invalid Unicode and conflicting IDs cannot poison valid entries or churn revisions (12.902625ms)
+  ✔ raw writes and checkpoint roll back together on a mid-batch storage failure (9.755083ms)
+  ✔ expired leases requeue and fence out late workers (8.665833ms)
+  ✔ 429 keeps retry-after durable; permanent auth failure blocks automatic polling (15.798875ms)
+  ✔ per-account concurrency never exceeds two (25.157875ms)
+  ✔ disable retains raw data; target changes reset checkpoint; deletion cannot resurrect content (19.852708ms)
+✔ PostgreSQL: collection contracts, revisions, recovery and ownership (343.317917ms)
+▶ SQLite DO: collection contracts, revisions, recovery and ownership
+  ✔ plugin catalog, generic configuration and declared actions preserve ownership and version fences (49.373708ms)
+  ✔ source mutations authenticate, enforce route policy and replay idempotently (36.059875ms)
+  ✔ manual enqueue is durable, duplicate deliveries cannot claim twice (30.241583ms)
+  ✔ same item replays deduplicate; changed payload appends an immutable revision (38.782958ms)
+  ✔ partial results do not checkpoint past invalid items; 304 and empty remain successful (23.218833ms)
+  ✔ invalid Unicode and conflicting IDs cannot poison valid entries or churn revisions (26.447792ms)
+  ✔ raw writes and checkpoint roll back together on a mid-batch storage failure (18.322625ms)
+  ✔ expired leases requeue and fence out late workers (12.552792ms)
+  ✔ 429 keeps retry-after durable; permanent auth failure blocks automatic polling (29.426167ms)
+  ✔ per-account concurrency never exceeds two (31.891916ms)
+  ✔ disable retains raw data; target changes reset checkpoint; deletion cannot resurrect content (37.079667ms)
+✔ SQLite DO: collection contracts, revisions, recovery and ownership (467.184125ms)
+ℹ tests 75
+ℹ suites 0
+ℹ pass 75
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94859.818293

@@ -113,7 +113,7 @@ public struct Discovery: Codable, Sendable {
         public var browserCallback: String?
     }
     /// Reserved so unknown capability keys from newer servers decode without failing.
-    public struct Capabilities: Codable, Sendable {}
+    public struct Capabilities: Codable, Sendable { public var serverSettings: Int? }
     public var auth: Authentication
     public var capabilities: Capabilities?
     public var `protocol`: ProtocolRange

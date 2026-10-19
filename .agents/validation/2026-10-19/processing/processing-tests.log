@@ -1,0 +1,38 @@
+✔ Node/PostgreSQL: operator credential visibility, authority, encryption, account binding and revocation (53.644125ms)
+✔ Node/PostgreSQL: byok credential visibility, authority, encryption, account binding and revocation (209.967333ms)
+✔ Node/PostgreSQL: shared credential visibility, authority, encryption, account binding and revocation (217.172167ms)
+✔ workerd/SQLite DO: operator credential visibility, authority, encryption, account binding and revocation (436.428ms)
+✔ workerd/SQLite DO: byok credential visibility, authority, encryption, account binding and revocation (749.49ms)
+✔ workerd/SQLite DO: shared credential visibility, authority, encryption, account binding and revocation (818.849001ms)
+✔ Node worker/PostgreSQL operator: automatic collector-to-publication runtime (synthetic model transport) (2502.36396ms)
+✔ Node worker/PostgreSQL byok: automatic collector-to-publication runtime (synthetic model transport) (2668.310376ms)
+✔ Node worker/PostgreSQL shared: automatic collector-to-publication runtime (synthetic model transport) (2589.582668ms)
+✔ workerd/DO Alarm + Queues operator: automatic collector-to-publication runtime (synthetic model transport) (3674.577501ms)
+✔ workerd/DO Alarm + Queues byok: automatic collector-to-publication runtime (synthetic model transport) (3588.015919ms)
+✔ workerd/DO Alarm + Queues shared: automatic collector-to-publication runtime (synthetic model transport) (3537.343835ms)
+▶ Node/PostgreSQL: synthetic-model full preference pipeline, durable boundaries and source deletion
+  ✔ save is inert; explicit compilation produces a draft, activation is separate and owner isolated (86.493791ms)
+  ✔ active policy applies to new culture/transport content, filters promotion and holds uncertainty without deleting originals (152.351917ms)
+  ✔ broken citations, invented numbers and unsupported statements cannot publish (94.304291ms)
+  ✔ lease fencing, checkpoint reuse, budget and raw revision checks survive retry (49.148875ms)
+  ✔ settings changes cancel late work and withdraw old publication; delete scrubs generated bodies and stage caches (27.087583ms)
+✔ Node/PostgreSQL: synthetic-model full preference pipeline, durable boundaries and source deletion (446.513792ms)
+▶ workerd/SQLite DO: synthetic-model full preference pipeline, durable boundaries and source deletion
+  ✔ save is inert; explicit compilation produces a draft, activation is separate and owner isolated (68.254083ms)
+  ✔ active policy applies to new culture/transport content, filters promotion and holds uncertainty without deleting originals (148.809417ms)
+  ✔ broken citations, invented numbers and unsupported statements cannot publish (123.567584ms)
+  ✔ lease fencing, checkpoint reuse, budget and raw revision checks survive retry (69.35925ms)
+  ✔ settings changes cancel late work and withdraw old publication; delete scrubs generated bodies and stage caches (38.178084ms)
+✔ workerd/SQLite DO: synthetic-model full preference pipeline, durable boundaries and source deletion (713.756792ms)
+✔ client credentials need an explicit mode, sealing key and server-controlled shared administrators (1.905875ms)
+✔ write-only credential mutations reject scope injection, empty changes, header injection and unsupported keys (0.3355ms)
+✔ processing config, public disclosure and workflow never disclose credentials or permit arbitrary endpoints (5.730292ms)
+✔ bounded model transport validates structured output, exact questions and distributions without leaking upstream errors (13.34125ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23916.784928
