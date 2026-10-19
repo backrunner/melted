@@ -1,0 +1,20 @@
+
+> @melted/server@0.2.0 worker:check
+> tsx src/entrypoints/plugins-check.ts cloudflare && wrangler deploy --dry-run --env=""
+
+Plugin preflight passed (cloudflare; 6 enabled)
+
+ ⛅️ wrangler 4.151.0 (update available 4.151.2)
+───────────────────────────────────────────────
+Total Upload: 1286.81 KiB / gzip: 244.79 KiB
+Your Worker has access to the following bindings:
+Binding                                                        Resource
+env.ACCOUNTS (AccountStore)                                    Durable Object
+env.CONTROL (ControlStore)                                     Durable Object
+env.COLLECTION_QUEUE (melted-collections)                      Queue
+env.MELTED_SERVER_ID ("replace-with-a-stable-server-id")       Environment Variable
+env.MELTED_OPERATOR ("Melted")                                 Environment Variable
+env.PUBLIC_ORIGIN ("https://replace.example.com")              Environment Variable
+env.REGISTRATION_MODE ("key")                                  Environment Variable
+
+--dry-run: exiting now.

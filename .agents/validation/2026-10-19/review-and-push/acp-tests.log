@@ -1,0 +1,13 @@
+
+> @melted/server@0.2.0 test:acp
+> node --import tsx --test tests/acp/*.test.ts
+
+✔ pinned real DeepSeek Harness boots isolated ACP profile, calls collection MCP and selects fetched evidence (synthetic model) (833.202709ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1586.922875

@@ -1,0 +1,4 @@
+Checked 79 Markdown files, 584 local links, 5 JSON examples.
+Checked 34 color pairs; minimum contrast 4.71:1.
+Checked reference page token parity. Anchors, external URLs and native UI are not checked.
+PASS: static design checks.

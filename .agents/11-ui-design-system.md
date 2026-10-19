@@ -74,7 +74,7 @@ Apple 一手参考沿用 [Typography](https://developer.apple.com/design/human-i
 
 ### 连接入口与服务器确认
 
-[ConnectionPage](../apps/macos/Sources/Melted/Features/Connection/ConnectionPage.swift) 是两步共享骨架：可滚动的单列、内容最大 440 pt、四周 32 pt、组间 28 pt；居中并用底部额外空间略向上作光学调整。小窗口允许滚动，不能裁掉登录操作。
+[ConnectionPage](../apps/macos/Sources/Melted/Features/Connection/ConnectionPage.swift) 是两步共享骨架：可滚动的单列、内容最大 440 pt、四周 32 pt、组间 28 pt；居中并用底部额外空间略向上作光学调整。滚动视口本身避开上下液面：按背景实际高度、4 pt 波幅及 24 pt 间隔预留固定在容器外的安全带，扣除窗口已提供的 safe area；滚动到任意位置都不进入液面。小窗口缩短视口，完整说明与登录操作通过滚动可达。
 
 连接页 Wordmark 放在表单列第一项、页面标题上方，与字段左边线对齐；标识 36 pt、文字 28 pt。工作台列表底栏左侧使用紧凑字标：标识 16 pt、文字 13 pt、间距 6 pt；右侧保留条数/加载状态。**工作台顶部不另加品牌条或预留空带。** 两种字标共用正式矢量组件。
 

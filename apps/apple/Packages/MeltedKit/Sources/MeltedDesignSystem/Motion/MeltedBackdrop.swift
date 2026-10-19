@@ -79,10 +79,10 @@ public struct MeltedBackdrop: View {
         let unit = min(w, 1100)
         let gutter = max(36, (w - MeltedConnection.contentMaximum) / 2 - 24)
         func ceiling(_ x: Double) -> Double {
-            h * 0.035 + 4 * sin(x / w * .pi * 5 + t * 0.22)
+            MeltedConnectionLayout.ceilingDepth(height: h) + MeltedConnection.waveAmplitude * sin(x / w * .pi * 5 + t * 0.22)
         }
         func surface(_ x: Double) -> Double {
-            h - min(48, h * 0.065) + 4 * sin(x / w * .pi * 4 + t * 0.28)
+            h - MeltedConnectionLayout.poolDepth(height: h) + MeltedConnection.waveAmplitude * sin(x / w * .pi * 4 + t * 0.28)
         }
 
         // Draw the actual liquid surface and use that same height for every impact.

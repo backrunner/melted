@@ -84,6 +84,9 @@ public enum MeltedConnection {
     public static let controlHeight: CGFloat = 40
     public static let brandSize: CGFloat = 36
     public static let brandTitle: CGFloat = 28
+    public static let animationClearance: CGFloat = 24
+    public static let waveAmplitude: CGFloat = 4
+    public static let poolMaximumDepth: CGFloat = 48
 }
 
 public enum MeltedLibraryStatus {

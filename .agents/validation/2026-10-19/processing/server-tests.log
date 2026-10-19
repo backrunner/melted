@@ -7,14 +7,14 @@
 ───────────────────────────────────────────────
 Total Upload: 1286.14 KiB / gzip: 244.63 KiB
 Your Worker has access to the following bindings:
-Binding                                                        Resource                  
-env.ACCOUNTS (AccountStore)                                    Durable Object            
-env.CONTROL (ControlStore)                                     Durable Object            
-env.COLLECTION_QUEUE (melted-collections)                      Queue                     
-env.MELTED_SERVER_ID ("replace-with-a-stable-server-id")       Environment Variable      
-env.MELTED_OPERATOR ("Melted")                                 Environment Variable      
-env.PUBLIC_ORIGIN ("https://replace.example.com")              Environment Variable      
-env.REGISTRATION_MODE ("key")                                  Environment Variable      
+Binding                                                        Resource
+env.ACCOUNTS (AccountStore)                                    Durable Object
+env.CONTROL (ControlStore)                                     Durable Object
+env.COLLECTION_QUEUE (melted-collections)                      Queue
+env.MELTED_SERVER_ID ("replace-with-a-stable-server-id")       Environment Variable
+env.MELTED_OPERATOR ("Melted")                                 Environment Variable
+env.PUBLIC_ORIGIN ("https://replace.example.com")              Environment Variable
+env.REGISTRATION_MODE ("key")                                  Environment Variable
 
 --dry-run: exiting now.
 

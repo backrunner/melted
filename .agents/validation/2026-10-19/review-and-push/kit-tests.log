@@ -1,0 +1,93 @@
+Building for debugging...
+[Using on-disk description]
+[1 / 1]
+Build complete! (0.84秒)
+Test Suite 'All tests' started at 2026-10-19 23:23:28.920.
+Test Suite 'All tests' passed at 2026-10-19 23:23:28.921.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'All tests' started at 2026-10-19 23:23:29.063.
+Test Suite 'All tests' passed at 2026-10-19 23:23:29.063.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Test splashStartsWhereTheFallingDropActuallyTouchesTheSurface() started.
+◇ Test waterMarkFadesCompletelyBeforeItsGeometryIsRemoved() started.
+◇ Test contactPreservesTheApproachingContour() started.
+◇ Test eachCycleStartsAndEndsWithAFlatEdge() started.
+✔ Test waterMarkFadesCompletelyBeforeItsGeometryIsRemoved() passed after 0.001 seconds.
+✔ Test eachCycleStartsAndEndsWithAFlatEdge() passed after 0.001 seconds.
+✔ Test splashStartsWhereTheFallingDropActuallyTouchesTheSurface() passed after 0.001 seconds.
+✔ Test contactPreservesTheApproachingContour() passed after 0.002 seconds.
+✔ Test run with 4 tests in 0 suites passed after 0.002 seconds.
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Test syntaxColorsPreserveSourceInBothAppearances() started.
+◇ Test sharedMediaBriefingPreservesLinksAndNeverRequiresExecutableHTML() started.
+◇ Test sharedBriefingDecodesAndRoundTrips() started.
+◇ Test serverPresetCatalogDecodesParameterizedRoutesWithoutClientPresets() started.
+◇ Test imageDecoderBoundsBytesAndRejectsHTMLAndSVG() started.
+➜ Test publicWebPDecodesThroughTheProductionImageTransport() skipped.
+◇ Test unknownEvidenceNeverAppearsVerified() started.
+◇ Test htmlOnlyExtractsKnownMediaAndIgnoresExecutableAttributes() started.
+◇ Test syntaxFallbacksPreserveUnknownEmptyAndLargeCode() started.
+◇ Test socialPluginsUseNativeFieldsAndOperatorProvidedChoices() started.
+◇ Test agentCollectionUsesNativeGoalScopeLimitsAndServerProfiles() started.
+◇ Test endpointsRejectUnsafeDestinations() started.
+◇ Test serverSettingsRejectsUnsafeTransportUnknownFormatsAndVersions() started.
+◇ Test sharedFilterPreservesSearchWhenCleared() started.
+◇ Test unknownPluginVersionsAndControlsDisableInteraction() started.
+◇ Test identityProofIsBoundToServerAndChallenge() started.
+◇ Test imageTransportIsIsolatedAndRejectsBadResponses() started.
+◇ Test optionalSuggestionsAndInvalidMetadata() started.
+◇ Test fencedLanguageInfoUsesAliasesWithoutTreatingOptionsAsLanguage() started.
+◇ Test processingWorkflowIsFiniteAndCompiledPreviewDecodes() started.
+◇ Test authenticationRequiresVersionAndHonorsServerOrder() started.
+◇ Test feedDSLProvidesURLFormatChoicesLimitsAndIndependentSubscriptions() started.
+◇ Test credentialsOmitKeptKeysAndEncodeClearsWithoutPersistedValues() started.
+◇ Test queuedPartialAndUnknownReceiptsRemainDistinct() started.
+◇ Test mediaRejectsExecutablePrivateCredentialAndAmbiguousReferences() started.
+◇ Test videoReferencesUseCanonicalPlayersWithoutSourceExecutionParameters() started.
+◇ Test nativeFormValidatesTypesRangesAndChoiceValues() started.
+◇ Test credentialDSLScopesAreExplicitAndRejectUnsafeOrPlaintextForms() started.
+◇ Test playerUsesAppIdentityAndRealWebKitPermissionDelegates() started.
+◇ Test serverPluginFixtureDecodesIntoNativeControlsAndSettings() started.
+◇ Test serverSettingsFixtureSupportsNaturalLanguageAndDynamicEndpoints() started.
+◇ Test collectionRenderingRequiresCurrentDescriptorAndRejectsUnknownBindings() started.
+◇ Test readerDoesNotAllowExecutableOrCredentialLinks() started.
+◇ Test codeBlockHidesOnlyTheFinalLineDelimiter() started.
+✔ Test fencedLanguageInfoUsesAliasesWithoutTreatingOptionsAsLanguage() passed after 0.002 seconds.
+✔ Test endpointsRejectUnsafeDestinations() passed after 0.002 seconds.
+✔ Test sharedFilterPreservesSearchWhenCleared() passed after 0.002 seconds.
+✔ Test optionalSuggestionsAndInvalidMetadata() passed after 0.002 seconds.
+✔ Test credentialsOmitKeptKeysAndEncodeClearsWithoutPersistedValues() passed after 0.002 seconds.
+✔ Test queuedPartialAndUnknownReceiptsRemainDistinct() passed after 0.002 seconds.
+✔ Test identityProofIsBoundToServerAndChallenge() passed after 0.003 seconds.
+✔ Test mediaRejectsExecutablePrivateCredentialAndAmbiguousReferences() passed after 0.002 seconds.
+✔ Test htmlOnlyExtractsKnownMediaAndIgnoresExecutableAttributes() passed after 0.003 seconds.
+✔ Test videoReferencesUseCanonicalPlayersWithoutSourceExecutionParameters() passed after 0.002 seconds.
+✔ Test serverPresetCatalogDecodesParameterizedRoutesWithoutClientPresets() passed after 0.003 seconds.
+✔ Test readerDoesNotAllowExecutableOrCredentialLinks() passed after 0.003 seconds.
+✔ Test serverSettingsRejectsUnsafeTransportUnknownFormatsAndVersions() passed after 0.003 seconds.
+✔ Test agentCollectionUsesNativeGoalScopeLimitsAndServerProfiles() passed after 0.003 seconds.
+✔ Test processingWorkflowIsFiniteAndCompiledPreviewDecodes() passed after 0.003 seconds.
+✔ Test codeBlockHidesOnlyTheFinalLineDelimiter() passed after 0.003 seconds.
+✔ Test socialPluginsUseNativeFieldsAndOperatorProvidedChoices() passed after 0.003 seconds.
+✔ Test serverSettingsFixtureSupportsNaturalLanguageAndDynamicEndpoints() passed after 0.003 seconds.
+✔ Test unknownPluginVersionsAndControlsDisableInteraction() passed after 0.003 seconds.
+✔ Test feedDSLProvidesURLFormatChoicesLimitsAndIndependentSubscriptions() passed after 0.003 seconds.
+✔ Test serverPluginFixtureDecodesIntoNativeControlsAndSettings() passed after 0.003 seconds.
+✔ Test credentialDSLScopesAreExplicitAndRejectUnsafeOrPlaintextForms() passed after 0.003 seconds.
+✔ Test unknownEvidenceNeverAppearsVerified() passed after 0.003 seconds.
+✔ Test playerUsesAppIdentityAndRealWebKitPermissionDelegates() passed after 0.004 seconds.
+✔ Test sharedMediaBriefingPreservesLinksAndNeverRequiresExecutableHTML() passed after 0.005 seconds.
+✔ Test sharedBriefingDecodesAndRoundTrips() passed after 0.005 seconds.
+✔ Test authenticationRequiresVersionAndHonorsServerOrder() passed after 0.005 seconds.
+✔ Test nativeFormValidatesTypesRangesAndChoiceValues() passed after 0.005 seconds.
+✔ Test collectionRenderingRequiresCurrentDescriptorAndRejectsUnknownBindings() passed after 0.005 seconds.
+✔ Test imageDecoderBoundsBytesAndRejectsHTMLAndSVG() passed after 0.008 seconds.
+✔ Test syntaxFallbacksPreserveUnknownEmptyAndLargeCode() passed after 0.291 seconds.
+✔ Test syntaxColorsPreserveSourceInBothAppearances() passed after 0.377 seconds.
+✔ Test imageTransportIsIsolatedAndRejectsBadResponses() passed after 0.421 seconds.
+✔ Test run with 34 tests in 0 suites passed after 0.421 seconds.

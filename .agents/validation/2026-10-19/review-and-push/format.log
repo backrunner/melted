@@ -1,0 +1,6 @@
+
+> @melted/server@0.2.0 format:check
+> prettier --check src tests scripts templates
+
+Checking formatting...
+All matched files use Prettier code style!

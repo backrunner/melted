@@ -1,0 +1,3 @@
+
+> @melted/server@0.2.0 build
+> rm -rf dist && tsc -p tsconfig.build.json && cp -R migrations dist/server/

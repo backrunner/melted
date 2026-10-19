@@ -1,0 +1,75 @@
+Building for debugging...
+[Constructing description]
+[Planning deferred tasks]
+[2 / 35]
+[3 / 12] Melted
+[22 / 31] Melted
+[25 / 35] Melted
+[29 / 34] MeltedTests-product
+[32 / 37] MeltedTests-product
+[34 / 37] MeltedTests-product
+[36 / 40] MeltedTests-product
+Build complete! (3.91秒)
+Test Suite 'All tests' started at 2026-10-19 03:49:19.018.
+Test Suite 'All tests' passed at 2026-10-19 03:49:19.019.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Test lateReceiptRefreshCannotRestoreARemovedSource() started.
+◇ Test concurrentLoginDoesNotRepeatIdentityAccess() started.
+◇ Test contextActionUpdatesClickedRowAndPreservesOpenArticle() started.
+◇ Test serverSettingsConflictKeepsInputAndLetsUserCompareLatestBeforeSaving() started.
+◇ Test cancelledSelectionCannotMarkAnotherArticleRead() started.
+◇ Test latePresetSearchCannotOverwriteNewerResults() started.
+◇ Test failedArrivalRefreshRetriesTheSameCursor() started.
+◇ Test pagedArrivalsAccumulateAndExistingRowsRetrigger() started.
+◇ Test delayedDeliveryUsesServerChangesAndPreservesReading() started.
+◇ Test deleteThenRegenerateUsesTheLatestChangeForTheSameContent() started.
+◇ Test unknownServerSettingsResponseDoesNotReportSaved() started.
+◇ Test expiredSessionReturnsToConnectionFlow() started.
+◇ Test partialBatchRetryPreservesRowKeysAndDoesNotRepeatSuccessfulSubscriptions() started.
+◇ Test arrivedContentIsMarkedAndStateChangesAreNot() started.
+◇ Test credentialRetryPreservesRequestAndSuccessErasesInputAndRetainedRequestCopy() started.
+◇ Test unsupportedAuthenticationNeverFallsBackToKeychain() started.
+◇ Test workflowRetryKeepsIdentityAndPollingPreservesEditsAndClearsRecoveredErrors() started.
+◇ Test duplicateActionClicksDoNotSubmitTwiceAndPartialRemainsVisible() started.
+◇ Test deletedGeneratedContentIsRemovedFromLoadedPagesAndOpenArticle() started.
+◇ Test expiredSessionDuringSyncReturnsToLogin() started.
+◇ Test serverSettingsDuplicateSaveIsSuppressedAndRetryReusesTheSameRequest() started.
+◇ Test negotiatedCredentialsRequireTrustAndDoNotAccessIdentityKeys() started.
+◇ Test refreshFailureKeepsContentAndOnlyRaisesABanner() started.
+◇ Test sourceSettingsConflictRetainsLoadedSourceAndShowsRecovery() started.
+◇ Test expiredSessionPreservesTheSelectedSupportedLoginMethod() started.
+◇ Test connectionFailuresAreDescribedForTheReader() started.
+◇ Test reopeningOrConcurrentStartupRestoresCredentialsOnlyOnce() started.
+◇ Test unknownActionResultDoesNotReportSuccess() started.
+✔ Test contextActionUpdatesClickedRowAndPreservesOpenArticle() passed after 0.032 seconds.
+✔ Test sourceSettingsConflictRetainsLoadedSourceAndShowsRecovery() passed after 0.031 seconds.
+✔ Test unsupportedAuthenticationNeverFallsBackToKeychain() passed after 0.033 seconds.
+✔ Test credentialRetryPreservesRequestAndSuccessErasesInputAndRetainedRequestCopy() passed after 0.033 seconds.
+✔ Test partialBatchRetryPreservesRowKeysAndDoesNotRepeatSuccessfulSubscriptions() passed after 0.033 seconds.
+✔ Test lateReceiptRefreshCannotRestoreARemovedSource() passed after 0.034 seconds.
+✔ Test workflowRetryKeepsIdentityAndPollingPreservesEditsAndClearsRecoveredErrors() passed after 0.033 seconds.
+✔ Test connectionFailuresAreDescribedForTheReader() passed after 0.054 seconds.
+✔ Test unknownActionResultDoesNotReportSuccess() passed after 0.063 seconds.
+✔ Test unknownServerSettingsResponseDoesNotReportSaved() passed after 0.063 seconds.
+✔ Test duplicateActionClicksDoNotSubmitTwiceAndPartialRemainsVisible() passed after 0.063 seconds.
+✔ Test cancelledSelectionCannotMarkAnotherArticleRead() passed after 0.071 seconds.
+✔ Test serverSettingsConflictKeepsInputAndLetsUserCompareLatestBeforeSaving() passed after 0.093 seconds.
+✔ Test serverSettingsDuplicateSaveIsSuppressedAndRetryReusesTheSameRequest() passed after 0.093 seconds.
+✔ Test reopeningOrConcurrentStartupRestoresCredentialsOnlyOnce() passed after 0.224 seconds.
+✔ Test concurrentLoginDoesNotRepeatIdentityAccess() passed after 0.275 seconds.
+✔ Test expiredSessionDuringSyncReturnsToLogin() passed after 0.275 seconds.
+✔ Test deletedGeneratedContentIsRemovedFromLoadedPagesAndOpenArticle() passed after 0.276 seconds.
+✔ Test deleteThenRegenerateUsesTheLatestChangeForTheSameContent() passed after 0.276 seconds.
+✔ Test delayedDeliveryUsesServerChangesAndPreservesReading() passed after 0.276 seconds.
+✔ Test arrivedContentIsMarkedAndStateChangesAreNot() passed after 0.276 seconds.
+✔ Test pagedArrivalsAccumulateAndExistingRowsRetrigger() passed after 0.277 seconds.
+✔ Test failedArrivalRefreshRetriesTheSameCursor() passed after 0.277 seconds.
+✔ Test negotiatedCredentialsRequireTrustAndDoNotAccessIdentityKeys() passed after 0.288 seconds.
+✔ Test latePresetSearchCannotOverwriteNewerResults() passed after 0.448 seconds.
+✔ Test refreshFailureKeepsContentAndOnlyRaisesABanner() passed after 0.463 seconds.
+✔ Test expiredSessionPreservesTheSelectedSupportedLoginMethod() passed after 0.463 seconds.
+✔ Test expiredSessionReturnsToConnectionFlow() passed after 0.703 seconds.
+✔ Test run with 28 tests in 0 suites passed after 0.704 seconds.

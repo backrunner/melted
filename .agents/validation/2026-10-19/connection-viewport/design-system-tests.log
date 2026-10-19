@@ -1,0 +1,30 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 421]
+[Planning deferred tasks]
+[1 / 1]
+[6 / 23] MeltedDesignSystem
+[10 / 27] MeltedDesignSystem
+[15 / 32] MeltedDesignSystem
+[21 / 40] MeltedDesignSystem
+[26 / 40] MeltedRendering
+[35 / 49] MeltedRendering
+[37 / 49] MeltedRendering
+[39 / 53] MeltedDesignSystemTests-product
+[45 / 51] MeltedCoreTests-product
+[54 / 60] MeltedCoreTests-product
+[56 / 60] MeltedCoreTests-product
+[58 / 60] MeltedCoreTests-product
+Build complete! (3.40秒)
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Test waterMarkFadesCompletelyBeforeItsGeometryIsRemoved() started.
+◇ Test contactPreservesTheApproachingContour() started.
+◇ Test splashStartsWhereTheFallingDropActuallyTouchesTheSurface() started.
+◇ Test eachCycleStartsAndEndsWithAFlatEdge() started.
+✔ Test waterMarkFadesCompletelyBeforeItsGeometryIsRemoved() passed after 0.001 seconds.
+✔ Test eachCycleStartsAndEndsWithAFlatEdge() passed after 0.001 seconds.
+✔ Test splashStartsWhereTheFallingDropActuallyTouchesTheSurface() passed after 0.001 seconds.
+✔ Test contactPreservesTheApproachingContour() passed after 0.002 seconds.
+✔ Test run with 4 tests in 0 suites passed after 0.002 seconds.
