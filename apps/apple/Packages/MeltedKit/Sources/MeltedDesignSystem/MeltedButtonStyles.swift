@@ -19,9 +19,18 @@ public struct MeltedSecondaryButtonStyle: ButtonStyle {
     }
 }
 
+/// A square secondary action with the same feedback and focus behavior as other buttons.
+public struct MeltedIconButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        MeltedButtonBody(configuration: configuration, prominent: false, iconOnly: true)
+    }
+}
+
 private struct MeltedButtonBody: View {
     let configuration: ButtonStyleConfiguration
     let prominent: Bool
+    var iconOnly = false
     @State private var isHovered = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorScheme) private var scheme
@@ -34,7 +43,9 @@ private struct MeltedButtonBody: View {
         configuration.label
             .font(.system(size: MeltedType.control, weight: .semibold))
             .foregroundStyle(prominent ? palette.accentText : (configuration.role == .destructive ? palette.danger : palette.text))
-            .padding(.horizontal, 20)
+            .padding(.horizontal, iconOnly ? 0 : 20)
+            .frame(width: iconOnly ? MeltedPanelMetrics.controlHeight : nil,
+                   height: iconOnly ? MeltedPanelMetrics.controlHeight : nil)
             .background {
                 if prominent {
                     shape.fill(palette.accent)

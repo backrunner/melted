@@ -4,6 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { RSSHubCollector } from "../../src/plugins/rsshub/plugin.js";
 import { formSchema, validateSettings } from "../../src/modules/plugins/dsl.js";
+import { hash } from "../../src/shared/crypto.js";
 import metadata from "../../../contracts/fixtures/rsshub-namespace.json" with { type: "json" };
 const operator = {
   base_url: "https://feeds.example.org",
@@ -11,16 +12,15 @@ const operator = {
   access_key: "private-key",
 };
 const query = { query: "", limit: 50 };
-function configured(data: unknown = metadata) {
-  return new RSSHubCollector(async () => Response.json(data)).configure(
-    operator,
-  );
+function configured(data: unknown = metadata, config = operator) {
+  return new RSSHubCollector(async () => Response.json(data)).configure(config);
 }
-test("instance catalog includes every route, uses declared parameters and reveals requirements without secrets", async () => {
+test("instance catalog exposes only open routes, uses declared parameters and reveals requirements without secrets", async () => {
   const plugin = configured(),
     provider = plugin.presets!;
   const page = await provider.list(query);
-  assert.equal(page.total, 6);
+  assert.equal(page.total, 5);
+  assert(page.presets.every((p) => p.allowed));
   const routeField = plugin.descriptor.form.fields[0]!;
   assert(routeField.type === "text");
   assert.equal(routeField.suggestions, undefined);
@@ -35,9 +35,15 @@ test("instance catalog includes every route, uses declared parameters and reveal
   await assert.rejects(provider.resolve(twitter.id, {}));
   for (const value of ["../home", "%2e%2e", "user?key=secret", "user#fragment"])
     await assert.rejects(provider.resolve(twitter.id, { p2: value }));
-  const blocked = page.presets.find((p) => p.summary === "/twitter/home")!;
-  assert(!blocked.allowed);
-  await assert.rejects(provider.resolve(blocked.id, {}), /route_not_allowed/);
+  assert(!page.presets.some((p) => p.summary === "/twitter/home"));
+  assert.equal(
+    (await provider.list({ ...query, query: "/twitter/home" })).total,
+    0,
+  );
+  await assert.rejects(
+    provider.resolve(await hash("/twitter/home"), {}),
+    /route_not_allowed/,
+  );
   assert(!page.presets.some((p) => p.summary.includes("api-only")));
 });
 test("regex metadata is never executed, path parameters and unsupported templates remain represented", async () => {
@@ -94,7 +100,7 @@ test("search, pagination and cache bind to query and authorization, coalescing c
     cursor: first.next_cursor,
   });
   assert(!first.presets.some((p) => second.presets.some((s) => s.id === p.id)));
-  assert.equal((await provider.list({ ...query, query: "Twitter" })).total, 2);
+  assert.equal((await provider.list({ ...query, query: "Twitter" })).total, 1);
   await assert.rejects(
     provider.list({
       ...query,
@@ -135,7 +141,7 @@ test("malformed, oversized, redirecting and failed catalogs return a stable erro
         error.message === "preset_catalog_unavailable",
     );
     fail = false;
-    assert.equal((await provider.list(query)).total, 6);
+    assert.equal((await provider.list(query)).total, 5);
   }
 });
 test("DSL rejects ambiguous, wrongly typed and out-of-range suggestions without restricting custom input", () => {
@@ -167,15 +173,18 @@ test("DSL rejects ambiguous, wrongly typed and out-of-range suggestions without 
 });
 
 test("nested namespaces, empty root aliases and unicode metadata stay usable", async () => {
-  const provider = configured({
-    "gov/cn": { name: "政务", routes: { "": { name: "Root" } } },
-    bbc: {
-      name: "",
-      routes: {
-        "/": { name: "", parameters: {}, description: "😀".repeat(10000) },
+  const provider = configured(
+    {
+      "gov/cn": { name: "政务", routes: { "": { name: "Root" } } },
+      bbc: {
+        name: "",
+        routes: {
+          "/": { name: "", parameters: {}, description: "😀".repeat(10000) },
+        },
       },
     },
-  }).presets!;
+    { ...operator, allowed_routes: [...operator.allowed_routes, "/gov/cn"] },
+  ).presets!;
   const page = await provider.list(query);
   assert.equal(page.total, 2);
   assert(page.presets.some((p) => p.summary === "/gov/cn"));
@@ -199,9 +208,7 @@ test("a narrow authorization does not enable a different route sharing a paramet
     }),
   ).configure({ ...operator, allowed_routes: ["/douban/book/latest"] });
   const page = await plugin.presets!.list(query);
-  assert.equal(
-    page.presets.find((p) => p.label === "Discussion")!.allowed,
-    false,
-  );
+  assert.equal(page.total, 1);
+  assert(!page.presets.some((p) => p.label === "Discussion"));
   assert.equal(page.presets.find((p) => p.label === "Books")!.allowed, true);
 });

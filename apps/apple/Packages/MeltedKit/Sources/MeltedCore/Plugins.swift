@@ -46,6 +46,7 @@ public struct PluginField: Codable, Identifiable, Sendable {
     public let unit: String?
     public let options: [Option]?
     public let monospaced: Bool?
+    public let multiline: Bool?
     public let format: String?
     public let suggestions: [SettingSuggestion]?
     public var supported: Bool {

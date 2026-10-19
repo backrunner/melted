@@ -7,6 +7,7 @@
         "label": "名称",
         "required": true,
         "type": "text",
+        "placeholder": "例如：世界新闻",
         "max_length": 200
       },
       {

@@ -265,7 +265,12 @@ export class RSSHubCatalog {
         const snapshot = await this.snapshot(config);
         const needle = query.query.trim().toLocaleLowerCase();
         const binding = await hash(
-          JSON.stringify([needle, query.limit, config.allowed_routes]),
+          JSON.stringify([
+            "open-routes",
+            needle,
+            query.limit,
+            config.allowed_routes,
+          ]),
         );
         const prefix = snapshot.revision + "." + binding + ".";
         let offset = 0;
@@ -278,14 +283,15 @@ export class RSSHubCatalog {
           offset = Number(query.cursor.slice(prefix.length));
         }
         const filtered = snapshot.entries.filter(
-          ({ preset }) =>
-            !needle ||
-            [
-              preset.group,
-              preset.label,
-              preset.summary,
-              preset.description ?? "",
-            ].some((s) => s.toLocaleLowerCase().includes(needle)),
+          (entry) =>
+            permitted(config, entry) &&
+            (!needle ||
+              [
+                entry.preset.group,
+                entry.preset.label,
+                entry.preset.summary,
+                entry.preset.description ?? "",
+              ].some((s) => s.toLocaleLowerCase().includes(needle))),
         );
         if (
           !Number.isSafeInteger(offset) ||
@@ -293,16 +299,11 @@ export class RSSHubCatalog {
           offset > filtered.length
         )
           throw new Problem(400, "invalid_preset_cursor");
-        filtered.sort(
-          (a, b) =>
-            Number(permitted(config, b)) - Number(permitted(config, a)) ||
-            a.preset.summary.localeCompare(b.preset.summary, "en"),
-        );
         const page = filtered.slice(offset, offset + query.limit);
         return {
           presets: page.map((e) => ({
             ...e.preset,
-            allowed: permitted(config, e),
+            allowed: true,
           })),
           total: filtered.length,
           next_cursor:
@@ -316,6 +317,8 @@ export class RSSHubCatalog {
           (e) => e.preset.id === id,
         );
         if (!entry) throw new Problem(404, "preset_not_found");
+        if (!permitted(config, entry))
+          throw new Problem(403, "route_not_allowed");
         const values = validateSettings(entry.preset.input, input);
         let route: string;
         if (!entry.segments) route = String(values.route);

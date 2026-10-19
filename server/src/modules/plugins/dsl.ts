@@ -43,6 +43,7 @@ export const fieldSchema = z.discriminatedUnion("type", [
       placeholder: label.optional(),
       max_length: z.number().int().min(1).max(4096),
       monospaced: z.boolean().optional(),
+      multiline: z.boolean().optional(),
       format: z.literal("url").optional(),
       suggestions: z.array(suggestionSchema).max(100).optional(),
     })
@@ -294,7 +295,13 @@ export function validateSettings(
 
 export const sourceForm = formSchema.parse({
   fields: [
-    { id: "name", type: "text", label: "名称", max_length: 200 },
+    {
+      id: "name",
+      type: "text",
+      label: "名称",
+      placeholder: "例如：世界新闻",
+      max_length: 200,
+    },
     { id: "enabled", type: "boolean", label: "自动采集", default: true },
     {
       id: "interval_seconds",

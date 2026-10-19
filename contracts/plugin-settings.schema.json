@@ -55,6 +55,9 @@
                   "monospaced": {
                     "type": "boolean"
                   },
+                  "multiline": {
+                    "type": "boolean"
+                  },
                   "format": {
                     "type": "string",
                     "const": "url"
@@ -419,6 +422,9 @@
                           "maximum": 4096
                         },
                         "monospaced": {
+                          "type": "boolean"
+                        },
+                        "multiline": {
                           "type": "boolean"
                         },
                         "format": {
@@ -894,6 +900,9 @@
                                 "maximum": 4096
                               },
                               "monospaced": {
+                                "type": "boolean"
+                              },
+                              "multiline": {
                                 "type": "boolean"
                               },
                               "format": {

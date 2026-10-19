@@ -8,17 +8,19 @@ import MeltedDesignSystem
 struct PluginFields: View {
     let form: PluginForm
     @Binding var values: PluginConfiguration
+    var minimumTextLines = 4
     var onSuggestion: (SettingSuggestion) -> Void = { _ in }
     var body: some View {
         VStack(alignment: .leading, spacing: MeltedPanelMetrics.fieldGap) {
             ForEach(form.fields) { field in
-                PluginFieldControl(field: field, value: Binding(get: { values[field.id] }, set: { values[field.id] = $0 }), onSuggestion: onSuggestion)
+                PluginFieldControl(field: field, minimumTextLines: minimumTextLines, value: Binding(get: { values[field.id] }, set: { values[field.id] = $0 }), onSuggestion: onSuggestion)
             }
         }
     }
 }
 private struct PluginFieldControl: View {
     let field: PluginField
+    let minimumTextLines: Int
     @Binding var value: SettingValue?
     let onSuggestion: (SettingSuggestion) -> Void
     @FocusState private var focused: Bool
@@ -38,9 +40,10 @@ private struct PluginFieldControl: View {
     @ViewBuilder private var control: some View {
         switch field.type {
         case "text":
-            MeltedField(field.label, isFocused: focused, height: MeltedConnection.controlHeight) {
+            MeltedField(field.label, isFocused: focused, height: MeltedConnection.controlHeight, expandsVertically: field.multiline == true) {
                 HStack(spacing: MeltedReading.actionGap) {
-                    TextField(field.placeholder ?? "", text: Binding(get: { value?.text ?? "" }, set: { value = .string($0) }))
+                    TextField(field.label, text: Binding(get: { value?.text ?? "" }, set: { value = .string($0) }), prompt: Text(field.placeholder ?? "").foregroundStyle(palette.secondary), axis: field.multiline == true ? .vertical : .horizontal)
+                        .lineLimit(field.multiline == true ? minimumTextLines...12 : 1...1)
                         .font(.system(size: MeltedType.control, design: field.monospaced == true ? .monospaced : .default))
                         .autocorrectionDisabled(field.format == "url")
                         .focused($focused).accessibilityLabel(field.label)

@@ -49,85 +49,8 @@
           }
         ]
       }
-    },
-    {
-      "id": "e144a6357dea966b3f5968a48ab14f4442675b2f6b88597d09818911b385b5b9",
-      "label": "Package",
-      "group": "npm",
-      "summary": "/npm/package/:name{(@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*}",
-      "requirements": [],
-      "allowed": false,
-      "input": {
-        "fields": [
-          {
-            "id": "p2",
-            "label": "name",
-            "required": true,
-            "type": "text",
-            "max_length": 1000
-          }
-        ]
-      }
-    },
-    {
-      "id": "353d134f6384c596b28bf7eeb622ea0f7c03750d3ccd5dbbbcd1b582849e8e8e",
-      "label": "Optional positions",
-      "group": "Patterns",
-      "summary": "/test/:first?/:second?",
-      "requirements": [],
-      "allowed": false,
-      "input": {
-        "fields": [
-          {
-            "id": "p1",
-            "label": "first",
-            "required": false,
-            "type": "text",
-            "max_length": 1000
-          },
-          {
-            "id": "p2",
-            "label": "second",
-            "required": false,
-            "type": "text",
-            "max_length": 1000
-          }
-        ]
-      }
-    },
-    {
-      "id": "fd0f7134bdf3de0a4860798f9ca961774afe0b6093f2371c800007d4b4b4b49a",
-      "label": "Complex pattern",
-      "group": "Patterns",
-      "summary": "/test/prefix-:value",
-      "requirements": [],
-      "allowed": false,
-      "input": {
-        "fields": [
-          {
-            "id": "route",
-            "label": "订阅路由",
-            "help": "按上方路由格式填写完整相对路径",
-            "required": true,
-            "type": "text",
-            "default": "/test/prefix-news",
-            "max_length": 2048
-          }
-        ]
-      }
-    },
-    {
-      "id": "fb1bb7177079cc58c470613d338f611926d104fc57ca9354f35fa4c3cd10475c",
-      "label": "Home timeline",
-      "group": "X (Twitter)",
-      "summary": "/twitter/home",
-      "requirements": [],
-      "allowed": false,
-      "input": {
-        "fields": []
-      }
     }
   ],
-  "total": 6,
+  "total": 2,
   "next_cursor": null
 }

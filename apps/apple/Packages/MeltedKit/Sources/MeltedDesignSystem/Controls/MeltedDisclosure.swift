@@ -37,17 +37,26 @@ public struct MeltedDisclosureToggle<Label: View>: View {
     }
 }
 
-public struct MeltedDisclosure<Label: View, Content: View>: View {
+public struct MeltedDisclosure<Label: View, Content: View, Trailing: View>: View {
     public enum Presentation { case plain, card }
     private let presentation: Presentation
     @Binding private var isExpanded: Bool
     private let label: Label
     private let content: Content
+    private let trailing: Trailing
 
     public init(isExpanded: Binding<Bool>, presentation: Presentation = .plain,
-                @ViewBuilder label: () -> Label, @ViewBuilder content: () -> Content) {
+                @ViewBuilder label: () -> Label, @ViewBuilder content: () -> Content) where Trailing == EmptyView {
         _isExpanded = isExpanded; self.presentation = presentation
         self.label = label(); self.content = content()
+        self.trailing = EmptyView()
+    }
+
+    public init(isExpanded: Binding<Bool>, presentation: Presentation = .plain,
+                @ViewBuilder label: () -> Label, @ViewBuilder trailing: () -> Trailing,
+                @ViewBuilder content: () -> Content) {
+        _isExpanded = isExpanded; self.presentation = presentation
+        self.label = label(); self.trailing = trailing(); self.content = content()
     }
 
     public var body: some View {
@@ -57,8 +66,11 @@ public struct MeltedDisclosure<Label: View, Content: View>: View {
 
     private var disclosure: some View {
         VStack(alignment: .leading, spacing: MeltedReading.actionGap) {
-            MeltedDisclosureToggle(isExpanded: $isExpanded) {
-                HStack { label; Spacer(minLength: 0) }
+            HStack(spacing: MeltedReading.actionGap) {
+                MeltedDisclosureToggle(isExpanded: $isExpanded) {
+                    HStack { label; Spacer(minLength: 0) }
+                }
+                trailing
             }
             if isExpanded { content.transition(.opacity) }
         }

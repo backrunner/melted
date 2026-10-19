@@ -8,16 +8,18 @@ public struct MeltedField<Content: View>: View {
     private let label: String
     private let isFocused: Bool
     private let height: CGFloat
+    private let expandsVertically: Bool
     private let content: Content
     @Environment(\.colorScheme) private var scheme
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
-    public init(_ label: String, isFocused: Bool, height: CGFloat = MeltedConnection.controlHeight, @ViewBuilder content: () -> Content) {
+    public init(_ label: String, isFocused: Bool, height: CGFloat = MeltedConnection.controlHeight, expandsVertically: Bool = false, @ViewBuilder content: () -> Content) {
         self.label = label
         self.isFocused = isFocused
         self.height = height
+        self.expandsVertically = expandsVertically
         self.content = content()
     }
 
@@ -34,7 +36,9 @@ public struct MeltedField<Content: View>: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(label)
                 .padding(.horizontal, 12)
-                .frame(height: height)
+                .padding(.vertical, expandsVertically ? MeltedReading.actionGap : 0)
+                .frame(height: expandsVertically ? nil : height)
+                .frame(minHeight: height)
                 .background(palette.surface, in: shape)
                 .overlay {
                     shape.strokeBorder(

@@ -54,6 +54,17 @@ struct SourcesPanel: View {
                             }), presentation: .card) {
                                 Text(plugin.title).font(.system(size: MeltedType.section, weight: .semibold)).foregroundStyle(palette.text)
                                 Text("\(sources.count) 个\(plugin.collection.title)").font(.system(size: MeltedType.metadata))
+                            } trailing: {
+                                Button {
+                                    model.error = nil
+                                    editor = .init(plugin: plugin, source: nil)
+                                } label: {
+                                    Image(systemName: "plus")
+                                }
+                                .buttonStyle(MeltedIconButtonStyle())
+                                .help("添加 \(plugin.title) 订阅")
+                                .accessibilityLabel("添加 \(plugin.title) 订阅")
+                                .disabled(model.busy || !plugin.available || !plugin.supported)
                             } content: {
                                 if plugin.supported {
                                     PluginSourceCollection(plugin: plugin, collection: plugin.collection, sources: sources, sourceForm: catalog.sourceForm) { source in
