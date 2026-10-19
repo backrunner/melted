@@ -82,3 +82,33 @@ development:
 #         allowed_origins: [https://feeds.bbci.co.uk, https://www.bbc.com]
 #         model_origin: https://api.deepseek.com
 # Harness / model secrets and process isolation: docs/agent-collection.md
+
+# Optional natural-language preference compilation / automatic organization.
+# JSON environment equivalent: PROCESSING_CONFIG (Cloudflare: Worker secret).
+# See docs/processing.md. Do not commit real credentials.
+# processing:
+#   generator:
+#     endpoint: https://api.deepseek.com/chat/completions
+#     model: choose-a-supported-json-model
+#     api_key: replace-server-side-secret
+#     max_tokens: 4096
+#   decision:
+#     endpoint: https://api.typesafe.ai/v1/systemone
+#     model: jev-latest
+#     api_key: replace-server-side-secret
+#   daily_call_limit: 60
+#   timeout_ms: 30000
+#   exclusion_threshold: 0.9
+#   inclusion_threshold: 0.8
+#   verification_threshold: 0.9
+
+# Optional client-managed credentials (choose ONE mode; omit api_key above):
+#   credentials:
+#     mode: byok  # every account supplies its own keys, no shared fallback
+# OR:
+#   credentials:
+#     mode: shared
+#     administrators: [acc_replace_with_exact_64_hex_account_id]
+# Default mode is operator: only server-side api_key, no client credential UI.
+# byok/shared require PROCESSING_SEAL_KEY (64 random lowercase hex chars).
+# Keep this master in server environment / Worker secret and back it up securely.

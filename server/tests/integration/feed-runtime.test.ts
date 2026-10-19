@@ -200,7 +200,7 @@ for (const target of [
         401,
       );
       assert.equal((await send(presetURL + "?limit=51")).status, 400);
-      const presetResponse = await send(presetURL + "?query=twitter&limit=1");
+      const presetResponse = await send(presetURL + "?limit=1");
       assert.equal(presetResponse.status, 200);
       const page = (await presetResponse.json()) as {
         presets: PluginPreset[];
@@ -222,12 +222,29 @@ for (const target of [
       );
       const next = (await (
         await send(
-          presetURL +
-            "?query=twitter&limit=1&cursor=" +
-            encodeURIComponent(page.next_cursor),
+          presetURL + "?limit=1&cursor=" + encodeURIComponent(page.next_cursor),
         )
       ).json()) as { presets: PluginPreset[] };
-      const user = [...page.presets, ...next.presets].find((p) => p.allowed)!;
+      const presets = [...page.presets, ...next.presets];
+      assert(presets.every((p) => p.allowed));
+      assert(!presets.some((p) => p.summary === "/twitter/home"));
+      const twitterPage = (await (
+        await send(presetURL + "?query=twitter")
+      ).json()) as { total: number };
+      assert.equal(twitterPage.total, 1);
+      const blockedPage = (await (
+        await send(presetURL + "?query=%2Ftwitter%2Fhome")
+      ).json()) as {
+        total: number;
+        presets: PluginPreset[];
+        next_cursor: string | null;
+      };
+      assert.deepEqual(blockedPage, {
+        total: 0,
+        presets: [],
+        next_cursor: null,
+      });
+      const user = presets.find((p) => p.summary.startsWith("/twitter/user"))!;
       const resolved = await send(
         presetURL + "/" + user.id + "/resolve",
         "POST",
@@ -239,12 +256,10 @@ for (const target of [
           .configuration.route,
         "/twitter/user/_RSSHub",
       );
-      const denied = [...page.presets, ...next.presets].find(
-        (p) => !p.allowed,
-      )!;
+      const deniedID = await hash("/twitter/home");
       assert.equal(
         (
-          await send(presetURL + "/" + denied.id + "/resolve", "POST", {
+          await send(presetURL + "/" + deniedID + "/resolve", "POST", {
             input: {},
           })
         ).status,

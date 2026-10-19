@@ -7,6 +7,7 @@ import { load } from "js-yaml";
 export interface ServerConfig {
   authentication?: unknown;
   plugins?: unknown;
+  processing?: unknown;
   server: {
     id: string;
     operator: string;
@@ -160,6 +161,9 @@ export function configToEnv(config: ServerConfig): Record<string, string> {
     DATABASE_URL: config.database.url,
     ...(config.plugins !== undefined
       ? { PLUGIN_CONFIG: JSON.stringify(config.plugins) }
+      : {}),
+    ...(config.processing !== undefined
+      ? { PROCESSING_CONFIG: JSON.stringify(config.processing) }
       : {}),
     ...(config.authentication !== undefined
       ? { AUTH_CONFIG: JSON.stringify(config.authentication) }

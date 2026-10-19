@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 export interface CloudBindings {
-  COLLECTION_QUEUE?: Queue<{ owner: string; run_id: string }>;
+  COLLECTION_QUEUE?: Queue<
+    { owner: string; run_id: string } | { owner: string; processing_id: string }
+  >;
+  PROCESSING_CONFIG?: string;
+  PROCESSING_SEAL_KEY?: string;
   PLUGIN_CONFIG?: string;
   RSSHUB_ACCESS_KEY?: string;
   ACCOUNTS: DurableObjectNamespace;

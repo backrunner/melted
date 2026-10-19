@@ -1,0 +1,25 @@
+{
+  "configured": true,
+  "version": 1,
+  "phase": "ready",
+  "preview": [
+    {
+      "label": "分类",
+      "value": "文化：阅读、艺术与公共文化活动"
+    },
+    {
+      "label": "输出",
+      "value": "简体中文，简洁短文，保留来源和不确定性"
+    }
+  ],
+  "jobs": {
+    "queued": 0,
+    "running": 0,
+    "failed": 0,
+    "published": 0,
+    "filtered": 0,
+    "held": 0
+  },
+  "reserved_calls": 1,
+  "daily_call_limit": 60
+}

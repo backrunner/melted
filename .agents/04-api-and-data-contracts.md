@@ -43,6 +43,8 @@ App 先展示运营者及 AI/mem 数据去向，用户同意后才发账号、�
 
 ## 插件设置与采集已实现子集
 
+2026-10-18 新增[服务端设置 DSL v1](../server/docs/settings.md)：discovery 的 `server_settings: 1` 声明独立目录 `/v1/settings`，表单与同源读写接口由服务器下发。`/v1/settings/preferences` 保存分类/标签、内容范围、个人偏好和输出偏好的自然语言原文，使用 schema_version、expected_version、Idempotency-Key、账户隔离与历史记录。保存响应 application=stored；2026-10-19 已增加 /v1/settings/preferences/processing 和 compile/activate/reprocess 工作流，状态按当前有效模型/凭据及策略版本区分，见处理文档。
+
 `/v1/sources` 管理账户来源，`/v1/sources/{id}/sync` 幂等返回 202 receipt，`/v1/receipts/{id}` 返回状态/错误/条数。`/v1/sources/{id}/items` 只返回元信息，`/v1/raw-items/{id}?revision=N` 独立鉴权读取原始正文。修改用 expected_version，删除用 If-Match；暂停和删除取消旧 generation，禁止迟到写入。完整字段及限制见 [OpenAPI](../contracts/openapi.json)和 [采集指南](../server/docs/rsshub.md)。
 
 `GET /v1/plugins`、`GET /v1/plugins/{id}` 返回鉴权后的有限设置 DSL；`POST /v1/sources/{id}/actions/{action}` 校验插件/来源版本并执行 collect 或 validate。来源只使用 plugin/config_version/configuration；发布前不保留旧 route 输入、输出或数据转换。协议、升级与共享 fixture 见 [插件说明](../server/docs/plugins.md)。
@@ -170,3 +172,7 @@ goal 编译成有界 QueryPlan：关键词/实体、语言、时间窗、最大�
 主版本用于破坏性变化，新增可选字段向后兼容。未知枚举降级显示未知，不猜成功。服务器声明兼容范围，常规能力响应不泄露私有插件配置。
 
 媒体支持以有效 capability 为准：通用 schema 可描述 video/file，P0 未配置对应支持时返回 415/422，不因 schema 存在就声称已经处理。渲染和状态验收同时覆盖 [UI 规范](11-ui-design-system.md) 与 [开发规范](12-development-standards.md)。
+
+## 2026-10-19 自然语言偏好处理增量
+
+2026-10-19：`processing-actions-v1` 提供编译、确认启用和失败重试；`write-only-secrets-v1` 独立承载可选凭据配置。operator/byok/shared 模式由部署配置决定，管理员 allowlist 每次请求重新鉴权，客户端不能指定 owner 或提升权限。具体 envelope、状态与版本见[设置协议](../server/docs/settings.md)及[凭据模式](../server/docs/processing.md#可选的客户端凭据配置)。

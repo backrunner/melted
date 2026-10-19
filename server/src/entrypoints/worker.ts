@@ -15,6 +15,8 @@ export default {
   async fetch(request: Request, env: CloudBindings): Promise<Response> {
     const config = configFromEnv({
       PLUGIN_CONFIG: env.PLUGIN_CONFIG,
+      PROCESSING_CONFIG: env.PROCESSING_CONFIG,
+      PROCESSING_SEAL_KEY: env.PROCESSING_SEAL_KEY,
       RSSHUB_ACCESS_KEY: env.RSSHUB_ACCESS_KEY,
       MELTED_SERVER_ID: env.MELTED_SERVER_ID,
       MELTED_OPERATOR: env.MELTED_OPERATOR,

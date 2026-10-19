@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Melted contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { CloudSources } from "./sources/proxy.js";
+import { CloudProcessing } from "./processing/proxy.js";
 import { z } from "zod";
 import { type Config } from "../../config/schema.js";
 import { unauthorized } from "../../shared/problem.js";
@@ -19,6 +20,10 @@ import { type Page } from "../../modules/content/repository.js";
 import { type Change } from "../../modules/sync/repository.js";
 import type { CloudBindings } from "./bindings.js";
 import { call } from "./rpc.js";
+import type {
+  SettingsState,
+  SettingsMutation,
+} from "../../modules/settings/dsl.js";
 
 function tokenOwner(token: string, kind: "access" | "refresh"): string {
   const parts = token.split(".");
@@ -36,10 +41,16 @@ function flowID(value: string) {
   if (!/^flow_[a-f0-9]{32}$/.test(valueID)) throw unauthorized();
   return valueID;
 }
+import { CloudCredentials } from "./processing/credentials.js";
+
 export class CloudRepository implements Repository {
   readonly sources: CloudSources;
+  readonly processing: CloudProcessing;
+  readonly credentials: CloudCredentials;
   constructor(private env: CloudBindings) {
     this.sources = new CloudSources(env.ACCOUNTS);
+    this.processing = new CloudProcessing(env.ACCOUNTS);
+    this.credentials = new CloudCredentials(env.ACCOUNTS, env.CONTROL);
   }
   private account<T>(owner: string, op: string, payload: unknown = {}) {
     return call<T>(this.env.ACCOUNTS, owner, op, payload);
@@ -114,6 +125,21 @@ export class CloudRepository implements Repository {
   }
   taxonomy(owner: string) {
     return this.account<Fixture["terms"]>(owner, "taxonomy");
+  }
+  settings(owner: string, section: string) {
+    return this.account<SettingsState>(owner, "settings.get", { section });
+  }
+  saveSettings(
+    owner: string,
+    section: string,
+    input: SettingsMutation,
+    requestID: string,
+  ) {
+    return this.account<SettingsState>(owner, "settings.save", {
+      section,
+      input,
+      requestID,
+    });
   }
   detail(owner: string, contentID: string) {
     return this.account<Briefing>(owner, "detail", { id: contentID });

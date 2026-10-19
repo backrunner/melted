@@ -357,6 +357,16 @@
                 "type": "integer",
                 "const": 1,
                 "description": "Versioned native plugin settings catalog available after authentication."
+              },
+              "server_settings": {
+                "type": "integer",
+                "const": 1,
+                "description": "Finite server-owned settings DSL; absent means unavailable."
+              },
+              "automatic_organization": {
+                "type": "integer",
+                "const": 1,
+                "description": "Optional configured processing model capability; explicit activation required."
               }
             },
             "required": [

@@ -27,6 +27,7 @@ import {
   remember,
 } from "./records.js";
 import { PostgresSourceJobs, enqueue } from "./jobs.js";
+import { hideProcessing } from "../processing/repository.js";
 
 export class PostgresSources
   extends PostgresSourceJobs
@@ -101,6 +102,7 @@ export class PostgresSources
         checkpoint: {},
       });
       await cancelRuns(c, owner, id, now);
+      await hideProcessing(c, owner, id);
       await c.query("DELETE FROM raw_items WHERE owner=$1 AND source_id=$2", [
         owner,
         id,

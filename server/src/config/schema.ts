@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { parse } from "../shared/validation.js";
 import { authPolicySchema } from "../modules/identity/auth-policy.js";
+import { processingSettingsSchema } from "../modules/processing/config.js";
 
 export const configSchema = z
   .object({
@@ -27,6 +28,11 @@ export const configSchema = z
     registration: z.enum(["key", "closed"]).default("key"),
     authentication: authPolicySchema.optional(),
     plugins: z.record(z.string(), z.unknown()).optional(),
+    processing: processingSettingsSchema.optional(),
+    processingSealKey: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
     oidc: z
       .object({
         issuer: z.url().startsWith("https://"),
@@ -35,6 +41,13 @@ export const configSchema = z
       })
       .optional(),
   })
+  .refine(
+    (c) =>
+      !c.processing ||
+      c.processing.credentials.mode === "operator" ||
+      Boolean(c.processingSealKey),
+    "Client credentials require PROCESSING_SEAL_KEY",
+  )
   .refine(
     (c) => !c.authentication?.methods.includes("browser") || Boolean(c.oidc),
     "Browser authentication requires OIDC",
@@ -66,6 +79,10 @@ export function configFromEnv(env: Record<string, string | undefined>): Config {
     publicOrigin: env.PUBLIC_ORIGIN,
     registration: env.REGISTRATION_MODE ?? "key",
     plugins,
+    processing: env.PROCESSING_CONFIG
+      ? parseAuthJSON(env.PROCESSING_CONFIG, "PROCESSING_CONFIG")
+      : undefined,
+    processingSealKey: env.PROCESSING_SEAL_KEY,
     authentication:
       env.AUTH_CONFIG !== undefined
         ? parseAuthJSON(env.AUTH_CONFIG)

@@ -10,6 +10,9 @@ import { registerContentRoutes } from "./routes/content.js";
 import { registerSyncRoutes } from "./routes/sync.js";
 import { pluginRegistry } from "../plugins/index.js";
 import type { PluginRegistry } from "../modules/plugins/registry.js";
+import { registerSettingsRoutes } from "./routes/settings.js";
+
+import { refreshProcessingContext } from "../modules/processing/credentials.js";
 
 export function createApp(registry: PluginRegistry = pluginRegistry) {
   const app = new Hono<AppEnv>();
@@ -21,9 +24,15 @@ export function createApp(registry: PluginRegistry = pluginRegistry) {
       "principal",
       await c.env.repository.authenticate(c.req.header("Authorization")),
     );
+    await refreshProcessingContext(
+      c.env.repository,
+      c.env.config,
+      c.get("principal").owner,
+    );
     await next();
   });
   registerSourceRoutes(app, registry);
+  registerSettingsRoutes(app);
   registerContentRoutes(app);
   registerSyncRoutes(app);
   return app;

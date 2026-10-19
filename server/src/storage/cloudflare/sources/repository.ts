@@ -16,6 +16,7 @@ import {
 import { Problem } from "../../../shared/problem.js";
 import { pageLimit } from "../../../modules/sources/schemas.js";
 import { AccountSourceJobs } from "./jobs.js";
+import { hideProcessing } from "../processing/repository.js";
 
 export class AccountSources extends AccountSourceJobs {
   list(): Source[] {
@@ -68,6 +69,7 @@ export class AccountSources extends AccountSourceJobs {
         checkpoint: {},
       });
       this.cancel(id, now);
+      hideProcessing(this.db, id);
       this.db.sql.exec(
         "DELETE FROM raw_item_revisions WHERE item_id IN (SELECT id FROM raw_items WHERE source_id=?)",
         id,

@@ -16,11 +16,15 @@ import { listBriefings } from "./queries.js";
 export class AccountContent {
   constructor(private db: AccountDatabase) {}
   private document(contentID: string, includeHidden = false): Briefing {
-    const row = this.db.first<{ document: string; hidden: number }>(
-      "SELECT document,hidden FROM briefings WHERE id=?",
+    const row = this.db.first<{
+      document: string;
+      hidden: number;
+      processing_visible: number;
+    }>(
+      "SELECT document,hidden,processing_visible FROM briefings WHERE id=?",
       contentID,
     );
-    if (!row || (!includeHidden && row.hidden))
+    if (!row || (!includeHidden && (row.hidden || !row.processing_visible)))
       throw new Problem(404, "not_found");
     return JSON.parse(row.document) as Briefing;
   }

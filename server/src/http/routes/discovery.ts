@@ -19,6 +19,7 @@ export function registerDiscoveryRoutes(
     const manifest = await collectionDisclosure(
       pluginConfiguration(c.env.config),
       registry,
+      c.env.config.processing,
     );
     return c.json({
       protocol: { min: 1, max: 1 },
@@ -30,6 +31,8 @@ export function registerDiscoveryRoutes(
       capabilities: {
         input: [],
         plugin_settings: 1,
+        server_settings: 1,
+        ...(c.env.config.processing ? { automatic_organization: 1 } : {}),
         collectors: [...new Set(manifest.destinations.map((d) => d.id))],
         subject_pull: false,
         html_static: false,
@@ -44,7 +47,11 @@ export function registerDiscoveryRoutes(
   });
   app.get("/.well-known/melted/processing", async (c) =>
     c.json(
-      await collectionDisclosure(pluginConfiguration(c.env.config), registry),
+      await collectionDisclosure(
+        pluginConfiguration(c.env.config),
+        registry,
+        c.env.config.processing,
+      ),
     ),
   );
 }

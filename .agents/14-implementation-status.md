@@ -6,21 +6,21 @@
 
 | 范围 | 当前实现 | 边界 |
 | --- | --- | --- |
-| 服务端 | TypeScript/Hono；Node 24/PostgreSQL、Workers/SQLite DO；发现、协商认证、会话轮换与账户隔离 | 上传与真实 AI 管线未接入 |
+| 服务端 | TypeScript/Hono；Node 24/PostgreSQL、Workers/SQLite DO；发现、协商认证、会话轮换与账户隔离 | 文本偏好管线已接入；真实模型质量及上传未验收 |
 | 身份 | 服务器 methods/preferred；预置密码/API Key、P-256、配置后 OIDC；客户端原生表单与 Keychain | 密钥不证明 Apple 身份；账户恢复、设备/多服务器管理 UI 后续 |
 | 内容 API | 词表、q/view/category/tag/subject 查询、中文子串、固定快照分页、详情、幂等状态与提交有序 changes | 不是 FTS/语义搜索；完整 v1 未冻结，无 facets/time UI |
-| RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载/AI 简报；客户端管理通过插件 DSL 提供 |
+| RSSHub 采集 | 来源 CRUD、异步 receipt、去重/修订原始入库；Node/PG worker 与 DO Alarms/outbox/Queues；固定镜像可选实例 | 公开源、当前窗口；无全文补抓/附件下载；可显式启用文本整理；客户端管理通过插件 DSL 提供 |
 | Feed 采集 | 独立 feed 插件，RSS 2.0 / Atom 1.0 / JSON Feed 解析、条件请求及统一入库；URL/格式/条数 DSL | 运营者精确允许 origin；无任意域名、自动重定向、全文补抓或历史回填 |
 | 社交采集 | 独立 Bluesky、Fediverse、Nostr 插件及服务端实例/relay 选项；账号/话题/Feed 订阅、Nostr 签名校验 | 公开内容与当前窗口；Fediverse 限 Mastodon 兼容 API；无登录/发布/私信/全网回填 |
-| Agent 采集 | 独立 DeepSeek Harness 插件、ACP 网关、受限工具与真实证据选择；双部署任务与入库 | 固定 Harness + 合成模型闭环已验证；真实模型质量/费用未验收，后处理 AI 简报未接入 |
+| Agent 采集 | 独立 DeepSeek Harness 插件、ACP 网关、受限工具与真实证据选择；双部署任务与入库 | 固定 Harness + 合成模型闭环已验证；文本后处理已接入；真实模型质量/费用仍待验收 |
 | 插件机制 | 独立采集模块、受信任注册、有限设置 DSL/host 动作；表单建议、list/table 集合与多选创建，来源通用 configuration；SDK 基类与可生成 boilerplate | 每行独立来源与任务，按 DSL 固定布局、无用户切换；不动态下载代码；仅 collect/validate 动作，iOS 设置 UI 后续 |
 | 契约与工程 | OpenAPI 3.1/JSON Schema/共享 fixture、增量迁移、CLI、Docker/Compose、Worker 与内置插件预检 | 第三方任意插件执行尚未开放；预检不证明沙箱 |
 | 原生工作台 | 无侧栏与可见文字标题、亮暗 token、双栏/窄窗阅读、列表分页/空态、收藏与已读状态 | 全页面/最低系统/辅助功能矩阵未全覆盖 |
 | 搜索 | SearchPalette 原生 sheet、NativeSearchField、菜单/⌘F、词表条件、组合查询、Esc 关闭及条件 chip 重开 | 时间/排序/facet 等扩展尚未实现 |
 | 阅读 | 原生 Markdown、行内等宽代码、离线语法高亮/复制/长行横滚、必要证据警告、文末元信息与来源；100–200% 阅读缩放 | 按需图片及 YouTube/B 站播放器引用；任意 raw HTML 不执行；无语义反馈 UI |
 | 连接设计 | 品牌放在表单标题上方；共享背景；220 ms 透明度切换，方法切换无布局插值 | 工作台品牌限于列表底栏左侧；不把局部空态动效扩到连接按钮 |
-| 设置 | 外观、内容/来源与插件、账户、关于；完整 GPL 和第三方声明 sheet；来源设置/动作/receipt | 偏好/关注/通知/反馈/导出删除页面后续 |
-| 同步 | 12 秒轮询 changes 提示，upsert 刷新/到达高亮，手动刷新，内存保留已加载内容 | 无正文磁盘缓存、SSE、持久离线 mutation、完整 snapshot 重放及远端 state/delete 应用；轮询失败已提示并保留水位重试 |
+| 设置 | 外观、内容/来源与插件、服务器偏好 DSL、账户、关于；完整 GPL 和第三方声明 sheet；来源设置/动作/receipt；自然语言分类/内容/个人/输出要求的版本化保存 | 已增加编译草案、确认应用和处理状态；学习、关注/通知/反馈/导出删除页面后续；保存原文不等于启用 |
+| 同步 | 12 秒轮询 changes 提示，upsert 刷新/到达高亮，手动刷新，内存保留已加载内容 | delete 已从已载列表和打开内容移除；无正文磁盘缓存、SSE、持久离线 mutation、完整 snapshot 重放及远端 state 应用；轮询失败已提示并保留水位重试 |
 | App 图标 | 正式品牌矢量生成 SVG/1024 PNG/多尺寸 ICNS，构建绑定 CFBundleIconFile | macOS 标准外观，非 iOS 图标或动态深色图标 |
 | 开源材料 | [公开仓库](https://github.com/backrunner/melted)、GPL-3.0-or-later、贡献/安全/第三方声明、原生截图 README | 无 App Store 例外、无已发布公证二进制或生产服务 |
 
@@ -40,9 +40,9 @@
 
 ## 当前设计差异与下一步
 
-优先处理 [设计复核中的实现缺口](13-design-review.md)：列表去冗余、分散 token、远端状态/删除的完整应用与辅助设置矩阵。搜索面板挂载和同步失败提示已修复。每项修复按当前构建做对应原生检查，不能把旧浏览器参考当通过。
+优先处理 [设计复核中的实现缺口](13-design-review.md)：列表去冗余、分散 token、远端状态的完整应用与辅助设置矩阵。搜索面板挂载和同步失败提示已修复。每项修复按当前构建做对应原生检查，不能把旧浏览器参考当通过。
 
-RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；后续补齐通用有权限摄取/上传、预算和处理目的地同意，再接入可替换 provider 完成真实整理链路。RSSHub 与 Feed 来源设置已按插件 DSL 接入，随后扩展偏好/关注/反馈与离线。无 provider 或语料时继续完成独立部分，明确质量缺口。
+RSSHub 来源已完成 receipt、任务恢复、取消/删除代际及 outbox；自然语言偏好、预算预留、处理目的地同意和文本整理现已接入。通用有权限摄取/上传、关注、反馈与离线仍待实现。下一步使用授权 provider 与语料验收真实模型质量，不能以合成协议闭环替代。
 
 ## 验证与运行入口
 
@@ -88,3 +88,7 @@ RSSHub 实施及双后端真实来源/恢复测试见 [2026-10-17 采集验收](
 - [水渍渐隐，2026-10-17](validation/2026-10-17/splash-fade/README.md)：触底痕迹用 1.33 s 渐隐，完全透明后清理；深浅原生画面、15 项共享测试与新构建验证。
 
 所有历史记录保留当时事实；最新源码状态与旧截图不同处以差异清单说明。没有 GitHub Actions 工作流，不把本地检查称为远端 CI；未验证 iCloud Keychain 实体设备同步、最低系统和完整 VoiceOver，不把 Apple Development 签名称为 Developer ID 公证发行。
+
+2026-10-19 新增服务端偏好处理、两部署执行和工作流 DSL，详见 [自动整理边界](../server/docs/processing.md)。
+
+2026-10-19 凭据权限与 UI 澄清：运营者选择 operator/byok/shared；客户端配置可关闭。BYOK 按账户隔离，共用凭据只有部署 allowlist 管理员获得 DSL 且每次 API 重新鉴权，不接受客户端提权。密钥经 AES-GCM 密封存储且不回显，处理绑定 scope/version；共享 DO 与账户 DO 的跨对象撤销由阶段检查与读取前撤下共同完成，不称原子事务。偏好编辑页只保留四类输入，生成的整理规则在独立页面检查确认；不把内部“草案”和任务统计堆进表单。详情及验证边界见 [处理文档](../server/docs/processing.md)。

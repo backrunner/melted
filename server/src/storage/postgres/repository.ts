@@ -16,21 +16,32 @@ import type { Repository } from "../repository.js";
 import { PostgresContent } from "./content.js";
 import { PostgresBrowserFlows } from "./browser-flows.js";
 import { listBriefings } from "./queries.js";
+import { PostgresSettings } from "./settings.js";
+import type { SettingsMutation } from "../../modules/settings/dsl.js";
+import { PostgresProcessing } from "./processing/repository.js";
+
+import { PostgresCredentials } from "./processing/credentials.js";
 
 export class PostgresRepository implements Repository {
   readonly sources: PostgresSources;
+  readonly processing: PostgresProcessing;
+  readonly credentials: PostgresCredentials;
   private content: PostgresContent;
   private browser: PostgresBrowserFlows;
+  private accountSettings: PostgresSettings;
   constructor(readonly db: Database) {
     this.sources = new PostgresSources(db);
+    this.processing = new PostgresProcessing(db);
+    this.credentials = new PostgresCredentials(db);
     this.content = new PostgresContent(db);
     this.browser = new PostgresBrowserFlows(db);
+    this.accountSettings = new PostgresSettings(db);
   }
   async health() {
     try {
       const result = await this.db.query(
         "SELECT 1 FROM schema_migrations WHERE version=$1",
-        ["003_sources.sql"],
+        ["006_processing_credentials.sql"],
       );
       if (!result.rowCount) throw new Error("migration_missing");
     } catch {
@@ -39,6 +50,17 @@ export class PostgresRepository implements Repository {
   }
   limit(key: string, maximum: number) {
     return rateLimit(this.db, key, maximum);
+  }
+  settings(owner: string, section: string) {
+    return this.accountSettings.settings(owner, section);
+  }
+  saveSettings(
+    owner: string,
+    section: string,
+    input: SettingsMutation,
+    requestID: string,
+  ) {
+    return this.accountSettings.saveSettings(owner, section, input, requestID);
   }
   challenge(config: Config, body: unknown) {
     return challenge(this.db, config, body);
@@ -106,6 +128,15 @@ export class PostgresRepository implements Repository {
     return this.browser.exchangeCode(code, challenge, redirect);
   }
   async maintenance() {
+    await this.db.query(
+      "DELETE FROM processing_credential_requests WHERE created_at<now()-interval '7 days'",
+    );
+    await this.db.query(
+      "DELETE FROM processing_actions WHERE created_at<now()-interval '7 days'; DELETE FROM processing_budget WHERE day < to_char(now()-interval '30 days','YYYY-MM-DD')",
+    );
+    await this.db.query(
+      "DELETE FROM settings_requests WHERE created_at<now()-interval '7 days'",
+    );
     await this.db.query("DELETE FROM source_requests WHERE created<$1", [
       Date.now() - 7 * 86400_000,
     ]);

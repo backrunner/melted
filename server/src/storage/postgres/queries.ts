@@ -46,7 +46,7 @@ export async function listBriefings(
         "DELETE FROM query_snapshots WHERE owner=$1 AND (expires_at<now() OR id IN (SELECT id FROM query_snapshots WHERE owner=$1 ORDER BY created_at DESC OFFSET 7))",
         [owner],
       );
-      const selection = ` FROM briefings b WHERE b.owner=$1 AND NOT b.hidden
+      const selection = ` FROM briefings b WHERE b.owner=$1 AND NOT b.hidden AND b.processing_visible
           AND ($2='all' OR ($2='unread' AND NOT b.read) OR ($2='saved' AND b.saved)) AND ($3='' OR strpos(lower(b.search_text),lower($3))>0)
           AND (cardinality($4::text[])=0 OR b.category_id=ANY($4))
           AND (cardinality($5::text[])=0 OR EXISTS(SELECT 1 FROM briefing_terms t JOIN terms term ON term.owner=t.owner AND term.id=t.term_id WHERE t.owner=b.owner AND t.briefing_id=b.id AND term.kind='tag' AND t.term_id=ANY($5)))
@@ -97,7 +97,7 @@ export async function listBriefings(
   const visible = new Set(
     (
       await db.query<{ id: string }>(
-        "SELECT id FROM briefings WHERE owner=$1 AND id=ANY($2::text[]) AND NOT hidden",
+        "SELECT id FROM briefings WHERE owner=$1 AND id=ANY($2::text[]) AND NOT hidden AND processing_visible",
         [owner, slice.map((d) => d.id)],
       )
     ).rows.map((r) => r.id),

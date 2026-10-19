@@ -93,8 +93,12 @@ Node 可仅通过环境变量启动。可选 YAML 按 `CONFIG_PATH`、`config.lo
 
 独立 `feed` 插件直接采集 RSS 2.0、Atom 1.0 和 JSON Feed，设置通过同一 DSL 渲染；见 [Feed 指南](docs/feed.md)。
 
+账户的分类/打标要求、内容范围、个人偏好与输出要求通过独立的[服务端设置 DSL](docs/settings.md)提供，客户端按描述符渲染并执行版本化读写。当前保存自然语言原文，尚未编译或应用到自动整理链路。
+
 独立 `bluesky`、`fediverse`、`nostr` 插件分别订阅账号/Feed、Mastodon 兼容账号/话题、公开 relay 的作者/话题；Nostr 校验事件 ID 和 Schnorr 签名。实例与 relay 选项由服务端下发，客户端复用原生多订阅表单。配置、范围和验证见 [社交来源指南](docs/social-collectors.md)。
 
 认证方式、预置账户与凭据生成见 [authentication.md](docs/authentication.md)。
 
 独立 `deepseek-harness` 插件通过 ACP 网关进行目标驱动的公开信息采集，只有工具实际获得的证据可入库；配置、独立固定 runtime、费用/恢复边界见 [Agent 采集指南](docs/agent-collection.md)。`npm run test:acp` 运行真实 Harness + 合成模型协议验收，需先安装 `agent-runtime`。
+
+自动整理与可选客户端凭据：见 [自然语言偏好管线](docs/processing.md)和 [设置 DSL](docs/settings.md)。operator/byok/shared 由服务器选择，管理员共用密钥配置与个人 BYOK 分开授权。

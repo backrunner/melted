@@ -43,7 +43,7 @@ export async function listBriefings(
         Date.now(),
       );
       const candidates = db.sql.exec<{ document: string }>(
-        `SELECT b.document FROM briefings b WHERE NOT hidden
+        `SELECT b.document FROM briefings b WHERE NOT hidden AND processing_visible
           AND (?='all' OR (?='unread' AND NOT read) OR (?='saved' AND saved)) AND (?='' OR instr(lower(search_text),lower(?))>0)
           AND (?='[]' OR category_id IN (SELECT value FROM json_each(?)))
           AND (?='[]' OR EXISTS(SELECT 1 FROM json_each(b.document,'$.tag_ids') t JOIN terms term ON term.id=t.value AND term.kind='tag' WHERE t.value IN (SELECT value FROM json_each(?))))
@@ -97,7 +97,7 @@ export async function listBriefings(
     const items = db.sql
       .exec<{ document: string }>(
         `SELECT s.document FROM snapshot_items s JOIN briefings b ON b.id=json_extract(s.document,'$.id')
-        WHERE s.snapshot=? AND s.ordinal>=? AND s.ordinal<? AND NOT b.hidden ORDER BY s.ordinal`,
+        WHERE s.snapshot=? AND s.ordinal>=? AND s.ordinal<? AND NOT b.hidden AND b.processing_visible ORDER BY s.ordinal`,
         snapshot,
         offset,
         end,

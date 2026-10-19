@@ -6,6 +6,7 @@ import type {
   PollResult,
   RawItem,
 } from "../../../modules/sources/types.js";
+import { appendChange } from "../changes.js";
 import { id } from "../../../shared/crypto.js";
 import { iso, emptyCounts } from "../../../modules/sources/lifecycle.js";
 
@@ -52,8 +53,20 @@ export function ingest(
       record.revision,
       JSON.stringify(record),
     );
-    if (previous) counts.updated++;
-    else counts.inserted++;
+    if (previous) {
+      const hidden = db.sql
+        .exec(
+          "UPDATE briefings SET processing_visible=0 WHERE id=? AND processing_visible=1 RETURNING id",
+          "organized_" + record.id,
+        )
+        .toArray();
+      if (hidden.length) {
+        db.sql.exec("DELETE FROM snapshot_items");
+        db.sql.exec("DELETE FROM snapshots");
+        appendChange(db, "organized_" + record.id, "delete");
+      }
+      counts.updated++;
+    } else counts.inserted++;
   }
   return counts;
 }

@@ -6,6 +6,7 @@ import type {
   PollResult,
   RawItem,
 } from "../../../modules/sources/types.js";
+import { appendChange } from "../account.js";
 import { id } from "../../../shared/crypto.js";
 import { iso, emptyCounts } from "../../../modules/sources/lifecycle.js";
 
@@ -48,8 +49,17 @@ export async function ingest(
       "INSERT INTO raw_item_revisions(owner,item_id,revision,document) VALUES($1,$2,$3,$4)",
       [owner, record.id, record.revision, record],
     );
-    if (previous) counts.updated++;
-    else counts.inserted++;
+    if (previous) {
+      const hidden = await c.query(
+        "UPDATE briefings SET processing_visible=false WHERE owner=$1 AND id=$2 AND processing_visible RETURNING id",
+        [owner, "organized_" + record.id],
+      );
+      if (hidden.rowCount) {
+        await c.query("DELETE FROM query_snapshots WHERE owner=$1", [owner]);
+        await appendChange(c, owner, "organized_" + record.id, "delete");
+      }
+      counts.updated++;
+    } else counts.inserted++;
   }
   return counts;
 }

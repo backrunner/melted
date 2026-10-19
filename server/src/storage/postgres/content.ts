@@ -25,7 +25,7 @@ export class PostgresContent {
   async detail(owner: string, contentID: string) {
     const row = (
       await this.db.query<{ document: Briefing }>(
-        `SELECT ${briefingProjection} FROM briefings b WHERE b.owner=$1 AND b.id=$2 AND NOT b.hidden`,
+        `SELECT ${briefingProjection} FROM briefings b WHERE b.owner=$1 AND b.id=$2 AND NOT b.hidden AND b.processing_visible`,
         [owner, contentID],
       )
     ).rows[0];

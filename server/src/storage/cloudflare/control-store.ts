@@ -5,6 +5,8 @@ import { DurableObject } from "cloudflare:workers";
 import { Problem, invalid, unauthorized } from "../../shared/problem.js";
 import { type BrowserFlow } from "../../modules/identity/browser-flow.js";
 
+import { dispatchCredentials } from "./processing/credentials.js";
+
 type StoredFlow = BrowserFlow & {
   status: "pending" | "processing" | "complete";
   owner?: string;
@@ -23,6 +25,10 @@ export class ControlStore extends DurableObject<CloudBindings> {
         operation: string;
         payload: Record<string, unknown>;
       };
+      if (operation.startsWith("credentials."))
+        return Response.json(
+          dispatchCredentials(this.ctx.storage, operation, payload),
+        );
       if (operation === "health") return Response.json({});
       const sql = this.ctx.storage.sql,
         now = Date.now();

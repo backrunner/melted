@@ -28,6 +28,7 @@
     "test:live:rsshub": "node --import tsx tests/live/rsshub.ts",
     "test:live:feed": "node --import tsx tests/live/feed.ts",
     "contracts:plugins": "tsx scripts/plugin-contracts.ts",
+    "contracts:settings": "tsx scripts/settings-contracts.ts",
     "plugins:new": "tsx scripts/new-plugin.ts",
     "test:acp": "node --import tsx --test tests/acp/*.test.ts",
     "agent:gateway": "tsx src/entrypoints/agent-gateway.ts",
